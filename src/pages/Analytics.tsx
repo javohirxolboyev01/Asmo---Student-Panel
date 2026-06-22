@@ -2,15 +2,15 @@ export default function Analytics() {
   return (
     <div className="flex-1 max-w-container-max mx-auto w-full relative">
       {/* Header Section */}
-      <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pt-4">
+      <div className="mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 pt-4">
         <div>
           <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Performance Analytics</h2>
-          <p className="text-on-surface-variant max-w-2xl">Track your IELTS mock exam progression and attendance metrics. Keep up the momentum!</p>
+          <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">Track your IELTS mock exam progression and attendance metrics. Keep up the momentum!</p>
         </div>
         <div className="flex gap-4">
-          <div className="clay-card px-6 py-3 flex items-center gap-3">
+          <div className="clay-card px-4 md:px-6 py-3 flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-secondary shadow-[0_0_10px_rgba(255,175,209,0.8)]"></div>
-            <span className="font-bold text-on-surface">Target Band: 7.5</span>
+            <span className="font-bold text-on-surface text-sm md:text-base">Target Band: 7.5</span>
           </div>
         </div>
       </div>

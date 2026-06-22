@@ -28,7 +28,7 @@ export default function Leaderboard() {
         </div>
 
         {/* Podium Section */}
-        <div className="grid grid-cols-3 gap-4 md:gap-8 mt-12 mb-8 items-end justify-center max-w-4xl mx-auto w-full h-[300px]">
+        <div className="grid grid-cols-3 gap-2 md:gap-8 mt-8 md:mt-12 mb-8 items-end justify-center max-w-4xl mx-auto w-full h-[250px] md:h-[300px]">
           {/* Rank 2 (Silver) */}
           <div className="flex flex-col items-center group relative h-[85%]">
             <div className="relative z-10 mb-[-20px] transform group-hover:-translate-y-2 transition-transform duration-300">
@@ -139,96 +139,96 @@ export default function Leaderboard() {
         {/* Leaderboard Table */}
         <div className="bg-surface-container/40 backdrop-blur-xl rounded-3xl border border-white/5 p-2 md:p-4 clay-card">
           <div className="flex flex-col gap-1">
-            <div className="flex items-center px-4 py-3 text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider text-[11px] border-b border-white/5 mb-2">
-              <div className="w-12 text-center">Rank</div>
-              <div className="flex-1 px-4">Student</div>
-              <div className="w-24 text-right">Score</div>
+            <div className="flex items-center px-3 md:px-4 py-3 text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider text-[10px] md:text-[11px] border-b border-white/5 mb-2">
+              <div className="w-10 md:w-12 text-center">Rank</div>
+              <div className="flex-1 px-2 md:px-4">Student</div>
+              <div className="w-20 md:w-24 text-right">Score</div>
             </div>
 
-            <div className="flex items-center px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
-              <div className="w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-lg group-hover:text-primary transition-colors">
+            <div className="flex items-center px-3 md:px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
+              <div className="w-10 md:w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-base md:text-lg group-hover:text-primary transition-colors">
                 4
               </div>
-              <div className="flex-1 px-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 clay-inset">
+              <div className="flex-1 px-2 md:px-4 flex items-center gap-2 md:gap-4 min-w-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border border-white/10 clay-inset shrink-0">
                   <img
                     alt="Student Avatar"
                     className="w-full h-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwHlNKvwY7NIAwEz71wO9NjaCwdorIx2YQMW_W0NufoBhwX_D_qHlr8-8aMXnZ8jnRzaskEovMQCr15nThgDUH8QrHSbwivci9bQNPgMk7eoBH4ajKVHDuYjAaUalGJEMOV93G9QtkiJl9p5LgLT7pzLlhJFLaAy4q1RtL8mg6WgXBHSVMdbgRZyF-ya1ObtwcjoxptqaOd7uPMisSlCzZODMCN0lflfpe1WQCNKhG1HnYA0xt5s7M2Z8JKSIOKmiJVMypLWIysXg"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-body-md text-body-md text-on-surface">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-body-md text-body-md text-on-surface truncate">
                     David Chen
                   </span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[11px]">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[10px] md:text-[11px]">
                     Level 42
                   </span>
                 </div>
               </div>
-              <div className="w-24 flex justify-end">
-                <div className="bg-surface-container-lowest/80 px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
-                  <span className="font-label-sm text-label-sm text-primary-fixed-dim">
+              <div className="w-20 md:w-24 flex justify-end shrink-0 ml-1">
+                <div className="bg-surface-container-lowest/80 px-2 md:px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
+                  <span className="font-label-sm text-label-sm text-primary-fixed-dim text-xs md:text-sm">
                     6,540
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
-              <div className="w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-lg group-hover:text-primary transition-colors">
+            <div className="flex items-center px-3 md:px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
+              <div className="w-10 md:w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-base md:text-lg group-hover:text-primary transition-colors">
                 5
               </div>
-              <div className="flex-1 px-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 clay-inset">
+              <div className="flex-1 px-2 md:px-4 flex items-center gap-2 md:gap-4 min-w-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border border-white/10 clay-inset shrink-0">
                   <img
                     alt="Student Avatar"
                     className="w-full h-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrBgcajKLx2SlAQzCxrr4Ok27P6CnJ7aMDzeLNp7SGbLVJwOd4KRstsS14LxbBTw_4Rtna2isq_ApatMA6AXdx9c34fnpHH1raZEkSXysI20VqswVmAKIloSflCgO30yD_3j-eyq7rgJpeme9O3-sPVMG5gBqlRe83fwf31LqBnWtdiHqciA7KLONr6mMRmF7OEa5_zr-FZQNOSXoMcHmqM1-DPl1TgCVyweCq_CO9PB_15qV-PpeJfwfj_6-4T3j7YtpEnpjPt20"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-body-md text-body-md text-on-surface">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-body-md text-body-md text-on-surface truncate">
                     Aisha Patel
                   </span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[11px]">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[10px] md:text-[11px]">
                     Level 39
                   </span>
                 </div>
               </div>
-              <div className="w-24 flex justify-end">
-                <div className="bg-surface-container-lowest/80 px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
-                  <span className="font-label-sm text-label-sm text-primary-fixed-dim">
+              <div className="w-20 md:w-24 flex justify-end shrink-0 ml-1">
+                <div className="bg-surface-container-lowest/80 px-2 md:px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
+                  <span className="font-label-sm text-label-sm text-primary-fixed-dim text-xs md:text-sm">
                     6,120
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
-              <div className="w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-lg group-hover:text-primary transition-colors">
+            <div className="flex items-center px-3 md:px-4 py-3 rounded-2xl hover:bg-surface-container-high/50 transition-colors group">
+              <div className="w-10 md:w-12 text-center font-headline-md text-headline-md text-on-surface-variant/70 text-base md:text-lg group-hover:text-primary transition-colors">
                 6
               </div>
-              <div className="flex-1 px-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 clay-inset">
+              <div className="flex-1 px-2 md:px-4 flex items-center gap-2 md:gap-4 min-w-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border border-white/10 clay-inset shrink-0">
                   <img
                     alt="Student Avatar"
                     className="w-full h-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS72SVbXU4fFljBRmfOOxyaEiDGHwOIR5G2kWhCyxOjnjyuda-BjIVVWyPnREDFgd5yMdWgANYs08TCcV1yLKah0eTPJ4Wkx0MCUyBwcZoND60W3ZMKvx2t6e-jEJ_hzrcVo2YmhBDS2RcPRg-oA3UnmIw6krokumc1uITIkEXTqQKqhXBEG7oKiRyX0F16crdEltP9jOLX4v36rFlHOcRZYn9Q78fJ0bb94gzhTmToNhoZfAAtngDqYP0w3eH5-UnLfyj6-Q1YmE"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-body-md text-body-md text-on-surface">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-body-md text-body-md text-on-surface truncate">
                     Jordan Lee
                   </span>
-                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[11px]">
+                  <span className="font-label-sm text-label-sm text-on-surface-variant text-[10px] md:text-[11px]">
                     Level 38
                   </span>
                 </div>
               </div>
-              <div className="w-24 flex justify-end">
-                <div className="bg-surface-container-lowest/80 px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
-                  <span className="font-label-sm text-label-sm text-primary-fixed-dim">
+              <div className="w-20 md:w-24 flex justify-end shrink-0 ml-1">
+                <div className="bg-surface-container-lowest/80 px-2 md:px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-white/5 shadow-inner">
+                  <span className="font-label-sm text-label-sm text-primary-fixed-dim text-xs md:text-sm">
                     5,890
                   </span>
                 </div>
@@ -236,31 +236,31 @@ export default function Leaderboard() {
             </div>
 
             {/* Current User Row */}
-            <div className="flex items-center px-4 py-4 rounded-2xl bg-primary/10 border border-primary/20 mt-2 relative overflow-hidden group">
+            <div className="flex items-center px-3 md:px-4 py-3 md:py-4 rounded-2xl bg-primary/10 border border-primary/20 mt-2 relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent pointer-events-none"></div>
-              <div className="w-12 text-center font-headline-md text-headline-md text-primary text-lg drop-shadow-sm">
+              <div className="w-10 md:w-12 text-center font-headline-md text-headline-md text-primary text-base md:text-lg drop-shadow-sm">
                 42
               </div>
-              <div className="flex-1 px-4 flex items-center gap-4 relative z-10">
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary clay-inset relative">
+              <div className="flex-1 px-2 md:px-4 flex items-center gap-2 md:gap-4 relative z-10 min-w-0">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-primary clay-inset relative shrink-0">
                   <img
                     alt="My Profile"
                     className="w-full h-full object-cover"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfODZajm64baJyaiqaDRaNsC1r7FN4q8O3V-KEopQsel99Fbf3GinNvcdZahBEmL7oySqj07CR6VhNFNJ6ZEC7lSQhC56v5MJESVS97LM_-gY6T2_rap1zBOkkTJm5KFPv6JmcOgGG1ML61mE3sPb2L-XcfizmECtsjF-6YRI9kRVV7Ays-24PCN6NX9ZKZcYtkz0OmqLWX8gmZrLy7eqMK0-UaIFJAXEWZK6-ZwNKKmhqjN5mvOajHK-oNvJgKOM80fFS4AsOxGQ"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-body-md text-body-md text-primary-fixed font-bold">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-body-md text-body-md text-primary-fixed font-bold truncate">
                     You (Alex Mercer)
                   </span>
-                  <span className="font-label-sm text-label-sm text-primary/70 text-[11px]">
+                  <span className="font-label-sm text-label-sm text-primary/70 text-[10px] md:text-[11px]">
                     Level 21
                   </span>
                 </div>
               </div>
-              <div className="w-24 flex justify-end relative z-10">
-                <div className="bg-primary-container px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-primary-fixed/30 shadow-[0_0_10px_rgba(170,115,255,0.4)]">
-                  <span className="font-label-sm text-label-sm text-on-primary-container font-bold">
+              <div className="w-20 md:w-24 flex justify-end relative z-10 shrink-0 ml-1">
+                <div className="bg-primary-container px-2 md:px-3 py-1 rounded-full clay-inset flex items-center gap-1 border border-primary-fixed/30 shadow-[0_0_10px_rgba(170,115,255,0.4)]">
+                  <span className="font-label-sm text-label-sm text-on-primary-container font-bold text-xs md:text-sm">
                     2,450
                   </span>
                 </div>

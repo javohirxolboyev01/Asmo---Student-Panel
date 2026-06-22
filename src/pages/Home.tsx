@@ -1,17 +1,17 @@
 export default function Home() {
   return (
     <>
-      <div className="clay-card relative overflow-hidden rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 z-10">
+      <div className="clay-card relative overflow-hidden rounded-3xl p-6 md:p-8 lg:p-12 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 z-10">
         <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
         <div className="relative z-10 max-w-xl">
           <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-4">Welcome back, Learner!</h1>
-          <p className="font-body-lg text-body-lg text-primary-fixed-dim mb-8">Ready for your IELTS Prep?</p>
-          <button className="clay-button px-8 py-4 text-on-primary font-label-sm text-label-sm uppercase tracking-wider inline-flex items-center gap-2">
+          <p className="font-body-md text-body-md text-primary-fixed-dim mb-6 md:mb-8">Ready for your IELTS Prep?</p>
+          <button className="clay-button px-6 md:px-8 py-4 text-on-primary font-label-sm text-label-sm uppercase tracking-wider inline-flex items-center gap-2">
             Start Learning
             <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
           </button>
         </div>
-        <div className="relative w-48 h-48 md:w-64 md:h-64 flex-shrink-0 animate-float z-10">
+        <div className="relative w-40 h-40 md:w-48 md:h-48 lg:w-64 lg:h-64 flex-shrink-0 animate-float z-10">
           <img alt="3D Graduation Cap" className="w-full h-full object-contain filter drop-shadow-[0_20px_30px_rgba(157,92,255,0.4)]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzCgpGuYbBicWQyAqpG_D3LCIIY1s-R7qkjhGdBkTrfT9quGZYgVRJRXS8PiigHYv9hIlg55cYilHW9IJeDBqZOhtmlLmodLbbA21HFfSREqNjHOQVJiJNAAUX4DmUrE--VCL0VSIV6yWk3tR_iSkk75zM5SR703-BkFTJ9ifZuYoF36ov-cpEuwEnzCNUE-6upoz5U0X9QUbr6xBpueG9sW9Gqmi0q5Fo900XtOGFZW4NUuMHtUkkbHc6dTVwsE059kBCE_D-PP0"/>
         </div>
       </div>

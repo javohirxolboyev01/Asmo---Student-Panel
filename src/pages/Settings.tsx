@@ -8,7 +8,7 @@ export default function Settings() {
       {/* Page Header */}
       <div className="flex flex-col gap-2">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface">Account Settings</h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant">Manage your personal profile and application preferences.</p>
+        <p className="font-body-md text-body-md text-on-surface-variant">Manage your personal profile and application preferences.</p>
       </div>
       
       {/* Bento Grid Layout for Forms */}

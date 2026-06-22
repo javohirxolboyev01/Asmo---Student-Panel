@@ -2,19 +2,19 @@ export default function Shop() {
   return (
     <div className="flex-grow w-full max-w-[1440px] mx-auto pt-4 relative z-10">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6 mb-8 md:mb-12">
         <div>
           <h2 className="font-headline-md text-headline-md text-on-surface mb-2">Student Store</h2>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">Redeem your ASMO coins for exclusive physical gear and digital rewards. Mockups are rendered in 3D for preview.</p>
         </div>
         {/* User Coin Balance Widget */}
-        <div className="inline-flex items-center gap-3 bg-surface-container-high px-5 py-3 rounded-2xl border border-white/10 shadow-[inset_2px_2px_4px_rgba(255,255,255,0.05),0_10px_20px_-5px_rgba(0,0,0,0.5)]">
+        <div className="inline-flex items-center gap-3 bg-surface-container-high px-4 md:px-5 py-3 rounded-2xl border border-white/10 shadow-[inset_2px_2px_4px_rgba(255,255,255,0.05),0_10px_20px_-5px_rgba(0,0,0,0.5)]">
           <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center shadow-[inset_1px_1px_2px_rgba(255,255,255,0.4)]">
             <span className="material-symbols-outlined text-on-primary-container text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>monetization_on</span>
           </div>
           <div>
             <p className="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">Balance</p>
-            <p className="font-headline-md text-[20px] text-primary font-bold leading-none">2,450</p>
+            <p className="font-headline-md text-[18px] md:text-[20px] text-primary font-bold leading-none">2,450</p>
           </div>
         </div>
       </div>

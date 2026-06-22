@@ -1,10 +1,10 @@
 export default function Groups() {
   return (
     <div className="max-w-[1440px] mx-auto w-full pt-4 relative z-10">
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
         <div>
-          <h2 className="font-display-lg text-display-lg font-black text-primary mb-2">My Study Groups</h2>
-          <p className="font-body-lg text-body-lg text-on-surface-variant">Collaborate and conquer your goals.</p>
+          <h2 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg font-black text-primary mb-2">My Study Groups</h2>
+          <p className="font-body-md text-body-md text-on-surface-variant">Collaborate and conquer your goals.</p>
         </div>
         <button className="bg-primary text-on-primary rounded-xl px-6 py-3 font-label-sm text-label-sm uppercase tracking-wider clay-button hover:scale-105 active:scale-95 transition-all duration-200 hidden sm:flex items-center gap-2">
           <span className="material-symbols-outlined">add</span>

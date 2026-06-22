@@ -38,57 +38,57 @@ export default function Payments() {
         <h3 className="font-headline-md text-headline-md text-on-surface mb-6">Recent Transactions</h3>
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between p-4 bg-surface-container-high/50 rounded-2xl hover:bg-surface-container-highest transition-colors border border-transparent hover:border-white/5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center clay-card">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center clay-card shrink-0">
                 <span className="material-symbols-outlined text-primary">school</span>
               </div>
-              <div>
-                <p className="font-body-md text-body-md text-on-surface font-semibold">May Tuition</p>
+              <div className="min-w-0">
+                <p className="font-body-md text-body-md text-on-surface font-semibold truncate">May Tuition</p>
                 <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">check_circle</span>
                   Paid via Payme
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0 ml-2">
               <p className="font-body-md text-body-md text-on-surface font-semibold">-250,000 UZS</p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">May 12, 2024</p>
             </div>
           </div>
           
           <div className="flex items-center justify-between p-4 bg-surface-container-high/50 rounded-2xl hover:bg-surface-container-highest transition-colors border border-transparent hover:border-white/5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center clay-card">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center clay-card shrink-0">
                 <span className="material-symbols-outlined text-secondary">assignment</span>
               </div>
-              <div>
-                <p className="font-body-md text-body-md text-on-surface font-semibold">Exam Fee</p>
+              <div className="min-w-0">
+                <p className="font-body-md text-body-md text-on-surface font-semibold truncate">Exam Fee</p>
                 <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">check_circle</span>
                   Paid via Click
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0 ml-2">
               <p className="font-body-md text-body-md text-on-surface font-semibold">-50,000 UZS</p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">May 05, 2024</p>
             </div>
           </div>
           
           <div className="flex items-center justify-between p-4 bg-surface-container-high/50 rounded-2xl hover:bg-surface-container-highest transition-colors border border-transparent hover:border-white/5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-tertiary/20 flex items-center justify-center clay-card">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-xl bg-tertiary/20 flex items-center justify-center clay-card shrink-0">
                 <span className="material-symbols-outlined text-tertiary">book</span>
               </div>
-              <div>
-                <p className="font-body-md text-body-md text-on-surface font-semibold">Study Materials</p>
+              <div className="min-w-0">
+                <p className="font-body-md text-body-md text-on-surface font-semibold truncate">Study Materials</p>
                 <p className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">check_circle</span>
                   Paid via Card
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="text-right shrink-0 ml-2">
               <p className="font-body-md text-body-md text-on-surface font-semibold">-100,000 UZS</p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">Apr 28, 2024</p>
             </div>
