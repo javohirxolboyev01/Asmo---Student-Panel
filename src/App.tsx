@@ -1,8 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./layouts/Layout";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import PublicRoute from "./routes/PublicRoute";
 
 // Lazy load pages
 const Home = lazy(() => import("./pages/Home"));
