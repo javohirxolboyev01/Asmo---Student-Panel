@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "type": "payment",
+    "amount": 250000,
+    "description": "May Tuition",
+    "method": "payme",
+    "status": "completed",
+    "createdAt": "2024-05-12T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "userId": 2,
+    "type": "payment",
+    "amount": 50000,
+    "description": "Exam Fee",
+    "method": "click",
+    "status": "completed",
+    "createdAt": "2024-05-05T14:20:00Z"
+  },
+  {
+    "id": 3,
+    "userId": 2,
+    "type": "purchase",
+    "amount": 100000,
+    "description": "Study Materials",
+    "method": "card",
+    "status": "completed",
+    "createdAt": "2024-04-28T09:15:00Z"
+  },
+  {
+    "id": 4,
+    "userId": 2,
+    "type": "purchase",
+    "amount": 1200,
+    "description": "ASMO Varsity Hoodie",
+    "method": "coins",
+    "status": "completed",
+    "createdAt": "2024-04-20T16:45:00Z"
+  },
+  {
+    "id": 5,
+    "userId": 2,
+    "type": "payment",
+    "amount": 250000,
+    "description": "April Tuition",
+    "method": "payme",
+    "status": "completed",
+    "createdAt": "2024-04-10T11:00:00Z"
+  }
+]

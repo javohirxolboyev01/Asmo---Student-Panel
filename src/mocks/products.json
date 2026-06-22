@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "name": "ASMO Varsity Hoodie",
+    "description": "Premium heavyweight cotton with embroidered logo. Soft clay texture.",
+    "price": 1200,
+    "category": "Clothing",
+    "stock": 10,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuATc9Rf0pbOJ76QO_sBE64_8W6W0byAJi-tbFktSLmqcKLyt8YtyeM8ylFDRywA7sOcWPmlW2PDDQHfvOF69FHqFg3_dGx8T0ZdFSvd1ghVJoijdOYUhWOHuO_D9PpFtnFazowi6NLlsUztFjCnqZwcLrdqqGfn1D7hDc-phn9sMQpmcvvjApprZv6qb2J9c5BVVPcjdZ7WGRDkC-3sNdSm-qHZ-jbqZ9puMCd6lLYH0VtKpheQHlWdqvnxQHhlN6jTcEHWVx2VxB4"
+  },
+  {
+    "id": 2,
+    "name": "Tech Commuter Pack",
+    "description": "Water-resistant shell with padded laptop sleeve and hidden compartments.",
+    "price": 850,
+    "category": "Gear",
+    "stock": 5,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDuRaM916KIZYGKpkQ6Uobbm-DWCGQZ9f9tBBaTsnmphyIipl2jOmFnYJMGBzgvNZh4S3e6gs8WTeGHW_6YEosEJgGRpFa-tbB-zICMYnG5tKuHFXtjgzRLYixb4lq2BA5TYVygwbGIOmBamh03CD0BQpDvagds-j8lNNswBJUW4mxFuIfRbN-wMVu-isEyxl1N27MVRz1wznZKPrf2lYC3rAD5oOvyW1QIjwe9N0JaMtS3ZkTwRUmnCV2D_BonwWwB40cGLAPA2n4"
+  },
+  {
+    "id": 3,
+    "name": "Hydro Flask 32oz",
+    "description": "Vacuum insulated stainless steel. Keeps drinks cold for 24 hours.",
+    "price": 400,
+    "category": "Accessories",
+    "stock": 20,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuASuMYvqbLNY-Dubs2LmuUuvOfxcpidqpui0AM7FqhO3BJ-CBw6PVWcN2BdIQExei82w5IUDEd9nCucijlCCP_mRCsBsonl6zqe-nN7Gm_605VZQI4FtGvAkR2phHcI501O2cGb5q8mE2ICmsZPNyjYbDy_iE75_6CaQC2XA-_0vP8ksDzjYeeZvK0YyXRMMILgWRtxXD3i0h0OhgbxVdeXjBHsN0ICujzOUdUDSdkE637O5dBF_ZvtKplWV7mJX8MxUVFtM1GqrGo"
+  },
+  {
+    "id": 4,
+    "name": "Classic Snapback",
+    "description": "Adjustable fit with 3D puff embroidery. Six-panel construction.",
+    "price": 250,
+    "category": "Clothing",
+    "stock": 15,
+    "image": "https://lh3.googleusercontent.com/aida-public/AB6AXuDzCTihPBXZcX1KZe4HZRazjbTvm1JZwGPNNxS7cJ8N7ADTphf-t2-3foDkG9rVPFguAP1QIyI1muwR_2B71xLWFuS9aIwH00aVnSrsbn2Z9uJVevOEf1K5b-2fLsxESU-bihz7cKfWqOdqXrIVJ-K_Z87uZWgEk4kIljHdJE7H5HUA3uWpbTkbm7aQNQ0-BZTlHntfOZuEpVA-wA3oqpk3fWHA_3WLa5--piG81U6P2IWx3K-b0XXhEvqYvK0AaDVqtDYxtcgPWyg"
+  }
+]

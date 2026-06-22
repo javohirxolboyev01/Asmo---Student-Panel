@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ASMO Learning Center - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ecdcff",
+                        "surface-container-low": "#1f182e",
+                        "on-primary-fixed-variant": "#5f00c0",
+                        "tertiary-fixed": "#7df4ff",
+                        "surface-container-high": "#2e263d",
+                        "on-error": "#690005",
+                        "on-surface-variant": "#cdc2d7",
+                        "background": "#160f26",
+                        "inverse-on-surface": "#342c44",
+                        "primary-container": "#aa73ff",
+                        "secondary-fixed-dim": "#ffafd1",
+                        "surface": "#160f26",
+                        "on-secondary-fixed-variant": "#8b0058",
+                        "surface-container": "#231c32",
+                        "error": "#ffb4ab",
+                        "on-surface": "#eaddfd",
+                        "surface-bright": "#3d354d",
+                        "surface-container-highest": "#393149",
+                        "on-background": "#eaddfd",
+                        "on-tertiary-fixed-variant": "#004f54",
+                        "on-primary-fixed": "#280057",
+                        "on-secondary-container": "#ffebf1",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#d6baff",
+                        "tertiary-fixed-dim": "#00dbe9",
+                        "on-primary-container": "#3a0079",
+                        "secondary-container": "#d10087",
+                        "on-primary": "#420089",
+                        "surface-tint": "#d6baff",
+                        "on-tertiary-fixed": "#002022",
+                        "outline": "#968da0",
+                        "secondary-fixed": "#ffd8e6",
+                        "surface-variant": "#393149",
+                        "error-container": "#93000a",
+                        "outline-variant": "#4b4454",
+                        "on-secondary": "#63003d",
+                        "surface-dim": "#160f26",
+                        "surface-container-lowest": "#110a20",
+                        "inverse-primary": "#7832d9",
+                        "on-tertiary": "#00363a",
+                        "on-secondary-fixed": "#3d0024",
+                        "tertiary-container": "#00a0aa",
+                        "on-tertiary-container": "#002f33",
+                        "secondary": "#ffafd1",
+                        "inverse-surface": "#eaddfd",
+                        "primary": "#d6baff",
+                        "tertiary": "#00dbe9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "unit": "8px",
+                        "nav-width": "280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Inter", "sans-serif"],
+                        "display-lg-mobile": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "label-sm": ["Geist", "sans-serif"],
+                        "body-md": ["Inter", "sans-serif"],
+                        "headline-md": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&amp;family=Geist:wght@600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Claymorphism Utilities */
+        .clay-card {
+            background: rgba(22, 15, 38, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.1), 
+                        inset -2px -2px 4px rgba(0, 0, 0, 0.5),
+                        0 20px 40px -10px rgba(157, 92, 255, 0.2);
+            border-radius: 1.5rem;
+        }
+        
+        .clay-inset {
+            background: rgba(17, 10, 32, 0.8);
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.6), 
+                        inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+        }
+        
+        .clay-button {
+            background: linear-gradient(135deg, #aa73ff, #7832d9);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.3), 
+                        inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+                        0 10px 20px -5px rgba(157, 92, 255, 0.4);
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+        }
+        
+        .clay-button:hover {
+            transform: translateY(2px);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.3), 
+                        inset -2px -2px 4px rgba(0, 0, 0, 0.2),
+                        0 5px 10px -2px rgba(157, 92, 255, 0.4);
+        }
+        
+        .clay-button:active {
+            transform: translateY(4px);
+            box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.2), 
+                        inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 3D Graduation Cap Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Vibrant Purple Background */
+        body {
+            background: radial-gradient(circle at 50% -20%, #3a0079 0%, #160f26 60%);
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar (Desktop) -->
+<header class="hidden md:flex w-full h-20 px-8 sticky top-0 z-40 bg-background/10 backdrop-blur-md justify-between items-center max-w-[1440px] ml-[280px]">
+<div class="font-display-lg text-display-lg tracking-tight text-primary">ASMO Learning Center</div>
+<div class="flex items-center gap-6">
+<div class="clay-inset flex items-center px-4 py-2 w-64">
+<span class="material-symbols-outlined text-on-surface-variant mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-on-surface w-full placeholder:text-on-surface-variant/50" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-primary dark:text-primary-fixed-dim">
+<button class="w-10 h-10 flex items-center justify-center hover:bg-primary/10 rounded-full transition-colors active:scale-90">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-primary/10 rounded-full transition-colors active:scale-90">
+<img alt="User Profile" class="w-8 h-8 rounded-full object-cover" data-alt="A stylized 3D avatar of a student, friendly face, soft claymorphism style, dark background, vibrant purple lighting accents, detailed textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqfdpMdYuQDMFFzgz6toybJDdZsY8wCE82lFclFvNlDC6OoGmdQDULEsJrDpm0m0LYyaxYeJM0_fzkBvcxUWX3L_CfcTCvCctovzmsj1rqsv94rUqcU0FODt1ebDmTMWOArL526fxBRjEIKktwrjtMepvDvWVEAKJXJIY8URpw0_wMpWLPrfT6Gzx17wrhoKSDZRRpLjOMoby16JuaninEhOmfFN-eJfnStf9QGCkBGgCKYFhZ3z-v1-VyGk3g_UVNCShlk-c-xLw"/>
+</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex fixed h-full w-[280px] left-0 top-0 bg-surface/20 backdrop-blur-xl dark:bg-surface-container/20 border-r border-white/10 backdrop-blur-2xl shadow-[40px_0_60px_-15px_rgba(157,92,255,0.2)] flex-col gap-8 p-6 z-50">
+<div class="flex items-center gap-4 mb-4">
+<img alt="Student Profile Picture" class="w-12 h-12 rounded-full border-2 border-primary/30" data-alt="A stylized 3D avatar of a student, friendly face, soft claymorphism style, dark background, vibrant purple lighting accents, detailed textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4QJQVCLmPEmQj0iFUyvW2uPaz9X3iIR6i7sVaXkNl85hzCPMAML33xrKjGaAgk-cp4LvYdu7R23cApqUSFwnTQY11EJX5lfXRPqh-ZO-QB48oZdTIzGzzRGrylt1HC_G7jPr6wgS_T4WWegV30SgWaniXxQrhJZgxh4fxvghXtnn5s4qGp0D-BQA98eKmhyjRFA9L_-fdF3Yb8uYDAZX8OItfnvW9DouJCbjDwQPQH6U2LClljJIJzbbZRM8JFG4dmcjuK-ffQv4"/>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed leading-tight">ASMO Portal</h2>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Learning Center</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<!-- Active Tab: Home -->
+<a class="flex items-center gap-4 bg-primary-container/80 text-on-primary-container rounded-xl px-4 py-3 shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.2)] hover:scale-105 transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined fill" data-icon="home" data-weight="fill">home</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Home</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Payments</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Groups</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Analytics</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Leaderboard</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Shop</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant hover:text-on-surface px-4 py-3 transition-all hover:scale-105 duration-200 active:scale-95 mt-auto" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Settings</span>
+</a>
+</div>
+<button class="clay-button w-full py-3 px-4 flex items-center justify-center gap-2 mt-4 text-on-primary font-label-sm text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+            Upgrade Plan
+        </button>
+</nav>
+<!-- Main Content Area -->
+<main class="md:ml-[280px] p-margin-mobile md:p-margin-desktop pb-32 md:pb-margin-desktop max-w-container-max mx-auto w-full min-h-screen flex flex-col gap-gutter">
+<!-- Hero Banner -->
+<div class="clay-card relative overflow-hidden rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 z-10">
+<!-- Background Glow -->
+<div class="absolute -top-24 -left-24 w-64 h-64 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
+<div class="relative z-10 max-w-xl">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-4">Welcome back, Learner!</h1>
+<p class="font-body-lg text-body-lg text-primary-fixed-dim mb-8">Ready for your IELTS Prep?</p>
+<button class="clay-button px-8 py-4 text-on-primary font-label-sm text-label-sm uppercase tracking-wider inline-flex items-center gap-2">
+                    Start Learning
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Floating 3D Graduation Cap Icon (Simulated with image placeholder for specific instruction) -->
+<div class="relative w-48 h-48 md:w-64 md:h-64 flex-shrink-0 animate-float z-10">
+<img alt="3D Graduation Cap" class="w-full h-full object-contain filter drop-shadow-[0_20px_30px_rgba(157,92,255,0.4)]" data-alt="A highly detailed 3D render of a graduation cap floating in mid-air. The cap has a soft, premium claymorphism texture with a slight matte finish. Deep vibrant purple background lighting casts an ethereal glow on the cap, highlighting its geometry. Modern, sleek, high-end digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzCgpGuYbBicWQyAqpG_D3LCIIY1s-R7qkjhGdBkTrfT9quGZYgVRJRXS8PiigHYv9hIlg55cYilHW9IJeDBqZOhtmlLmodLbbA21HFfSREqNjHOQVJiJNAAUX4DmUrE--VCL0VSIV6yWk3tR_iSkk75zM5SR703-BkFTJ9ifZuYoF36ov-cpEuwEnzCNUE-6upoz5U0X9QUbr6xBpueG9sW9Gqmi0q5Fo900XtOGFZW4NUuMHtUkkbHc6dTVwsE059kBCE_D-PP0"/>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Daily Schedule Widget -->
+<div class="clay-card p-6 md:col-span-8 flex flex-col gap-6">
+<div class="flex items-center justify-between border-b border-white/10 pb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calendar_month</span>
+                        Today's Schedule
+                    </h2>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">3 Classes</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Current/Next Class Highlight -->
+<div class="clay-inset p-4 relative overflow-hidden group hover:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.6),inset_-4px_-4px_8px_rgba(255,255,255,0.05),0_0_15px_rgba(157,92,255,0.2)] transition-all duration-300">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start md:items-center flex-col md:flex-row gap-4 ml-2">
+<div>
+<div class="text-primary font-label-sm text-label-sm mb-1 uppercase tracking-wider flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    Up Next • 14:00 - 15:30
+                                </div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-bold">IELTS Masterclass</h3>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Room 4
+                                    <span class="text-white/20 mx-1">|</span>
+<span class="material-symbols-outlined text-[16px]">person</span> Mr. Alex
+                                </p>
+</div>
+<button class="clay-button px-6 py-2 text-on-primary font-label-sm text-label-sm rounded-full self-start md:self-auto">
+                                Join Room
+                            </button>
+</div>
+</div>
+<!-- Later Class -->
+<div class="clay-inset p-4 opacity-70 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-center ml-2">
+<div>
+<div class="text-on-surface-variant font-label-sm text-label-sm mb-1 uppercase tracking-wider">16:00 - 17:00</div>
+<h3 class="font-body-md text-body-md text-on-surface font-bold">Speaking Practice</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Online • Ms. Sarah</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Stats / Progress -->
+<div class="clay-card p-6 md:col-span-4 flex flex-col gap-6">
+<h2 class="font-headline-md text-headline-md text-on-surface border-b border-white/10 pb-4">Prep Progress</h2>
+<div class="flex flex-col gap-4 items-center justify-center flex-grow">
+<!-- Circular Progress (Simulated with CSS) -->
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="8"></circle>
+<circle class="drop-shadow-[0_0_10px_rgba(170,115,255,0.5)]" cx="50" cy="50" fill="none" r="40" stroke="#aa73ff" stroke-dasharray="251" stroke-dashoffset="60" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary">76%</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant text-center mt-2">Target Score: 7.5</p>
+</div>
+</div>
+<!-- Study Materials Promo -->
+<div class="clay-card p-0 md:col-span-12 h-64 relative overflow-hidden group cursor-pointer mt-4">
+<div class="absolute inset-0 bg-cover bg-center w-full h-full opacity-50 group-hover:opacity-70 transition-opacity duration-500 mix-blend-overlay" data-alt="A highly aesthetic 3D render of floating books, tablets, and study notes in a dark atmospheric room. Soft volumetric lighting with deep purple and electric blue neon accents. The scene looks like a modern, high-tech magical library in a claymorphism style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB5InCyvrnPnYdiOpv5v88HQryxcYk8a1tuoExldzOV_hXP6DrP_SGEoWJpfq2jNf_PbheVAjdzCsweIMYw-uErfpBpY1A6-Ds9Dd5UUzVBpQO0XS9okbYjv8PN__L9ub6Y2hs-y_f2js1ZtvvTeFMGTnth0zY9PeRpXaoJo-juoCIxxrFic0FsvNhpUBXhE9CWWl463Ua8_7O7202YlrMn6JRuY_nrVpKc5s5a7X1L_aoyPgyVSp33XumYBoFqlS29s9DRViKy0cM')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent p-8 flex flex-col justify-center">
+<h3 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-2">New Mock Tests Available</h3>
+<p class="font-body-lg text-body-lg text-primary-fixed-dim max-w-md mb-6">Test your skills with our latest 2024 IELTS listening and reading materials.</p>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider flex items-center gap-2 group-hover:translate-x-2 transition-transform">Explore Materials <span class="material-symbols-outlined">arrow_forward</span></span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="flex justify-around items-center px-4 py-3 h-20 fixed bottom-0 w-full z-50 rounded-t-3xl md:hidden bg-surface-container/90 backdrop-blur-2xl dark:bg-surface-container-highest/90 shadow-[0_-10px_40px_rgba(157,92,255,0.3)]">
+<!-- Active Tab: Home -->
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-full w-12 h-12 shadow-[inset_2px_2px_4px_rgba(255,255,255,0.4)] active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined fill" data-icon="home" data-weight="fill">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="military_tech">military_tech</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+</nav>
+</body></html>

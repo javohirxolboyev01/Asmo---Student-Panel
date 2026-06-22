@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "userId": 2,
+    "overallBand": 6.5,
+    "listening": 7.0,
+    "reading": 6.5,
+    "writing": 6.0,
+    "speaking": 6.5,
+    "targetBand": 7.5,
+    "attendance": 92,
+    "totalClasses": 50,
+    "presentClasses": 46,
+    "mockExams": 5,
+    "lastExamDate": "2024-06-10T00:00:00Z",
+    "nextExamDate": "2024-07-10T00:00:00Z",
+    "progress": 76
+  }
+]

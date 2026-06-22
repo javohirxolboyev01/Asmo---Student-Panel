@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "name": "IELTS Level 1",
+    "description": "Foundation English",
+    "category": "IELTS",
+    "progress": 65,
+    "status": "active",
+    "members": 7,
+    "maxMembers": 10,
+    "nextSession": "2024-06-23T14:00:00Z",
+    "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuA4QJQVCLmPEmQj0iFUyvW2uPaz9X3iIR6i7sVaXkNl85hzCPMAML33xrKjGaAgk-cp4LvYdu7R23cApqUSFwnTQY11EJX5lfXRPqh-ZO-QB48oZdTIzGzzRGrylt1HC_G7jPr6wgS_T4WWegV30SgWaniXxQrhJZgxh4fxvghXtnn5s4qGp0D-BQA98eKmhyjRFA9L_-fdF3Yb8uYDAZX8OItfnvW9DouJCbjDwQPQH6U2LClljJIJzbbZRM8JFG4dmcjuK-ffQv4",
+    "createdAt": "2024-03-01T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Speaking Club",
+    "description": "Conversational English Practice",
+    "category": "Speaking",
+    "progress": 82,
+    "status": "upcoming",
+    "members": 5,
+    "maxMembers": 8,
+    "nextSession": "2024-06-24T18:00:00Z",
+    "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuAduLuWnowbVdJRbeptL8blwc_9EULpjUDyip5fAHbs6EeKa8VetU_Ng84F6GoNXbb0BFFmejeth4W4V20b8PYZVXvP3qN6vpGxMoywJn8YgkAgmxu3oR3EcFbeyJJaUBuQHH7EUoXpNRGQk6uufuLxC50WHHLPSxDHeBcbjX4Yu5Bj3cIdxsLMldlRqAldGcF-8OSRli7RU3f14jGMAN2Hzk8ntx7Z7-y2I179yohQIBfUaaGkUgwHnCfpmhvBvhSgORPmaxJUOdI",
+    "createdAt": "2024-04-01T00:00:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Advanced Writing",
+    "description": "Academic Writing Skills",
+    "category": "Writing",
+    "progress": 45,
+    "status": "active",
+    "members": 6,
+    "maxMembers": 8,
+    "nextSession": "2024-06-25T15:00:00Z",
+    "avatar": "https://lh3.googleusercontent.com/aida-public/AB6AXuAzuVES6IlMUrbcuLqFpSWMOPbwGdVO0ye1jpD04TIL4qrU25ARfaIQq5V2Sr_vGERYf9gsV8ZkIsQFQKbWLlgx5kjgZ28FlvMJkhbmw8hAJM8ttTn81EYfWzBD9BM4s7lieFkIh6J12SZKBbFbcy279CY4OOOs0k2FD3thXLMpNYuYarzwzsC7C8v7zce6r5dApHfgcPV7NMot9Nk6dzgXJetDEbAd57vGVzTnSkoPkb_F3aRUdjzQ59ejhmfF0sDJkuMSRvDQD-g",
+    "createdAt": "2024-04-15T00:00:00Z"
+  }
+]
