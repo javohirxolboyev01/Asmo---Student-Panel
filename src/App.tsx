@@ -19,7 +19,9 @@ const Register = lazy(() => import("./pages/Register"));
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
     <div className="flex flex-col items-center gap-4">
-      <span className="material-symbols-outlined text-6xl text-primary animate-spin">refresh</span>
+      <span className="material-symbols-outlined text-6xl text-primary animate-spin">
+        refresh
+      </span>
       <p className="text-on-surface-variant">Loading...</p>
     </div>
   </div>
@@ -33,26 +35,26 @@ function App() {
         <Route
           path="/login"
           element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
+            // <PublicRoute>
+            <Login />
+            // </PublicRoute>
           }
         />
         <Route
           path="/register"
           element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
+            // <PublicRoute>
+            <Register />
+            // </PublicRoute>
           }
         />
 
         {/* Protected Routes */}
         <Route
           element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
+            // <ProtectedRoute>
+            <Layout />
+            // </ProtectedRoute>
           }
         >
           <Route path="/" element={<Home />} />
