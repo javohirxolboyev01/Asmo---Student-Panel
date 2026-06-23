@@ -15,7 +15,7 @@
     "zustand": "^4.4.7",
     "axios": "^1.6.2",
     "date-fns": "^2.30.0",
-    "lucide-react": "^0.294.0",
+    "lucide-react": "^1.21.0",
     "clsx": "^2.0.0",
     "tailwind-merge": "^2.1.0"
   },
