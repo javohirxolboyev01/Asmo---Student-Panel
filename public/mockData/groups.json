@@ -1,0 +1,36 @@
+{
+  "groups": [
+    {
+      "id": "grp-001",
+      "name": "WD-2024-A",
+      "direction": {
+        "id": "dir-001",
+        "name": "Web Dasturlash",
+        "color": "#3B82F6"
+      },
+      "teacher": {
+        "id": "tch-001",
+        "fullName": "Azizbek Karimov",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Azizbek"
+      },
+      "studentCount": 12,
+      "status": "active"
+    },
+    {
+      "id": "grp-002",
+      "name": "ENG-B2-01",
+      "direction": {
+        "id": "dir-002",
+        "name": "Ingliz tili",
+        "color": "#10B981"
+      },
+      "teacher": {
+        "id": "tch-002",
+        "fullName": "Dilnoza Rahimova",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Dilnoza"
+      },
+      "studentCount": 8,
+      "status": "active"
+    }
+  ]
+}

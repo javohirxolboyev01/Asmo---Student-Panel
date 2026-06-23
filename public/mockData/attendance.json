@@ -1,0 +1,75 @@
+{
+  "summary": {
+    "totalLessons": 20,
+    "present": 17,
+    "absent": 2,
+    "late": 1,
+    "percentage": 85
+  },
+  "records": [
+    {
+      "id": "att-001",
+      "lessonId": "les-001",
+      "lessonTopic": "React Introduction",
+      "lessonDate": "2024-06-01",
+      "status": "present",
+      "markedAt": "2024-06-01T18:05:00"
+    },
+    {
+      "id": "att-002",
+      "lessonId": "les-002",
+      "lessonTopic": "useState Hook",
+      "lessonDate": "2024-06-03",
+      "status": "present",
+      "markedAt": "2024-06-03T18:02:00"
+    },
+    {
+      "id": "att-003",
+      "lessonId": "les-003",
+      "lessonTopic": "useEffect Hook",
+      "lessonDate": "2024-06-05",
+      "status": "absent",
+      "markedAt": "2024-06-05T18:30:00"
+    },
+    {
+      "id": "att-004",
+      "lessonId": "les-004",
+      "lessonTopic": "Context API",
+      "lessonDate": "2024-06-08",
+      "status": "late",
+      "markedAt": "2024-06-08T18:20:00"
+    },
+    {
+      "id": "att-005",
+      "lessonId": "les-005",
+      "lessonTopic": "useReducer Hook",
+      "lessonDate": "2024-06-10",
+      "status": "present",
+      "markedAt": "2024-06-10T18:01:00"
+    },
+    {
+      "id": "att-006",
+      "lessonId": "les-006",
+      "lessonTopic": "Custom Hooks",
+      "lessonDate": "2024-06-12",
+      "status": "present",
+      "markedAt": "2024-06-12T18:03:00"
+    },
+    {
+      "id": "att-007",
+      "lessonId": "les-007",
+      "lessonTopic": "React Router",
+      "lessonDate": "2024-06-15",
+      "status": "absent",
+      "markedAt": "2024-06-15T18:25:00"
+    },
+    {
+      "id": "att-008",
+      "lessonId": "les-008",
+      "lessonTopic": "State Management",
+      "lessonDate": "2024-06-17",
+      "status": "present",
+      "markedAt": "2024-06-17T18:00:00"
+    }
+  ]
+}

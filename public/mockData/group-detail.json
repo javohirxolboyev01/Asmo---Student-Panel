@@ -1,0 +1,62 @@
+{
+  "group": {
+    "id": "grp-001",
+    "name": "WD-2024-A",
+    "courseName": "React Advanced",
+    "directionName": "Web Dasturlash",
+    "teacherName": "Azizbek Karimov",
+    "studentCount": 12,
+    "maxStudents": 15,
+    "schedule": {
+      "days": ["Dushanba", "Chorshanba"],
+      "time": "18:00"
+    }
+  },
+  "lessons": [
+    {
+      "id": "les-001",
+      "topic": "React Introduction",
+      "lessonOrder": 1,
+      "lessonDate": "2024-06-01",
+      "homework": {
+        "id": "hw-001",
+        "title": "React nima?",
+        "status": "submitted",
+        "deadline": "2024-06-05T23:59:00",
+        "isOverdue": false,
+        "score": 85,
+        "maxScore": 100
+      }
+    },
+    {
+      "id": "les-002",
+      "topic": "useState Hook",
+      "lessonOrder": 2,
+      "lessonDate": "2024-06-03",
+      "homework": {
+        "id": "hw-002",
+        "title": "Counter yaratish",
+        "status": "not_submitted",
+        "deadline": "2024-06-10T23:59:00",
+        "isOverdue": true,
+        "score": 0,
+        "maxScore": 100
+      }
+    },
+    {
+      "id": "les-003",
+      "topic": "useEffect Hook",
+      "lessonOrder": 3,
+      "lessonDate": "2024-06-05",
+      "homework": {
+        "id": "hw-003",
+        "title": "useEffect bilan API",
+        "status": "pending",
+        "deadline": "2024-06-30T23:59:00",
+        "isOverdue": false,
+        "score": 0,
+        "maxScore": 100
+      }
+    }
+  ]
+}

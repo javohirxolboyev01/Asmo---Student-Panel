@@ -1,0 +1,77 @@
+{
+  "balance": 150,
+  "history": [
+    {
+      "id": "coin-001",
+      "amount": 10,
+      "reason": "Darsga qatnashdi",
+      "sourceType": "attendance",
+      "sourceId": "att-001",
+      "createdAt": "2024-06-01T18:05:00"
+    },
+    {
+      "id": "coin-002",
+      "amount": 5,
+      "reason": "Uyga vazifa topshirdi",
+      "sourceType": "homework",
+      "sourceId": "sub-001",
+      "createdAt": "2024-06-24T15:30:00"
+    },
+    {
+      "id": "coin-003",
+      "amount": -5,
+      "reason": "Darsga kelmadi",
+      "sourceType": "attendance",
+      "sourceId": "att-003",
+      "createdAt": "2024-06-05T18:30:00"
+    },
+    {
+      "id": "coin-004",
+      "amount": 10,
+      "reason": "Uyga vazifa 100% ball",
+      "sourceType": "homework",
+      "sourceId": "sub-002",
+      "createdAt": "2024-06-15T10:00:00"
+    },
+    {
+      "id": "coin-005",
+      "amount": 10,
+      "reason": "Darsga qatnashdi",
+      "sourceType": "attendance",
+      "sourceId": "att-002",
+      "createdAt": "2024-06-03T18:05:00"
+    },
+    {
+      "id": "coin-006",
+      "amount": 10,
+      "reason": "Darsga qatnashdi",
+      "sourceType": "attendance",
+      "sourceId": "att-005",
+      "createdAt": "2024-06-10T18:05:00"
+    },
+    {
+      "id": "coin-007",
+      "amount": 10,
+      "reason": "Darsga qatnashdi",
+      "sourceType": "attendance",
+      "sourceId": "att-006",
+      "createdAt": "2024-06-12T18:05:00"
+    },
+    {
+      "id": "coin-008",
+      "amount": -5,
+      "reason": "Darsga kelmadi",
+      "sourceType": "attendance",
+      "sourceId": "att-007",
+      "createdAt": "2024-06-15T18:25:00"
+    },
+    {
+      "id": "coin-009",
+      "amount": 10,
+      "reason": "Darsga qatnashdi",
+      "sourceType": "attendance",
+      "sourceId": "att-008",
+      "createdAt": "2024-06-17T18:05:00"
+    }
+  ]
+}

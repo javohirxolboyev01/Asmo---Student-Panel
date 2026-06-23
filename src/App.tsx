@@ -1,73 +1,37 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./layouts/Layout";
-
-// Lazy load pages
-const Home = lazy(() => import("./pages/Home"));
-const Payments = lazy(() => import("./pages/Payments"));
-const Analytics = lazy(() => import("./pages/Analytics"));
-const Groups = lazy(() => import("./pages/Groups"));
-const Leaderboard = lazy(() => import("./pages/Leaderboard"));
-const Shop = lazy(() => import("./pages/Shop"));
-const Settings = lazy(() => import("./pages/Settings"));
-const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
-
-// Loading component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="flex flex-col items-center gap-4">
-      <span className="material-symbols-outlined text-6xl text-primary animate-spin">
-        refresh
-      </span>
-      <p className="text-on-surface-variant">Loading...</p>
-    </div>
-  </div>
-);
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "./components/Layout/Layout";
+import { DashboardPage } from "./pages/DashboardPage";
+import { GroupsPage } from "./pages/GroupsPage";
+import { GroupDetailPage } from "./pages/GroupDetailPage";
+import { LessonDetailPage } from "./pages/LessonDetailPage";
+import { AttendancePage } from "./pages/AttendancePage";
+import { CoinsPage } from "./pages/CoinsPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { LoginPage } from "./pages/LoginPage";
+import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/login"
-          element={
-            // <PublicRoute>
-            <Login />
-            // </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            // <PublicRoute>
-            <Register />
-            // </PublicRoute>
-          }
-        />
-
-        {/* Protected Routes */}
-        <Route
-          element={
-            // <ProtectedRoute>
-            <Layout />
-            // </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<Home />} />
-          <Route path="/payments" element={<Payments />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/groups" element={<Groups />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/settings" element={<Settings />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/:id" element={<GroupDetailPage />} />
+            <Route path="/lessons/:id" element={<LessonDetailPage />} />
+            <Route path="/attendance" element={<AttendancePage />} />
+            <Route path="/coins" element={<CoinsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
         </Route>
-
-        {/* Default redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Suspense>
+    </BrowserRouter>
   );
 }
 

@@ -1,0 +1,58 @@
+{
+  "activeCourse": {
+    "groupId": "grp-001",
+    "groupName": "WD-2024-A",
+    "courseName": "React Advanced",
+    "directionName": "Web Dasturlash",
+    "directionColor": "#3B82F6",
+    "totalLessons": 20,
+    "completedLessons": 12,
+    "progress": 60,
+    "nextLessonDate": "2024-06-25T18:00:00",
+    "teacherName": "Azizbek Karimov"
+  },
+  "attendance": {
+    "thisWeek": {
+      "total": 5,
+      "present": 4,
+      "absent": 1,
+      "percentage": 80
+    }
+  },
+  "coins": {
+    "balance": 150,
+    "thisMonth": 45
+  },
+  "upcomingLessons": [
+    {
+      "id": "les-015",
+      "time": "18:00",
+      "groupName": "WD-2024-A",
+      "topic": "useEffect Hooklari"
+    },
+    {
+      "id": "les-016",
+      "time": "20:00",
+      "groupName": "ENG-B2-01",
+      "topic": "IELTS Speaking"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-001",
+      "title": "Yangi uyga vazifa",
+      "message": "useEffect mavzusiga uyga vazifa berildi",
+      "type": "homework",
+      "isRead": false,
+      "createdAt": "2024-06-24T10:00:00"
+    },
+    {
+      "id": "notif-002",
+      "title": "Dars bekor qilindi",
+      "message": "Bugungi dars 18:00 da bekor qilindi",
+      "type": "lesson",
+      "isRead": false,
+      "createdAt": "2024-06-24T08:30:00"
+    }
+  ]
+}

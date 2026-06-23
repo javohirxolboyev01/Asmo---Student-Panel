@@ -1,0 +1,29 @@
+{
+  "lesson": {
+    "id": "les-003",
+    "topic": "useEffect Hook",
+    "description": "useEffect hooki komponent lifecycle'ini boshqarish uchun ishlatiladi.",
+    "lessonDate": "2024-06-20",
+    "lessonOrder": 3,
+    "groupName": "WD-2024-A",
+    "teacherName": "Azizbek Karimov"
+  },
+  "homework": {
+    "id": "hw-003",
+    "title": "useEffect bilan counter yaratish",
+    "description": "useState va useEffect hooklaridan foydalanib counter ilovasi yarating. Har 3 soniyada background rangi o'zgarishi kerak. Qo'llanma: 1) useState bilan count state yarating 2) useEffect bilan interval o'rnatib har 3 sekundda count oshirilsin 3) count ga qarab background rangi o'zgarsin",
+    "maxScore": 100,
+    "deadline": "2024-06-25T23:59:00",
+    "isOverdue": true,
+    "status": "active"
+  },
+  "submission": {
+    "id": "sub-001",
+    "content": "Men counter ilovasini yaratdim...",
+    "attachmentUrl": null,
+    "submittedAt": "2024-06-24T15:30:00",
+    "score": 85,
+    "feedback": "Yaxshi ish! Lekin interval tozalashni unutdingiz.",
+    "status": "graded"
+  }
+}
