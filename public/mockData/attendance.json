@@ -1,75 +1,171 @@
 {
   "summary": {
-    "totalLessons": 20,
-    "present": 17,
-    "absent": 2,
-    "late": 1,
-    "percentage": 85
+    "jamiDarslar": 20,
+    "qatnashgan": 17,
+    "qatnashmagan": 2,
+    "kechikkan": 1,
+    "foiz": 85
   },
   "records": [
     {
       "id": "att-001",
-      "lessonId": "les-001",
-      "lessonTopic": "React Introduction",
+      "lessonId": "eng-001",
+      "lessonTopic": "Present Simple Tense",
       "lessonDate": "2024-06-01",
       "status": "present",
       "markedAt": "2024-06-01T18:05:00"
     },
     {
       "id": "att-002",
-      "lessonId": "les-002",
-      "lessonTopic": "useState Hook",
+      "lessonId": "eng-002",
+      "lessonTopic": "Present Continuous Tense",
       "lessonDate": "2024-06-03",
       "status": "present",
       "markedAt": "2024-06-03T18:02:00"
     },
     {
       "id": "att-003",
-      "lessonId": "les-003",
-      "lessonTopic": "useEffect Hook",
+      "lessonId": "eng-003",
+      "lessonTopic": "Past Simple Tense",
       "lessonDate": "2024-06-05",
       "status": "absent",
       "markedAt": "2024-06-05T18:30:00"
     },
     {
       "id": "att-004",
-      "lessonId": "les-004",
-      "lessonTopic": "Context API",
+      "lessonId": "eng-004",
+      "lessonTopic": "Past Continuous Tense",
       "lessonDate": "2024-06-08",
       "status": "late",
       "markedAt": "2024-06-08T18:20:00"
     },
     {
       "id": "att-005",
-      "lessonId": "les-005",
-      "lessonTopic": "useReducer Hook",
+      "lessonId": "eng-005",
+      "lessonTopic": "Future Simple Tense",
       "lessonDate": "2024-06-10",
       "status": "present",
       "markedAt": "2024-06-10T18:01:00"
     },
     {
       "id": "att-006",
-      "lessonId": "les-006",
-      "lessonTopic": "Custom Hooks",
+      "lessonId": "eng-006",
+      "lessonTopic": "Modal Verbs",
       "lessonDate": "2024-06-12",
       "status": "present",
       "markedAt": "2024-06-12T18:03:00"
     },
     {
       "id": "att-007",
-      "lessonId": "les-007",
-      "lessonTopic": "React Router",
+      "lessonId": "eng-007",
+      "lessonTopic": "Conditionals",
       "lessonDate": "2024-06-15",
       "status": "absent",
       "markedAt": "2024-06-15T18:25:00"
     },
     {
       "id": "att-008",
-      "lessonId": "les-008",
-      "lessonTopic": "State Management",
+      "lessonId": "eng-008",
+      "lessonTopic": "Speaking Practice",
       "lessonDate": "2024-06-17",
       "status": "present",
       "markedAt": "2024-06-17T18:00:00"
+    },
+    {
+      "id": "att-009",
+      "lessonId": "eng-009",
+      "lessonTopic": "Listening Skills",
+      "lessonDate": "2024-06-19",
+      "status": "present",
+      "markedAt": "2024-06-19T18:01:00"
+    },
+    {
+      "id": "att-010",
+      "lessonId": "eng-010",
+      "lessonTopic": "Reading Comprehension",
+      "lessonDate": "2024-06-22",
+      "status": "present",
+      "markedAt": "2024-06-22T18:04:00"
+    },
+    {
+      "id": "att-011",
+      "lessonId": "eng-011",
+      "lessonTopic": "Essay Writing",
+      "lessonDate": "2024-06-24",
+      "status": "present",
+      "markedAt": "2024-06-24T18:02:00"
+    },
+    {
+      "id": "att-012",
+      "lessonId": "eng-012",
+      "lessonTopic": "IELTS Vocabulary",
+      "lessonDate": "2024-06-26",
+      "status": "present",
+      "markedAt": "2024-06-26T18:03:00"
+    },
+    {
+      "id": "att-013",
+      "lessonId": "eng-013",
+      "lessonTopic": "Academic Vocabulary",
+      "lessonDate": "2024-06-29",
+      "status": "present",
+      "markedAt": "2024-06-29T18:00:00"
+    },
+    {
+      "id": "att-014",
+      "lessonId": "eng-014",
+      "lessonTopic": "IELTS Reading",
+      "lessonDate": "2024-07-01",
+      "status": "present",
+      "markedAt": "2024-07-01T18:05:00"
+    },
+    {
+      "id": "att-015",
+      "lessonId": "eng-015",
+      "lessonTopic": "IELTS Listening",
+      "lessonDate": "2024-07-03",
+      "status": "present",
+      "markedAt": "2024-07-03T18:03:00"
+    },
+    {
+      "id": "att-016",
+      "lessonId": "eng-016",
+      "lessonTopic": "IELTS Writing Task 1",
+      "lessonDate": "2024-07-06",
+      "status": "present",
+      "markedAt": "2024-07-06T18:01:00"
+    },
+    {
+      "id": "att-017",
+      "lessonId": "eng-017",
+      "lessonTopic": "IELTS Writing Task 2",
+      "lessonDate": "2024-07-08",
+      "status": "present",
+      "markedAt": "2024-07-08T18:04:00"
+    },
+    {
+      "id": "att-018",
+      "lessonId": "eng-018",
+      "lessonTopic": "IELTS Speaking Part 1",
+      "lessonDate": "2024-07-10",
+      "status": "present",
+      "markedAt": "2024-07-10T18:02:00"
+    },
+    {
+      "id": "att-019",
+      "lessonId": "eng-019",
+      "lessonTopic": "IELTS Speaking Part 2",
+      "lessonDate": "2024-07-13",
+      "status": "present",
+      "markedAt": "2024-07-13T18:01:00"
+    },
+    {
+      "id": "att-020",
+      "lessonId": "eng-020",
+      "lessonTopic": "Mock IELTS Exam",
+      "lessonDate": "2024-07-15",
+      "status": "present",
+      "markedAt": "2024-07-15T18:00:00"
     }
   ]
 }

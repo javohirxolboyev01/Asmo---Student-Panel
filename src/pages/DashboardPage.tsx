@@ -1,5 +1,6 @@
 // src/pages/DashboardPage.tsx
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useNotificationStore } from "@/stores/notificationStore";
 import {
@@ -7,7 +8,6 @@ import {
   Calendar,
   Clock,
   CheckCircle,
-  ChevronRight,
   Bell,
   Coins as CoinsIcon,
 } from "lucide-react";
@@ -15,8 +15,11 @@ import {
 import { formatDate, formatTime } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { useAuthStore } from "@/stores/authStore";
 
 export const DashboardPage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { data, isLoading, error, fetchDashboard } = useDashboardStore();
   const { setNotifications } = useNotificationStore();
 
@@ -58,7 +61,7 @@ export const DashboardPage = () => {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-[#1A1D26]">
-            Salom, Ali! 👋
+            Salom, {user?.firstName}
           </h1>
           <p className="text-gray-500 text-sm md:text-base">
             Bugun o'quv kuningizni boshlang
@@ -124,9 +127,13 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Stats Grid - 3 columns */}
+      {/* Stats Grid - 3 columns with click navigation */}
       <div className="grid grid-cols-3 gap-3 md:gap-4">
-        <div className="card p-4 md:p-5 text-center">
+        {/* Attendance Card - Navigate to /attendance */}
+        <div
+          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          onClick={() => navigate("/attendance")}
+        >
           <div className="flex items-center justify-center mb-2">
             <div className="w-10 h-10 bg-[#E8F5E9] rounded-full flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-[#2E7D32]" />
@@ -141,7 +148,11 @@ export const DashboardPage = () => {
           </p>
         </div>
 
-        <div className="card p-4 md:p-5 text-center">
+        {/* Coins Card - Navigate to /coins */}
+        <div
+          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          onClick={() => navigate("/coins")}
+        >
           <div className="flex items-center justify-center mb-2">
             <div className="w-10 h-10 bg-[#FFF8E1] rounded-full flex items-center justify-center">
               <CoinsIcon className="w-5 h-5 text-[#F59E0B]" />
@@ -154,7 +165,11 @@ export const DashboardPage = () => {
           </p>
         </div>
 
-        <div className="card p-4 md:p-5 text-center">
+        {/* Lessons Card - Navigate to /groups */}
+        <div
+          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          onClick={() => navigate("/groups")}
+        >
           <div className="flex items-center justify-center mb-2">
             <div className="w-10 h-10 bg-[#E3F2FD] rounded-full flex items-center justify-center">
               <Calendar className="w-5 h-5 text-[#0D47A1]" />
@@ -172,13 +187,19 @@ export const DashboardPage = () => {
       <div className="card">
         <div className="card-header">
           <h3 className="font-semibold text-[#1A1D26]">Tez oradagi darslar</h3>
-          <span className="text-xs text-[#2D6BFF] font-medium">Yana</span>
+          <span
+            className="text-xs text-[#2D6BFF] font-medium cursor-pointer hover:underline"
+            onClick={() => navigate("/groups")}
+          >
+            Yana
+          </span>
         </div>
         <div className="card-body space-y-3">
           {upcomingLessons.map((lesson) => (
             <div
               key={lesson.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl"
+              className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => navigate(`/lessons/${lesson.id}`)}
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#2D6BFF]/10 rounded-xl flex items-center justify-center">
@@ -195,7 +216,6 @@ export const DashboardPage = () => {
                   </div>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
             </div>
           ))}
         </div>
@@ -208,13 +228,19 @@ export const DashboardPage = () => {
             <Bell className="w-4 h-4 text-gray-500" />
             <h3 className="font-semibold text-[#1A1D26]">Xabarlar</h3>
           </div>
-          <span className="text-xs text-[#2D6BFF] font-medium">Barchasi</span>
+          <span
+            className="text-xs text-[#2D6BFF] font-medium cursor-pointer hover:underline"
+            onClick={() => navigate("/notifications")}
+          >
+            Barchasi
+          </span>
         </div>
         <div className="card-body space-y-3">
           {notifications.slice(0, 2).map((notif) => (
             <div
               key={notif.id}
-              className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl"
+              className="flex items-start gap-3 p-3 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors"
+              onClick={() => navigate("/notifications")}
             >
               <div
                 className={cn(

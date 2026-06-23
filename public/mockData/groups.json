@@ -2,14 +2,30 @@
   "groups": [
     {
       "id": "grp-001",
-      "name": "WD-2024-A",
+      "name": "IELTS Foundation - 01",
       "direction": {
         "id": "dir-001",
-        "name": "Web Dasturlash",
+        "name": "IELTS Foundation",
         "color": "#3B82F6"
       },
       "teacher": {
         "id": "tch-001",
+        "fullName": "Dilnoza Rahimova",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Dilnoza"
+      },
+      "studentCount": 15,
+      "status": "active"
+    },
+    {
+      "id": "grp-002",
+      "name": "General English Beginner",
+      "direction": {
+        "id": "dir-002",
+        "name": "General English",
+        "color": "#10B981"
+      },
+      "teacher": {
+        "id": "tch-002",
         "fullName": "Azizbek Karimov",
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Azizbek"
       },
@@ -17,17 +33,65 @@
       "status": "active"
     },
     {
-      "id": "grp-002",
-      "name": "ENG-B2-01",
+      "id": "grp-003",
+      "name": "General English Elementary",
       "direction": {
-        "id": "dir-002",
-        "name": "Ingliz tili",
-        "color": "#10B981"
+        "id": "dir-003",
+        "name": "General English",
+        "color": "#F59E0B"
       },
       "teacher": {
-        "id": "tch-002",
-        "fullName": "Dilnoza Rahimova",
-        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Dilnoza"
+        "id": "tch-003",
+        "fullName": "Shahzoda Ismoilova",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Shahzoda"
+      },
+      "studentCount": 18,
+      "status": "active"
+    },
+    {
+      "id": "grp-004",
+      "name": "General English Intermediate",
+      "direction": {
+        "id": "dir-004",
+        "name": "General English",
+        "color": "#8B5CF6"
+      },
+      "teacher": {
+        "id": "tch-004",
+        "fullName": "Jasur Raxmatov",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jasur"
+      },
+      "studentCount": 14,
+      "status": "active"
+    },
+    {
+      "id": "grp-005",
+      "name": "IELTS 5.5+",
+      "direction": {
+        "id": "dir-005",
+        "name": "IELTS Preparation",
+        "color": "#EF4444"
+      },
+      "teacher": {
+        "id": "tch-005",
+        "fullName": "Muhammadali Tursunov",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Muhammadali"
+      },
+      "studentCount": 10,
+      "status": "active"
+    },
+    {
+      "id": "grp-006",
+      "name": "IELTS 6.5+",
+      "direction": {
+        "id": "dir-006",
+        "name": "IELTS Preparation",
+        "color": "#06B6D4"
+      },
+      "teacher": {
+        "id": "tch-006",
+        "fullName": "Zarina Qodirova",
+        "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Zarina"
       },
       "studentCount": 8,
       "status": "active"

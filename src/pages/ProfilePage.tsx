@@ -1,13 +1,6 @@
 // src/pages/ProfilePage.tsx
 import { useAuthStore } from "@/stores/authStore";
-import {
-  User,
-  Mail,
-  Phone,
-  Settings,
-  LogOut,
-  ChevronRight,
-} from "lucide-react";
+import { User, Phone, Settings, LogOut, ChevronRight } from "lucide-react";
 
 export const ProfilePage = () => {
   const { user, logout } = useAuthStore();
@@ -45,10 +38,10 @@ export const ProfilePage = () => {
             </h2>
             <p className="text-gray-500 text-sm">Talaba</p>
             <div className="flex flex-wrap items-center justify-center gap-3 mt-3 text-sm text-gray-500">
-              <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
+              {/* <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
                 <Mail className="w-4 h-4" />
                 <span>{user.email}</span>
-              </div>
+              </div> */}
               {user.phone && (
                 <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
                   <Phone className="w-4 h-4" />

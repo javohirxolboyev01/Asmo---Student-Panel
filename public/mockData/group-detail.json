@@ -1,41 +1,41 @@
 {
   "group": {
     "id": "grp-001",
-    "name": "WD-2024-A",
-    "courseName": "React Advanced",
-    "directionName": "Web Dasturlash",
-    "teacherName": "Azizbek Karimov",
+    "name": "IELTS 6.5+",
+    "courseName": "IELTS Preparation",
+    "directionName": "Ingliz tili",
+    "teacherName": "Dilnoza Rahimova",
     "studentCount": 12,
     "maxStudents": 15,
     "schedule": {
-      "days": ["Dushanba", "Chorshanba"],
-      "time": "18:00"
+      "days": ["Dushanba", "Chorshanba", "Juma"],
+      "time": "18:30"
     }
   },
   "lessons": [
     {
       "id": "les-001",
-      "topic": "React Introduction",
+      "topic": "IELTS Reading Strategies",
       "lessonOrder": 1,
       "lessonDate": "2024-06-01",
       "homework": {
         "id": "hw-001",
-        "title": "React nima?",
+        "title": "Reading Passage 1 topshirig'i",
         "status": "submitted",
         "deadline": "2024-06-05T23:59:00",
         "isOverdue": false,
-        "score": 85,
+        "score": 88,
         "maxScore": 100
       }
     },
     {
       "id": "les-002",
-      "topic": "useState Hook",
+      "topic": "IELTS Listening Skills",
       "lessonOrder": 2,
       "lessonDate": "2024-06-03",
       "homework": {
         "id": "hw-002",
-        "title": "Counter yaratish",
+        "title": "Listening Test 1",
         "status": "not_submitted",
         "deadline": "2024-06-10T23:59:00",
         "isOverdue": true,
@@ -45,14 +45,59 @@
     },
     {
       "id": "les-003",
-      "topic": "useEffect Hook",
+      "topic": "IELTS Writing Task 1",
       "lessonOrder": 3,
       "lessonDate": "2024-06-05",
       "homework": {
         "id": "hw-003",
-        "title": "useEffect bilan API",
+        "title": "Line Graph Essay",
         "status": "pending",
         "deadline": "2024-06-30T23:59:00",
+        "isOverdue": false,
+        "score": 0,
+        "maxScore": 100
+      }
+    },
+    {
+      "id": "les-004",
+      "topic": "IELTS Writing Task 2",
+      "lessonOrder": 4,
+      "lessonDate": "2024-06-08",
+      "homework": {
+        "id": "hw-004",
+        "title": "Opinion Essay",
+        "status": "submitted",
+        "deadline": "2024-06-12T23:59:00",
+        "isOverdue": false,
+        "score": 92,
+        "maxScore": 100
+      }
+    },
+    {
+      "id": "les-005",
+      "topic": "IELTS Speaking Part 1",
+      "lessonOrder": 5,
+      "lessonDate": "2024-06-10",
+      "homework": {
+        "id": "hw-005",
+        "title": "Daily Routine Speaking Practice",
+        "status": "submitted",
+        "deadline": "2024-06-15T23:59:00",
+        "isOverdue": false,
+        "score": 90,
+        "maxScore": 100
+      }
+    },
+    {
+      "id": "les-006",
+      "topic": "IELTS Speaking Part 2",
+      "lessonOrder": 6,
+      "lessonDate": "2024-06-12",
+      "homework": {
+        "id": "hw-006",
+        "title": "Cue Card Practice",
+        "status": "pending",
+        "deadline": "2024-06-20T23:59:00",
         "isOverdue": false,
         "score": 0,
         "maxScore": 100

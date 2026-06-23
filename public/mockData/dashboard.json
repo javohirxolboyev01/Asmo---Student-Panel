@@ -1,58 +1,66 @@
 {
   "activeCourse": {
     "groupId": "grp-001",
-    "groupName": "WD-2024-A",
-    "courseName": "React Advanced",
-    "directionName": "Web Dasturlash",
+    "groupName": "IELTS 6.5+",
+    "courseName": "IELTS Preparation",
+    "directionName": "Ingliz tili",
     "directionColor": "#3B82F6",
-    "totalLessons": 20,
-    "completedLessons": 12,
-    "progress": 60,
-    "nextLessonDate": "2024-06-25T18:00:00",
-    "teacherName": "Azizbek Karimov"
+    "totalLessons": 24,
+    "completedLessons": 15,
+    "progress": 63,
+    "nextLessonDate": "2024-06-25T18:30:00",
+    "teacherName": "Dilnoza Rahimova"
   },
   "attendance": {
     "thisWeek": {
-      "total": 5,
-      "present": 4,
-      "absent": 1,
-      "percentage": 80
+      "total": 3,
+      "present": 3,
+      "absent": 0,
+      "percentage": 100
     }
   },
   "coins": {
-    "balance": 150,
-    "thisMonth": 45
+    "balance": 250,
+    "thisMonth": 70
   },
   "upcomingLessons": [
     {
-      "id": "les-015",
-      "time": "18:00",
-      "groupName": "WD-2024-A",
-      "topic": "useEffect Hooklari"
+      "id": "les-016",
+      "time": "18:30",
+      "groupName": "IELTS 6.5+",
+      "topic": "IELTS Writing Task 2"
     },
     {
-      "id": "les-016",
-      "time": "20:00",
-      "groupName": "ENG-B2-01",
-      "topic": "IELTS Speaking"
+      "id": "les-017",
+      "time": "18:30",
+      "groupName": "IELTS 6.5+",
+      "topic": "IELTS Speaking Part 2"
     }
   ],
   "notifications": [
     {
       "id": "notif-001",
       "title": "Yangi uyga vazifa",
-      "message": "useEffect mavzusiga uyga vazifa berildi",
+      "message": "IELTS Writing Task 2 mavzusi bo'yicha esse topshirig'i berildi",
       "type": "homework",
       "isRead": false,
       "createdAt": "2024-06-24T10:00:00"
     },
     {
       "id": "notif-002",
-      "title": "Dars bekor qilindi",
-      "message": "Bugungi dars 18:00 da bekor qilindi",
-      "type": "lesson",
+      "title": "Mock imtihon e'loni",
+      "message": "Shanba kuni IELTS Mock Exam o'tkaziladi",
+      "type": "exam",
       "isRead": false,
       "createdAt": "2024-06-24T08:30:00"
+    },
+    {
+      "id": "notif-003",
+      "title": "Davomat tabrigi",
+      "message": "Siz ushbu haftada 100% davomat ko'rsatdingiz",
+      "type": "attendance",
+      "isRead": true,
+      "createdAt": "2024-06-23T19:00:00"
     }
   ]
 }
