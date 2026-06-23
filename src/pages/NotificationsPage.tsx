@@ -1,6 +1,6 @@
 // src/pages/NotificationsPage.tsx
 import { useNotificationStore } from "@/stores/notificationStore";
-import { Bell, Check, Clock, ChevronRight } from "lucide-react";
+import { Bell, Check, Clock } from "lucide-react";
 import { getRelativeTime } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
 

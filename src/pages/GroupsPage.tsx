@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useGroupStore } from "@/stores/groupStore";
 import { Link } from "react-router-dom";
-import { Search, Users, ChevronRight, BookOpen, User } from "lucide-react";
+import { Search, Users, ChevronRight, User } from "lucide-react";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
 export const GroupsPage = () => {

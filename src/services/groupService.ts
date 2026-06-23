@@ -6,7 +6,7 @@ export const groupService = {
     const response = await api.get("/groups.json");
     return response.data.groups;
   },
-  getGroupDetail: async (id: string) => {
+  getGroupDetail: async () => {
     const response = await api.get("/group-detail.json");
     return response.data;
   },

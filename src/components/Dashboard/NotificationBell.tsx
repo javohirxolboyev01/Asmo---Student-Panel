@@ -1,5 +1,5 @@
 // src/components/Dashboard/NotificationBell.tsx
-import { Bell, ChevronRight } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Notification } from "@/types/notification";
 import { getRelativeTime } from "@/utilist/formatData";

@@ -18,110 +18,181 @@
       -apple-system,
       BlinkMacSystemFont,
       sans-serif;
-    @apply bg-[#F5F7FA] text-[#1A1D26];
+    background-color: #f5f7fa;
+    color: #1a1d26;
   }
 
   #root {
-    @apply min-h-screen;
+    min-height: 100vh;
   }
 }
 
 @layer components {
-  /* Bottom Navigation */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 pt-2 pb-safe z-50;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #f1f2f4;
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    z-index: 50;
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center gap-0.5 py-1.5 px-2 rounded-xl transition-all duration-200 min-w-[56px];
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s;
+    min-width: 56px;
   }
 
   .bottom-nav-item.active {
-    @apply text-[#2D6BFF];
+    color: #2d6bff;
   }
 
   .bottom-nav-item:not(.active) {
-    @apply text-[#8E92A4];
+    color: #8e92a4;
   }
 
-  /* Cards */
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-gray-100/80;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(241, 242, 244, 0.8);
   }
 
   .card-header {
-    @apply px-5 py-4 border-b border-gray-100 flex items-center justify-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f1f2f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .card-body {
-    @apply p-5;
+    padding: 1.25rem;
   }
 
-  /* Status Badges */
   .badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
 
   .badge-present {
-    @apply bg-[#E8F5E9] text-[#2E7D32];
+    background: #e8f5e9;
+    color: #2e7d32;
   }
 
   .badge-absent {
-    @apply bg-[#FFEBEE] text-[#C62828];
+    background: #ffebee;
+    color: #c62828;
   }
 
   .badge-late {
-    @apply bg-[#FFF3E0] text-[#E65100];
+    background: #fff3e0;
+    color: #e65100;
   }
 
   .badge-excused {
-    @apply bg-[#E3F2FD] text-[#0D47A1];
+    background: #e3f2fd;
+    color: #0d47a1;
   }
 
   .badge-submitted {
-    @apply bg-[#E8F5E9] text-[#2E7D32];
+    background: #e8f5e9;
+    color: #2e7d32;
   }
 
   .badge-not_submitted {
-    @apply bg-[#FFEBEE] text-[#C62828];
+    background: #ffebee;
+    color: #c62828;
   }
 
   .badge-pending {
-    @apply bg-[#F5F5F5] text-[#616161];
+    background: #f5f5f5;
+    color: #616161;
   }
 
   .badge-graded {
-    @apply bg-[#E3F2FD] text-[#0D47A1];
+    background: #e3f2fd;
+    color: #0d47a1;
   }
 
-  /* Buttons */
   .btn-primary {
-    @apply bg-[#2D6BFF] text-white px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 hover:bg-[#1A56E8] active:scale-95 shadow-sm;
+    background: #2d6bff;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-primary:hover {
+    background: #1a56e8;
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95);
   }
 
   .btn-outline {
-    @apply border-2 border-[#E8EAED] text-[#1A1D26] px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 hover:border-[#2D6BFF] hover:text-[#2D6BFF] active:scale-95;
+    border: 2px solid #e8eaed;
+    color: #1a1d26;
+    padding: 0.75rem 1.5rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
   }
 
-  /* Inputs */
+  .btn-outline:hover {
+    border-color: #2d6bff;
+    color: #2d6bff;
+  }
+
+  .btn-outline:active {
+    transform: scale(0.95);
+  }
+
   .input-field {
-    @apply w-full px-4 py-3 rounded-2xl border border-[#E8EAED] focus:border-[#2D6BFF] focus:ring-2 focus:ring-[#2D6BFF]/20 outline-none transition-all bg-white text-[#1A1D26];
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    border: 1px solid #e8eaed;
+    transition: all 0.2s;
+    background: white;
+    color: #1a1d26;
   }
 
-  /* Scrollbar */
+  .input-field:focus {
+    border-color: #2d6bff;
+    outline: none;
+    ring: 2px solid rgba(45, 107, 255, 0.2);
+  }
+
   ::-webkit-scrollbar {
     width: 4px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-transparent;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    background: #d1d5db;
+    border-radius: 9999px;
   }
 
-  /* Safe area for bottom nav */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }

@@ -1,5 +1,5 @@
 // src/components/Dashboard/AttendanceStats.tsx
-import { TrendingUp, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 
 interface AttendanceStatsProps {
   total: number;

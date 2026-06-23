@@ -2,14 +2,11 @@
 import api from "./api";
 
 export const lessonService = {
-  getLesson: async (id: string) => {
+  getLesson: async () => {
     const response = await api.get("/lessons.json");
     return response.data;
   },
-  submitHomework: async (
-    homeworkId: string,
-    data: { content: string; file?: File },
-  ) => {
+  submitHomework: async () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     return { success: true, message: "Topshirildi!" };
   },

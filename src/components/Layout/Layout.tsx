@@ -1,13 +1,12 @@
 // src/components/Layout/Layout.tsx
 import { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { Header } from "./Header";
 import { useAuthStore } from "@/stores/authStore";
 
 export const Layout = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const location = useLocation();
   const { user } = useAuthStore();
 
   useEffect(() => {

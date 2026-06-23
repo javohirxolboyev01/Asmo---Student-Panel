@@ -1,6 +1,6 @@
 // src/components/Layout/Header.tsx
 import { Link } from "react-router-dom";
-import { Bell, Coins, Menu, Search, X, GraduationCap } from "lucide-react";
+import { Bell, Coins, Search, X, GraduationCap } from "lucide-react";
 import { useState } from "react";
 import { User } from "@/types/user";
 

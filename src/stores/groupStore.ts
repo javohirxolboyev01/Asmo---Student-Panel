@@ -10,7 +10,7 @@ interface GroupState {
   isLoading: boolean;
   error: string | null;
   fetchGroups: () => Promise<void>;
-  fetchGroupDetail: (id: string) => Promise<void>;
+  fetchGroupDetail: (_id: string) => Promise<void>;
   clearSelectedGroup: () => void;
 }
 
@@ -33,10 +33,10 @@ export const useGroupStore = create<GroupState>((set) => ({
     }
   },
 
-  fetchGroupDetail: async (id: string) => {
+  fetchGroupDetail: async (_id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await groupService.getGroupDetail(id);
+      const data = await groupService.getGroupDetail();
       set({ selectedGroup: data.group, lessons: data.lessons });
     } catch (error) {
       set({ error: "Failed to load group details" });

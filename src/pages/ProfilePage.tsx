@@ -4,7 +4,6 @@ import {
   User,
   Mail,
   Phone,
-  GraduationCap,
   Settings,
   LogOut,
   ChevronRight,

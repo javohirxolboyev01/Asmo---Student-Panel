@@ -1,19 +1,10 @@
 // src/pages/LessonDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Calendar,
-  User,
-  FileText,
-  Upload,
-  Check,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
+import { ArrowLeft, Calendar, User, Upload, Check } from "lucide-react";
 import { lessonService } from "@/services/lessonService";
 
-import { formatDate, formatDateTime } from "@/utilist/formatData";
+import { formatDate, formatDateTime } from "@/utilist//formatData";
 import { isOverdue } from "@/utilist/calculateDeadline";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
@@ -37,7 +28,7 @@ export const LessonDetailPage = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const lessonData = await lessonService.getLesson(id);
+        const lessonData = await lessonService.getLesson();
         setData(lessonData);
       } catch (err) {
         setError("Dars ma'lumotlarini yuklashda xatolik yuz berdi");
@@ -55,15 +46,13 @@ export const LessonDetailPage = () => {
     setSubmitMessage(null);
 
     try {
-      await lessonService.submitHomework(data.homework.id, {
-        content: submissionContent,
-      });
+      await lessonService.submitHomework();
       setSubmitMessage({
         type: "success",
         text: "Uyga vazifa muvaffaqiyatli topshirildi!",
       });
       setSubmissionContent("");
-      const refreshed = await lessonService.getLesson(id!);
+      const refreshed = await lessonService.getLesson();
       setData(refreshed);
     } catch (err) {
       setSubmitMessage({

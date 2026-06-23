@@ -9,8 +9,28 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 
 type ViewMode = "weekly" | "monthly";
 
+interface AttendanceRecord {
+  id: string;
+  lessonId: string;
+  lessonTopic: string;
+  lessonDate: string;
+  status: "present" | "absent" | "late" | "excused";
+  markedAt: string;
+}
+
+interface AttendanceData {
+  summary: {
+    totalLessons: number;
+    present: number;
+    absent: number;
+    late: number;
+    percentage: number;
+  };
+  records: AttendanceRecord[];
+}
+
 export const AttendancePage = () => {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<AttendanceData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
@@ -54,6 +74,11 @@ export const AttendancePage = () => {
   }
 
   const { summary, records } = data;
+
+  // Get day of month from date string
+  const getDayOfMonth = (dateStr: string): number => {
+    return new Date(dateStr).getDate();
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -131,7 +156,7 @@ export const AttendancePage = () => {
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => {
               const record = records.find(
-                (r) => new Date(r.lessonDate).getDate() === day,
+                (r: AttendanceRecord) => getDayOfMonth(r.lessonDate) === day,
               );
               const status = record?.status || "excused";
               const colorMap = {
@@ -202,7 +227,7 @@ export const AttendancePage = () => {
                 </tr>
               </thead>
               <tbody>
-                {records.map((record: any) => (
+                {records.map((record: AttendanceRecord) => (
                   <tr key={record.id} className="border-b border-gray-50">
                     <td className="py-2.5 px-3 text-sm text-gray-500">
                       {formatDate(record.lessonDate)}

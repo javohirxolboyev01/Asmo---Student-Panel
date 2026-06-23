@@ -1,14 +1,28 @@
 // src/pages/CoinsPage.tsx
 import { useEffect, useState } from "react";
 import { coinService } from "@/services/coinService";
-import { Coins, TrendingUp, TrendingDown, Award, Clock } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown } from "lucide-react";
 
 import { formatDate } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 
+interface CoinRecord {
+  id: string;
+  amount: number;
+  reason: string;
+  sourceType: string;
+  sourceId: string;
+  createdAt: string;
+}
+
+interface CoinData {
+  balance: number;
+  history: CoinRecord[];
+}
+
 export const CoinsPage = () => {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<CoinData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,11 +65,11 @@ export const CoinsPage = () => {
   }
 
   const totalEarned = data.history
-    .filter((h: any) => h.amount > 0)
-    .reduce((sum: number, h: any) => sum + h.amount, 0);
+    .filter((h: CoinRecord) => h.amount > 0)
+    .reduce((sum: number, h: CoinRecord) => sum + h.amount, 0);
   const totalSpent = data.history
-    .filter((h: any) => h.amount < 0)
-    .reduce((sum: number, h: any) => sum + Math.abs(h.amount), 0);
+    .filter((h: CoinRecord) => h.amount < 0)
+    .reduce((sum: number, h: CoinRecord) => sum + Math.abs(h.amount), 0);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -112,7 +126,7 @@ export const CoinsPage = () => {
         <div className="p-5">
           <h3 className="font-semibold text-[#1A1D26] mb-4">📋 Coin tarixi</h3>
           <div className="space-y-3">
-            {data.history.map((record: any) => (
+            {data.history.map((record: CoinRecord) => (
               <div
                 key={record.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl"
