@@ -14,6 +14,9 @@ interface CourseCardProps {
   teacherName: string;
 }
 
+
+
+
 export const CourseCard = ({
   groupName,
   courseName,

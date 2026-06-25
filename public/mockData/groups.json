@@ -30,7 +30,7 @@
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Azizbek"
       },
       "studentCount": 12,
-      "status": "active"
+      "status": "completed"
     },
     {
       "id": "grp-003",
@@ -94,7 +94,7 @@
         "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Zarina"
       },
       "studentCount": 8,
-      "status": "active"
+      "status": "completed"
     }
   ]
 }
