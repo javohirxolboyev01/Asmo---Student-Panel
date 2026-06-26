@@ -17,7 +17,7 @@ export const Header = ({ user }: HeaderProps) => {
           <img
             src={Logo}
             alt="ASMO Learning Platform"
-            className="w-[260px] md:w-[300px] h-auto object-contain -ml-12 text-[#F59E0B]"
+            className="w-[240px] md:w-[300px] h-auto object-contain -ml-12 text-[#F59E0B]"
           />
         </Link>
 

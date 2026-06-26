@@ -164,7 +164,7 @@ export const StreakCard = ({ onClick }: StreakCardProps) => {
         </div>
         <p
           className={cn(
-            "text-xl font-semibold transition-colors duration-300",
+            "text-lg font-semibold transition-colors duration-300",
             isDark ? "text-white" : "text-[#1A1D26]",
           )}
         >

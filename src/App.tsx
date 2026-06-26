@@ -1,16 +1,18 @@
-// src/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// src/App.tsx - Yangilangan route'lar
+import { ShopPage } from "./pages/ShopPage";
+import { CoinsPage } from "./pages/CoinsPage";
+import { LoginPage } from "./pages/LoginPage";
+import { GroupsPage } from "./pages/GroupsPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { PaymentsPage } from "./pages/PaymentsPage";
 import { Layout } from "./components/Layout/Layout";
 import { DashboardPage } from "./pages/DashboardPage";
-import { GroupsPage } from "./pages/GroupsPage";
+import { AttendancePage } from "./pages/AttendancePage";
 import { GroupDetailPage } from "./pages/GroupDetailPage";
 import { LessonDetailPage } from "./pages/LessonDetailPage";
-import { AttendancePage } from "./pages/AttendancePage";
-import { CoinsPage } from "./pages/CoinsPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { LoginPage } from "./pages/LoginPage";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/coins" element={<CoinsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Route>

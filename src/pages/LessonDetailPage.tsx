@@ -1,13 +1,13 @@
 // src/pages/LessonDetailPage.tsx
-import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, User, Upload, Check } from "lucide-react";
-import { lessonService } from "@/services/lessonService";
 
-import { formatDate, formatDateTime } from "@/utilist//formatData";
-import { isOverdue } from "@/utilist/calculateDeadline";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { isOverdue } from "@/utilist/calculateDeadline";
+import { lessonService } from "@/services/lessonService";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { formatDate, formatDateTime } from "@/utilist//formatData";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ArrowLeft, Calendar, User, Upload, Check } from "lucide-react";
 
 export const LessonDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,10 +76,7 @@ export const LessonDetailPage = () => {
     return (
       <div className="card p-8 text-center">
         <p className="text-red-500">{error || "Dars topilmadi"}</p>
-        <button
-          onClick={() => navigate("/groups")}
-          className="btn-primary mt-4"
-        >
+        <button onClick={() => navigate(-1)} className="btn-primary mt-4">
           Guruhlarga qaytish
         </button>
       </div>
