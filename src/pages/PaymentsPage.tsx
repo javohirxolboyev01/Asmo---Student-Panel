@@ -499,7 +499,7 @@ export const PaymentsPage = () => {
       </div>
 
       {/* Payment Summary */}
-      <div className="card bg-gradient-to-br from-[#2D6BFF] to-[#1A56E8] text-white">
+      {/* <div className="card bg-gradient-to-br from-[#2D6BFF] to-[#1A56E8] text-white">
         <div className="p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -534,7 +534,7 @@ export const PaymentsPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <style>{`
         @keyframes fade-in {

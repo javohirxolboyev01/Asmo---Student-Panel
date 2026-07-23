@@ -1,5 +1,6 @@
 // src/App.tsx - Yangilangan route'lar
 import { ShopPage } from "./pages/ShopPage";
+import { WishlistPage } from "./pages/WishlistPage";
 import { CoinsPage } from "./pages/CoinsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { GroupsPage } from "./pages/GroupsPage";
@@ -30,6 +31,7 @@ function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/payments" element={<PaymentsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
@@ -48,7 +49,6 @@ const getLevelFromCourse = (courseName: string): string => {
   return "Basic IELTS / CEFER";
 };
 
-// ─── Page ────────────────────────────────────────────────────────────────────
 
 export const DashboardPage = () => {
   const {
@@ -76,7 +76,7 @@ export const DashboardPage = () => {
   // ── Loading ──
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className={cn('flex', 'items-center', 'justify-center', 'min-h-[400px]')}>
         <LoadingSpinner size="lg" text="Yuklanmoqda..." />
       </div>
     );
@@ -85,9 +85,9 @@ export const DashboardPage = () => {
   // ── Error ──
   if (error || !data) {
     return (
-      <div className="card p-8 text-center">
+      <div className={cn('card', 'p-8', 'text-center')}>
         <p className="text-red-500">{error || "Xatolik yuz berdi"}</p>
-        <button onClick={fetchDashboard} className="btn-primary mt-4">
+        <button onClick={fetchDashboard} className={cn('btn-primary', 'mt-4')}>
           Qayta urinish
         </button>
       </div>
@@ -118,15 +118,15 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className={cn('space-y-4', 'md:space-y-6')}>
       {/* ── Welcome ── */}
-      <div className="flex items-start justify-between ml-1">
+      <div className={cn('flex', 'items-start', 'justify-between', 'ml-1')}>
         <div>
-          <h1 className="text-xl md:text-3xl font-semibold text-[#1A1D26]">
+          <h1 className={cn('text-xl', 'md:text-3xl', 'font-semibold', 'text-[#1A1D26]')}>
             Xush kelibsiz!{" "}
             <span className="text-[#F59E0B]">{user?.firstName}</span>
           </h1>
-          <p className="text-gray-500 text-xs md:text-base">
+          <p className={cn('text-gray-500', 'text-xs', 'md:text-base')}>
             Bugungi maqsadlaringizni amalga oshirishga tayyormisiz?
           </p>
         </div>
@@ -143,64 +143,64 @@ export const DashboardPage = () => {
       />
 
       {/* ── Stats Grid ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className={cn('grid', 'grid-cols-2', 'md:grid-cols-4', 'gap-3', 'md:gap-4')}>
         {/* Coins */}
         <div
-          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          className={cn('card', 'p-4', 'md:p-5', 'text-center', 'cursor-pointer', 'hover:shadow-card-hover', 'transition-all', 'duration-200', 'hover:scale-[1.02]', 'active:scale-95')}
           onClick={() => navigate("/coins")}
         >
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-10 h-10 bg-[#FFF8E1] rounded-full flex items-center justify-center">
-              <CoinsIcon className="w-5 h-5 text-[#F59E0B]" />
+          <div className={cn('flex', 'items-center', 'justify-center', 'mb-2')}>
+            <div className={cn('w-10', 'h-10', 'bg-[#FFF8E1]', 'rounded-full', 'flex', 'items-center', 'justify-center')}>
+              <CoinsIcon className={cn('w-5', 'h-5', 'text-[#F59E0B]')} />
             </div>
           </div>
-          <p className="text-lg font-semibold text-[#F59E0B]">
+          <p className={cn('text-lg', 'font-semibold', 'text-[#F59E0B]')}>
             {coins.balance}
           </p>
-          <p className="text-xs text-gray-500">Coin</p>
-          <p className="text-xs text-green-600 mt-0.5">
+          <p className={cn('text-xs', 'text-gray-500')}>Coin</p>
+          <p className={cn('text-xs', 'text-green-600', 'mt-0.5')}>
             +{coins.thisMonth} bu oy
           </p>
         </div>
 
         {/* Leaderboard Rank */}
         <div
-          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          className={cn('card', 'p-4', 'md:p-5', 'text-center', 'cursor-pointer', 'hover:shadow-card-hover', 'transition-all', 'duration-200', 'hover:scale-[1.02]', 'active:scale-95')}
           onClick={() => navigate("/leaderboard")}
         >
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
-              <Trophy className="w-5 h-5 text-purple-600" />
+          <div className={cn('flex', 'items-center', 'justify-center', 'mb-2')}>
+            <div className={cn('w-10', 'h-10', 'bg-purple-50', 'rounded-full', 'flex', 'items-center', 'justify-center')}>
+              <Trophy className={cn('w-5', 'h-5', 'text-purple-600')} />
             </div>
           </div>
-          <p className="text-lg font-semibold text-[#1A1D26]">
+          <p className={cn('text-lg', 'font-semibold', 'text-[#1A1D26]')}>
             {leaderboardRank}
           </p>
-          <p className="text-xs text-gray-500">Reyting</p>
-          <p className="text-xs text-gray-400 mt-0.5">Top 10% da</p>
+          <p className={cn('text-xs', 'text-gray-500')}>Reyting</p>
+          <p className={cn('text-xs', 'text-gray-400', 'mt-0.5')}>Top 10% da</p>
         </div>
 
         {/* Attendance */}
         <div
-          className="card p-4 md:p-5 text-center cursor-pointer hover:shadow-card-hover transition-all duration-200 hover:scale-[1.02] active:scale-95"
+          className={cn('card', 'p-4', 'md:p-5', 'text-center', 'cursor-pointer', 'hover:shadow-card-hover', 'transition-all', 'duration-200', 'hover:scale-[1.02]', 'active:scale-95')}
           onClick={() => navigate("/attendance")}
         >
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-10 h-10 bg-[#E8F5E9] rounded-full flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-[#2E7D32]" />
+          <div className={cn('flex', 'items-center', 'justify-center', 'mb-2')}>
+            <div className={cn('w-10', 'h-10', 'bg-[#E8F5E9]', 'rounded-full', 'flex', 'items-center', 'justify-center')}>
+              <Calendar className={cn('w-5', 'h-5', 'text-[#2E7D32]')} />
             </div>
           </div>
-          <p className="text-lg font-semibold text-[#1A1D26]">
+          <p className={cn('text-lg', 'font-semibold', 'text-[#1A1D26]')}>
             {totalAttendanceDays} kun
           </p>
-          <p className="text-xs text-gray-500">Qatnashgan kun</p>
-          <p className="text-xs text-gray-400 mt-0.5">Jami 20 kun</p>
+          <p className={cn('text-xs', 'text-gray-500')}>Qatnashgan kun</p>
+          <p className={cn('text-xs', 'text-gray-400', 'mt-0.5')}>Jami 20 kun</p>
         </div>
 
         {/* Streak */}
         <StreakCard
           streakDays={streakDays}
-          onClick={() => navigate("/attendance")}
+          onClick={() => navigate("")}
         />
       </div>
 

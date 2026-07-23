@@ -11,16 +11,62 @@ interface StreakCardProps {
 export const StreakCard = ({ onClick }: StreakCardProps) => {
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem("streakTheme");
-    return saved ? saved === "dark" : false;
+    if (saved) return saved === "dark";
+    // Auto-detect on initial mount
+    const hour = new Date().getHours();
+    return hour < 6 || hour >= 20;
   });
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [previousHour, setPreviousHour] = useState(new Date().getHours());
 
   useEffect(() => {
     localStorage.setItem("streakTheme", isDark ? "dark" : "light");
   }, [isDark]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      
+      // Check if hour crossed day/night boundary (6:00 or 20:00)
+      const currentHour = now.getHours();
+      const prevHour = previousHour;
+      
+      // Auto-switch when crossing from day to night (19 -> 20) or night to day (5 -> 6)
+      if ((prevHour === 19 && currentHour === 20) || (prevHour === 5 && currentHour === 6)) {
+        const isNight = currentHour < 6 || currentHour >= 20;
+        setIsDark(isNight);
+      }
+      
+      setPreviousHour(currentHour);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [previousHour]);
+
   const toggleTheme = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDark(!isDark);
+  };
+
+  const formatDate = (date: Date) => {
+    const months = [
+      "yanvar", "fevral", "mart", "aprel", "may", "iyun",
+      "iyul", "avgust", "sentyabr", "oktyabr", "noyabr", "dekabr"
+    ];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    return `${day} - ${month}`;
+  };
+
+  const formatDayOfWeek = (date: Date) => {
+    const days = [
+      "Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"
+    ];
+    return days[date.getDay()];
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
@@ -168,7 +214,7 @@ export const StreakCard = ({ onClick }: StreakCardProps) => {
             isDark ? "text-white" : "text-[#1A1D26]",
           )}
         >
-          24 - iyun
+          {formatDate(currentTime)}
         </p>
         <p
           className={cn(
@@ -176,7 +222,7 @@ export const StreakCard = ({ onClick }: StreakCardProps) => {
             isDark ? "text-gray-400" : "text-gray-500",
           )}
         >
-          Payshanba
+          {formatDayOfWeek(currentTime)}
         </p>
         <p
           className={cn(
@@ -184,7 +230,7 @@ export const StreakCard = ({ onClick }: StreakCardProps) => {
             isDark ? "text-gray-500" : "text-gray-400",
           )}
         >
-          {isDark ? "Tun" : "Kun"}
+          {formatTime(currentTime)}
         </p>
       </div>
 
