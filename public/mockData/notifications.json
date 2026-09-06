@@ -1,0 +1,44 @@
+{
+  "notifications": [
+    {
+      "id": "notif-001",
+      "title": "Yangi uyga vazifa",
+      "message": "IELTS Writing Task 2 mavzusi bo'yicha esse topshirig'i berildi",
+      "type": "homework",
+      "isRead": false,
+      "createdAt": "2024-06-24T10:00:00"
+    },
+    {
+      "id": "notif-002",
+      "title": "Mock imtihon e'loni",
+      "message": "Shanba kuni IELTS Mock Exam o'tkaziladi",
+      "type": "lesson",
+      "isRead": false,
+      "createdAt": "2024-06-24T08:30:00"
+    },
+    {
+      "id": "notif-003",
+      "title": "Davomat tabrigi",
+      "message": "Siz ushbu haftada 100% davomat ko'rsatdingiz",
+      "type": "system",
+      "isRead": true,
+      "createdAt": "2024-06-23T19:00:00"
+    },
+    {
+      "id": "notif-004",
+      "title": "Uyga vazifa baholandi",
+      "message": "\"Opinion Essay yozish\" vazifangiz 87/100 ball bilan baholandi",
+      "type": "grade",
+      "isRead": true,
+      "createdAt": "2024-06-22T14:15:00"
+    },
+    {
+      "id": "notif-005",
+      "title": "Dars vaqti o'zgardi",
+      "message": "Juma kungi dars 18:30 dan 19:00 ga ko'chirildi",
+      "type": "lesson",
+      "isRead": true,
+      "createdAt": "2024-06-20T09:00:00"
+    }
+  ]
+}

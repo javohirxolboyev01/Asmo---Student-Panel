@@ -1,8 +1,6 @@
 // src/pages/PaymentsPage.tsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
   CreditCard,
   AlertCircle,
   ChevronRight,
@@ -19,8 +17,21 @@ import {
   Banknote,
   CreditCard as CardIcon,
   Smartphone,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { paymentService } from "@/services/paymentService";
+import { studentService } from "@/services/studentService";
+import { useAuthStore } from "@/stores/authStore";
+import { StudentSummary } from "@/types/teacher";
+import { Modal } from "@/components/common/Modal";
+import { formatDate, formatTime } from "@/utilist/formatData";
+import { Skeleton, SkeletonHeader, SkeletonStatGrid, SkeletonList } from "@/components/common/Skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button, IconButton, Input, Select } from "@/components/ui";
+import { toast, getErrorMessage } from "@/lib/toast";
+import { useConfirm } from "@/hooks/useConfirm";
 
 interface Payment {
   id: string;
@@ -28,144 +39,186 @@ interface Payment {
   amount: string;
   amountNumber: number;
   status: "paid" | "pending" | "overdue" | "cancelled";
-  paymentType: "naqd" | "click" | "payme" | "bank" | "uzum";
+  paymentType: "cash" | "click" | "payme" | "bank" | "uzum";
   date: string;
   time: string;
   teacherName: string;
   description?: string;
   receiptNumber?: string;
+  userId?: string;
+  studentName?: string;
 }
 
-const payments: Payment[] = [
-  {
-    id: "1",
-    orderNumber: 2,
-    amount: "500 000 so'm",
-    amountNumber: 500000,
-    status: "paid",
-    paymentType: "naqd",
-    date: "11 iyul, 2025",
-    time: "16:13",
-    teacherName: "Azizbek Karimov",
-    description: "3-oylik to'lov",
-    receiptNumber: "RCP-2025-001",
-  },
-  {
-    id: "2",
-    orderNumber: 3,
-    amount: "300 000 so'm",
-    amountNumber: 300000,
-    status: "paid",
-    paymentType: "click",
-    date: "26 iyun, 2025",
-    time: "14:27",
-    teacherName: "Dilnoza Rahimova",
-    description: "2-oylik to'lov",
-    receiptNumber: "RCP-2025-002",
-  },
-  {
-    id: "3",
-    orderNumber: 1,
-    amount: "1 000 000 so'm",
-    amountNumber: 1000000,
-    status: "paid",
-    paymentType: "bank",
-    date: "05 may, 2025",
-    time: "09:45",
-    teacherName: "Azizbek Karimov",
-    description: "1-oylik to'lov",
-    receiptNumber: "RCP-2025-003",
-  },
-  {
-    id: "4",
-    orderNumber: 4,
-    amount: "200 000 so'm",
-    amountNumber: 200000,
-    status: "pending",
-    paymentType: "payme",
-    date: "15 iyul, 2025",
-    time: "10:30",
-    teacherName: "Sardor Aliyev",
-    description: "Qo'shimcha dars to'lovi",
-    receiptNumber: "RCP-2025-004",
-  },
-  {
-    id: "5",
-    orderNumber: 5,
-    amount: "150 000 so'm",
-    amountNumber: 150000,
-    status: "cancelled",
-    paymentType: "uzum",
-    date: "20 iyun, 2025",
-    time: "11:20",
-    teacherName: "Dilnoza Rahimova",
-    description: "Bekor qilingan to'lov",
-    receiptNumber: "RCP-2025-005",
-  },
-];
+interface RawPayment {
+  id: string;
+  orderNumber: number;
+  amountNumber: number;
+  status: Payment["status"];
+  paymentType: Payment["paymentType"];
+  paidAt: string | null;
+  teacherName: string;
+  description?: string;
+  receiptNumber?: string;
+  userId?: string;
+  studentName?: string;
+}
 
 const paymentTypeIcons = {
-  naqd: {
+  cash: {
     icon: Banknote,
-    label: "Naqd",
+    labelKey: "payments.typeCash" as const,
     color: "text-emerald-600",
-    bgColor: "bg-emerald-50",
+    bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
   },
   click: {
     icon: Smartphone,
     label: "Click",
     color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    bgColor: "bg-blue-50 dark:bg-blue-500/10",
   },
   payme: {
     icon: Smartphone,
     label: "Payme",
     color: "text-purple-600",
-    bgColor: "bg-purple-50",
+    bgColor: "bg-purple-50 dark:bg-purple-500/10",
   },
   bank: {
     icon: CardIcon,
-    label: "Bank",
+    labelKey: "payments.typeBank" as const,
     color: "text-orange-600",
-    bgColor: "bg-orange-50",
+    bgColor: "bg-orange-50 dark:bg-orange-500/10",
   },
   uzum: {
     icon: Smartphone,
     label: "Uzum",
     color: "text-pink-600",
-    bgColor: "bg-pink-50",
+    bgColor: "bg-pink-50 dark:bg-pink-500/10",
   },
 };
 
 const statusConfig = {
   paid: {
-    label: "To'langan",
-    color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    labelKey: "payments.statusPaid" as const,
+    color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30",
     icon: CircleCheck,
   },
   pending: {
-    label: "Kutilmoqda",
-    color: "text-yellow-600 bg-yellow-50 border-yellow-200",
+    labelKey: "payments.statusPending" as const,
+    color: "text-yellow-600 bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30",
     icon: ClockIcon,
   },
   overdue: {
-    label: "Muddati o'tgan",
-    color: "text-red-600 bg-red-50 border-red-200",
+    labelKey: "payments.statusOverdue" as const,
+    color: "text-red-600 bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30",
     icon: AlertCircle,
   },
   cancelled: {
-    label: "Bekor qilingan",
-    color: "text-gray-500 bg-gray-50 border-gray-200",
+    labelKey: "payments.statusCancelled" as const,
+    color: "text-gray-500 bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-gray-700",
     icon: CircleX,
   },
 };
 
 export const PaymentsPage = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const isTeacher = user?.role === "teacher" || user?.role === "admin";
+  const getLabel = (item: { label?: string; labelKey?: string }) =>
+    item.labelKey ? t(item.labelKey) : item.label ?? "";
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [students, setStudents] = useState<StudentSummary[]>([]);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({ studentId: "", amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { confirm, confirmModal } = useConfirm();
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat("uz-UZ").format(amount) + " so'm";
+  };
+
+  const loadPayments = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const raw: RawPayment[] = await paymentService.getPayments();
+      setPayments(
+        raw.map((p) => ({
+          id: p.id,
+          orderNumber: p.orderNumber,
+          amount: formatAmount(p.amountNumber),
+          amountNumber: p.amountNumber,
+          status: p.status,
+          paymentType: p.paymentType,
+          date: formatDate(p.paidAt),
+          time: formatTime(p.paidAt),
+          teacherName: p.teacherName,
+          description: p.description,
+          receiptNumber: p.receiptNumber,
+          userId: p.userId,
+          studentName: p.studentName,
+        })),
+      );
+    } catch {
+      setError(t("payments.loadError"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPayments();
+    if (isTeacher) studentService.getStudents().then(setStudents);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleAddPayment = async () => {
+    if (!paymentForm.studentId || !paymentForm.amountNumber) return;
+    setIsSubmitting(true);
+    try {
+      await paymentService.addPayment(paymentForm.studentId, {
+        amountNumber: Number(paymentForm.amountNumber),
+        paymentType: paymentForm.paymentType,
+        status: paymentForm.status,
+        description: paymentForm.description || undefined,
+      });
+      setIsPaymentModalOpen(false);
+      setPaymentForm({ studentId: "", amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
+      loadPayments();
+      toast.success(t("common.createSuccess"));
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStatusChange = async (paymentId: string, status: string) => {
+    try {
+      await paymentService.updatePayment(paymentId, { status });
+      loadPayments();
+      toast.success(t("common.updateSuccess"));
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
+    }
+  };
+
+  const handleDeletePayment = async (paymentId: string) => {
+    const confirmed = await confirm(t("payments.deleteConfirm"));
+    if (!confirmed) return;
+    try {
+      await paymentService.deletePayment(paymentId);
+      loadPayments();
+      toast.success(t("common.deleteSuccess"));
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
+    }
+  };
 
   const filteredPayments = payments
     .filter(
@@ -185,36 +238,60 @@ export const PaymentsPage = () => {
   const totalPayments = payments.length;
   const lastPayment = payments.find((p) => p.status === "paid");
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("uz-UZ").format(amount) + " so'm";
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-4 md:space-y-6 pb-24">
+        <div>
+          <Skeleton className="w-20 h-4 mb-3" />
+          <SkeletonHeader />
+        </div>
+        <SkeletonStatGrid count={3} />
+        <Skeleton className="w-full h-12 rounded-2xl" />
+        <div className="card p-5">
+          <Skeleton className="w-40 h-5 mb-4" />
+          <SkeletonList rows={4} withAvatar={false} />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card p-8 text-center">
+        <p className="text-red-500">{error}</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">
+          {t("common.retry")}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6 pb-24">
       {/* Header */}
       <div>
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-[#2D6BFF] transition-colors text-sm mb-3"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Orqaga
-        </button>
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-[#1A1D26] flex items-center gap-2">
-              <CreditCard className="w-7 h-7 text-[#2D6BFF]" />
-              To'lovlar tarixi
+            <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
+              <CreditCard className="w-7 h-7 text-primary-500" />
+              {t("payments.title")}
             </h1>
             <p className="text-gray-500 text-sm md:text-base">
-              Barcha to'lovlaringiz ro'yxati va statistikasi
+              {t("payments.subtitle")}
             </p>
           </div>
-          <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-bold text-[#1A1D26]">
-              {totalPayments} ta
-            </span>
+          <div className="flex items-center gap-2">
+            {isTeacher && (
+              <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => setIsPaymentModalOpen(true)}>
+                <span className="hidden sm:inline">{t("payments.addPayment")}</span>
+              </Button>
+            )}
+            <div className="bg-white dark:bg-card-dark px-4 py-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-2">
+              <Receipt className="w-4 h-4 text-gray-400" />
+              <span className="text-sm font-bold text-gray-800 dark:text-gray-100">
+                {t("payments.countSuffix", { count: totalPayments })}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -225,18 +302,18 @@ export const PaymentsPage = () => {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                Jami to'langan
+                {t("payments.totalPaid")}
               </p>
-              <p className="text-xl font-bold text-[#1A1D26] mt-1.5">
+              <p className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-1.5">
                 {formatAmount(totalPaid)}
               </p>
               {lastPayment && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Oxirgi to'lov: {lastPayment.date}
+                  {t("payments.lastPayment", { date: lastPayment.date })}
                 </p>
               )}
             </div>
-            <div className="w-10 h-10 bg-emerald-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-5 h-5 text-emerald-500" />
             </div>
           </div>
@@ -246,16 +323,16 @@ export const PaymentsPage = () => {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                Holat
+                {t("payments.status")}
               </p>
               <p className="text-xl font-bold text-emerald-600 mt-1.5">
-                Qarz yo'q
+                {t("payments.noDebt")}
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                Barcha to'lovlar amalga oshirilgan
+                {t("payments.allPaidDesc")}
               </p>
             </div>
-            <div className="w-10 h-10 bg-blue-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
               <CircleCheck className="w-5 h-5 text-blue-500" />
             </div>
           </div>
@@ -265,17 +342,18 @@ export const PaymentsPage = () => {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                Jami tranzaksiyalar
+                {t("payments.totalTransactions")}
               </p>
-              <p className="text-xl font-bold text-[#1A1D26] mt-1.5">
-                {totalPayments} ta
+              <p className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-1.5">
+                {t("payments.countSuffix", { count: totalPayments })}
               </p>
               <p className="text-xs text-gray-400 mt-1">
-                {payments.filter((p) => p.status === "paid").length} ta
-                to'langan
+                {t("payments.paidCountSuffix", {
+                  count: payments.filter((p) => p.status === "paid").length,
+                })}
               </p>
             </div>
-            <div className="w-10 h-10 bg-purple-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-purple-50 dark:bg-purple-500/10 rounded-2xl flex items-center justify-center flex-shrink-0">
               <Receipt className="w-5 h-5 text-purple-500" />
             </div>
           </div>
@@ -284,26 +362,21 @@ export const PaymentsPage = () => {
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="O'qituvchi, miqdor, raqam bo'yicha qidirish..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl border border-gray-200 focus:border-[#2D6BFF] focus:ring-2 focus:ring-[#2D6BFF]/20 outline-none transition-all text-sm"
-          />
-        </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="px-5 py-3.5 bg-white rounded-2xl border border-gray-200 flex items-center gap-2 hover:border-[#2D6BFF] transition-colors"
-        >
-          <Filter className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-500">Filter</span>
+        <Input
+          type="text"
+          placeholder={t("payments.searchPlaceholder")}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          leftIcon={<Search className="w-4 h-4" />}
+          uiSize="lg"
+          containerClassName="flex-1"
+        />
+        <Button variant="outline" size="lg" leftIcon={<Filter className="w-4 h-4" />} onClick={() => setShowFilters(!showFilters)}>
+          {t("payments.filter")}
           {(filterStatus !== "all" || filterType !== "all") && (
-            <span className="w-2 h-2 bg-[#2D6BFF] rounded-full" />
+            <span className="w-2 h-2 bg-primary-500 rounded-full" />
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Filter Dropdown */}
@@ -312,65 +385,65 @@ export const PaymentsPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Holat bo'yicha
+                {t("payments.filterByStatus")}
               </label>
               <div className="flex flex-wrap gap-2 mt-2">
                 <button
                   onClick={() => setFilterStatus("all")}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                    "px-2.5 py-1 text-[11px] rounded-full font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs",
                     filterStatus === "all"
-                      ? "bg-[#2D6BFF] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                      ? "bg-warning text-white"
+                      : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700",
                   )}
                 >
-                  Barcha
+                  {t("common.all")}
                 </button>
                 {Object.entries(statusConfig).map(([key, value]) => (
                   <button
                     key={key}
                     onClick={() => setFilterStatus(key)}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1",
+                      "px-2.5 py-1 text-[11px] rounded-full font-medium transition-all flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-xs",
                       filterStatus === key
-                        ? "bg-[#2D6BFF] text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                        ? "bg-warning text-white"
+                        : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700",
                     )}
                   >
-                    {value.label}
+                    {getLabel(value)}
                   </button>
                 ))}
               </div>
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                To'lov turi bo'yicha
+                {t("payments.filterByType")}
               </label>
               <div className="flex flex-wrap gap-2 mt-2">
                 <button
                   onClick={() => setFilterType("all")}
                   className={cn(
-                    "px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                    "px-2.5 py-1 text-[11px] rounded-full font-medium transition-all sm:px-3 sm:py-1.5 sm:text-xs",
                     filterType === "all"
-                      ? "bg-[#2D6BFF] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                      ? "bg-warning text-white"
+                      : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700",
                   )}
                 >
-                  Barcha
+                  {t("common.all")}
                 </button>
                 {Object.entries(paymentTypeIcons).map(([key, value]) => (
                   <button
                     key={key}
                     onClick={() => setFilterType(key)}
                     className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1",
+                      "px-2.5 py-1 text-[11px] rounded-full font-medium transition-all flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-xs",
                       filterType === key
-                        ? "bg-[#2D6BFF] text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                        ? "bg-warning text-white"
+                        : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700",
                     )}
                   >
                     <value.icon className="w-3 h-3" />
-                    {value.label}
+                    {getLabel(value)}
                   </button>
                 ))}
               </div>
@@ -382,25 +455,25 @@ export const PaymentsPage = () => {
       {/* Payments List */}
       <div className="card">
         <div className="p-5">
-          <h3 className="font-semibold text-[#1A1D26] flex items-center gap-2 mb-4">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-4">
             <Receipt className="w-4 h-4 text-gray-400" />
-            To'lovlar ro'yxati
+            {t("payments.list")}
             <span className="text-xs font-medium text-gray-400 ml-2">
-              ({filteredPayments.length} ta)
+              ({t("payments.countSuffix", { count: filteredPayments.length })})
             </span>
           </h3>
 
           <div className="space-y-3">
             {filteredPayments.map((payment) => {
-              const status = statusConfig[payment.status];
+              const status = statusConfig[payment.status] ?? statusConfig.pending;
               const StatusIcon = status.icon;
-              const type = paymentTypeIcons[payment.paymentType];
+              const type = paymentTypeIcons[payment.paymentType] ?? paymentTypeIcons.cash;
               const TypeIcon = type.icon;
 
               return (
                 <div
                   key={payment.id}
-                  className="bg-gradient-to-r from-gray-50 to-white rounded-2xl p-4 hover:shadow-md transition-all duration-200 border border-gray-100/80 hover:border-gray-200"
+                  className="bg-gradient-to-r from-gray-50 to-white dark:from-white/5 dark:to-card-dark rounded-2xl p-4 hover:shadow-md transition-all duration-200 border border-gray-100/80 dark:border-gray-800 hover:border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -415,19 +488,19 @@ export const PaymentsPage = () => {
                           )}
                         >
                           <StatusIcon className="w-3 h-3" />
-                          {status.label}
+                          {getLabel(status)}
                         </div>
                       </div>
 
                       <div className="flex flex-wrap items-center gap-3 text-sm">
-                        <span className="font-bold text-[#1A1D26]">
+                        <span className="font-bold text-gray-800 dark:text-gray-100">
                           {payment.amount}
                         </span>
                         <span className="text-gray-300">•</span>
                         <div className="flex items-center gap-1.5 text-gray-500">
                           <TypeIcon className="w-3.5 h-3.5" />
-                          <span className="font-medium text-[#1A1D26]">
-                            {type.label}
+                          <span className="font-medium text-gray-800 dark:text-gray-100">
+                            {getLabel(type)}
                           </span>
                         </div>
                       </div>
@@ -435,21 +508,21 @@ export const PaymentsPage = () => {
                       <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-gray-400">
                         <div className="flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5" />
-                          <span>{payment.teacherName}</span>
+                          <span>{isTeacher && payment.studentName ? payment.studentName : payment.teacherName}</span>
                         </div>
-                        <span className="w-px h-3 bg-gray-200" />
+                        <span className="w-px h-3 bg-gray-200 dark:bg-gray-700" />
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5" />
                           <span>{payment.date}</span>
                         </div>
-                        <span className="w-px h-3 bg-gray-200" />
+                        <span className="w-px h-3 bg-gray-200 dark:bg-gray-700" />
                         <div className="flex items-center gap-1.5">
                           <ClockIcon className="w-3.5 h-3.5" />
                           <span>{payment.time}</span>
                         </div>
                         {payment.receiptNumber && (
                           <>
-                            <span className="w-px h-3 bg-gray-200" />
+                            <span className="w-px h-3 bg-gray-200 dark:bg-gray-700" />
                             <span className="text-gray-400">
                               #{payment.receiptNumber}
                             </span>
@@ -464,11 +537,33 @@ export const PaymentsPage = () => {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button className="p-2 rounded-xl hover:bg-gray-100 transition-colors text-gray-400 hover:text-[#2D6BFF] group">
-                        <Eye className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                      </button>
-                      <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 hover:text-[#2D6BFF] transition-colors cursor-pointer" />
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {isTeacher ? (
+                        <>
+                          <Select
+                            value={payment.status}
+                            onChange={(e) => handleStatusChange(payment.id, e.target.value.toUpperCase())}
+                            className="text-xs py-1.5"
+                            containerClassName="w-auto"
+                          >
+                            {Object.keys(statusConfig).map((key) => (
+                              <option key={key} value={key}>
+                                {getLabel(statusConfig[key as keyof typeof statusConfig])}
+                              </option>
+                            ))}
+                          </Select>
+                          <IconButton size="sm" variant="danger" onClick={() => handleDeletePayment(payment.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </IconButton>
+                        </>
+                      ) : (
+                        <>
+                          <IconButton size="sm">
+                            <Eye className="w-4 h-4" />
+                          </IconButton>
+                          <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 hover:text-primary-500 transition-colors cursor-pointer" />
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -479,27 +574,27 @@ export const PaymentsPage = () => {
           {filteredPayments.length === 0 && (
             <div className="text-center py-12">
               <Receipt className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-[#1A1D26] mb-1">
-                Hech qanday to'lov topilmadi
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                {t("payments.notFound")}
               </h3>
               <p className="text-gray-400 text-sm">
                 {searchQuery
-                  ? `"${searchQuery}" bo'yicha hech narsa topilmadi`
-                  : "Hozircha to'lovlar mavjud emas"}
+                  ? t("payments.noSearchResults", { query: searchQuery })
+                  : t("payments.noPaymentsYet")}
               </p>
             </div>
           )}
 
           {filteredPayments.length > 0 && (
-            <button className="w-full mt-4 py-2.5 text-center text-sm text-[#2D6BFF] font-medium hover:bg-blue-50 rounded-xl transition-colors">
-              Barchasini ko'rish
-            </button>
+            <Button variant="ghost" fullWidth size="sm" className="mt-4">
+              {t("payments.viewAll")}
+            </Button>
           )}
         </div>
       </div>
 
       {/* Payment Summary */}
-      {/* <div className="card bg-gradient-to-br from-[#2D6BFF] to-[#1A56E8] text-white">
+      {/* <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
         <div className="p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -535,6 +630,60 @@ export const PaymentsPage = () => {
           </div>
         </div>
       </div> */}
+
+      {isTeacher && (
+        <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title={t("payments.addPayment")}>
+          <div className="space-y-3">
+            <Select
+              value={paymentForm.studentId}
+              onChange={(e) => setPaymentForm({ ...paymentForm, studentId: e.target.value })}
+            >
+              <option value="">{t("payments.student")}</option>
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.firstName} {s.lastName}
+                </option>
+              ))}
+            </Select>
+            <Input
+              type="number"
+              placeholder={t("payments.amount")}
+              value={paymentForm.amountNumber}
+              onChange={(e) => setPaymentForm({ ...paymentForm, amountNumber: e.target.value })}
+            />
+            <Select
+              value={paymentForm.paymentType}
+              onChange={(e) => setPaymentForm({ ...paymentForm, paymentType: e.target.value })}
+            >
+              {["CASH", "CLICK", "PAYME", "BANK", "UZUM"].map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </Select>
+            <Select
+              value={paymentForm.status}
+              onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}
+            >
+              {["PENDING", "PAID", "OVERDUE", "CANCELLED"].map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </Select>
+            <Input
+              type="text"
+              placeholder={t("common.optional")}
+              value={paymentForm.description}
+              onChange={(e) => setPaymentForm({ ...paymentForm, description: e.target.value })}
+            />
+            <Button onClick={handleAddPayment} isLoading={isSubmitting} fullWidth>
+              {t("common.create")}
+            </Button>
+          </div>
+        </Modal>
+      )}
+      {confirmModal}
 
       <style>{`
         @keyframes fade-in {

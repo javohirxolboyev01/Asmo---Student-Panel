@@ -1,0 +1,59 @@
+{
+  "payments": [
+    {
+      "id": "pay-001",
+      "orderNumber": 1005,
+      "amountNumber": 450000,
+      "status": "paid",
+      "paymentType": "click",
+      "paidAt": "2024-06-01T10:15:00",
+      "teacherName": "Dilnoza Rahimova",
+      "description": "IELTS 6.5+ - Iyun oyi uchun to'lov",
+      "receiptNumber": "REC-10021"
+    },
+    {
+      "id": "pay-002",
+      "orderNumber": 1004,
+      "amountNumber": 450000,
+      "status": "paid",
+      "paymentType": "payme",
+      "paidAt": "2024-05-01T09:40:00",
+      "teacherName": "Dilnoza Rahimova",
+      "description": "IELTS 6.5+ - May oyi uchun to'lov",
+      "receiptNumber": "REC-09876"
+    },
+    {
+      "id": "pay-003",
+      "orderNumber": 1003,
+      "amountNumber": 400000,
+      "status": "paid",
+      "paymentType": "naqd",
+      "paidAt": "2024-04-02T12:00:00",
+      "teacherName": "Dilnoza Rahimova",
+      "description": "IELTS 6.5+ - Aprel oyi uchun to'lov",
+      "receiptNumber": "REC-09621"
+    },
+    {
+      "id": "pay-004",
+      "orderNumber": 1002,
+      "amountNumber": 400000,
+      "status": "pending",
+      "paymentType": "bank",
+      "paidAt": "2024-07-01T08:00:00",
+      "teacherName": "Dilnoza Rahimova",
+      "description": "IELTS 6.5+ - Iyul oyi uchun to'lov",
+      "receiptNumber": null
+    },
+    {
+      "id": "pay-005",
+      "orderNumber": 1001,
+      "amountNumber": 400000,
+      "status": "paid",
+      "paymentType": "uzum",
+      "paidAt": "2024-03-01T11:20:00",
+      "teacherName": "Dilnoza Rahimova",
+      "description": "IELTS 6.5+ - Mart oyi uchun to'lov",
+      "receiptNumber": "REC-09310"
+    }
+  ]
+}

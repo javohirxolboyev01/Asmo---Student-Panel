@@ -2,6 +2,25 @@
 import { create } from "zustand";
 import { User } from "@/types/user";
 import { authService } from "@/services/authService";
+import { tokenStorage } from "@/services/apiClient";
+
+const extractErrorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
+
+interface RegisterPayload {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}
+
+interface UpdateProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  avatar?: string | null;
+}
 
 interface AuthState {
   user: User | null;
@@ -9,8 +28,12 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
+  updateEmail: (email: string) => Promise<void>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,14 +42,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
-  login: async (_email: string, _password: string) => {
+  login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await authService.login();
-      localStorage.setItem("token", data.token);
+      const data = await authService.login(email, password);
       set({ user: data.user, isAuthenticated: true });
     } catch (error) {
-      set({ error: "Login failed" });
+      set({ error: extractErrorMessage(error, "Email yoki parol noto'g'ri") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  register: async (payload: RegisterPayload) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await authService.register(payload);
+      set({ user: data.user, isAuthenticated: true });
+    } catch (error) {
+      set({ error: extractErrorMessage(error, "Ro'yxatdan o'tishda xatolik yuz berdi") });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -39,7 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
-    const token = localStorage.getItem("token");
+    const token = tokenStorage.getAccessToken();
     if (!token) {
       set({ isAuthenticated: false, user: null });
       return;
@@ -49,8 +84,46 @@ export const useAuthStore = create<AuthState>((set) => ({
       const user = await authService.getMe();
       set({ user, isAuthenticated: true });
     } catch {
-      localStorage.removeItem("token");
+      tokenStorage.clear();
       set({ user: null, isAuthenticated: false });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (payload: UpdateProfilePayload) => {
+    set({ isLoading: true, error: null });
+    try {
+      const user = await authService.updateProfile(payload);
+      set({ user });
+    } catch (error) {
+      set({ error: extractErrorMessage(error, "Ma'lumotlarni yangilashda xatolik yuz berdi") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateEmail: async (email: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await authService.updateEmail(email);
+      set({ user: data.user });
+    } catch (error) {
+      set({ error: extractErrorMessage(error, "Emailni yangilashda xatolik yuz berdi") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updatePassword: async (currentPassword: string, newPassword: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authService.updatePassword(currentPassword, newPassword);
+    } catch (error) {
+      set({ error: extractErrorMessage(error, "Parolni yangilashda xatolik yuz berdi") });
+      throw error;
     } finally {
       set({ isLoading: false });
     }

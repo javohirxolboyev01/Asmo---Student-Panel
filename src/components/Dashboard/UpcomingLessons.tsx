@@ -1,6 +1,7 @@
 // src/components/Dashboard/UpcomingLessons.tsx
 import { Clock, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface UpcomingLesson {
   id: string;
@@ -14,13 +15,14 @@ interface UpcomingLessonsProps {
 }
 
 export const UpcomingLessons = ({ lessons }: UpcomingLessonsProps) => {
+  const { t } = useTranslation();
   if (lessons.length === 0) {
     return (
       <div className="card">
         <h4 className="font-medium text-text-primary mb-4">
-          Tez oradagi darslar
+          {t("dashboardWidgets.upcomingLessons")}
         </h4>
-        <p className="text-text-secondary text-sm">Yaqin vaqtda darslar yo'q</p>
+        <p className="text-text-secondary text-sm">{t("dashboardWidgets.noUpcomingLessons")}</p>
       </div>
     );
   }
@@ -28,17 +30,17 @@ export const UpcomingLessons = ({ lessons }: UpcomingLessonsProps) => {
   return (
     <div className="card">
       <h4 className="font-medium text-text-primary mb-4">
-        Tez oradagi darslar
+        {t("dashboardWidgets.upcomingLessons")}
       </h4>
       <div className="space-y-3">
         {lessons.map((lesson) => (
           <Link
             key={lesson.id}
             to={`/lessons/${lesson.id}`}
-            className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+            className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:bg-white/5 transition-colors group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 rounded-full flex items-center justify-center">
                 <Clock className="w-4 h-4 text-primary-500" />
               </div>
               <div>

@@ -4,12 +4,13 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: "student" | "teacher" | "admin";
-  avatar: string;
-  phone?: string;
+  role: string;
+  avatar: string | null;
+  phone?: string | null;
 }
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  accessToken: string;
+  refreshToken?: string;
 }

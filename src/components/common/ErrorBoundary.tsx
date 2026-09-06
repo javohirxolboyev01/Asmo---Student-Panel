@@ -1,5 +1,6 @@
 // src/components/Common/ErrorBoundary.tsx
 import { Component, ErrorInfo, ReactNode } from "react";
+import { Button } from "@/components/ui";
 
 interface Props {
   children: ReactNode;
@@ -36,12 +37,9 @@ export class ErrorBoundary extends Component<Props, State> {
               Kechirasiz, kutilmagan xatolik yuz berdi. Iltimos, sahifani qayta
               yuklang.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-primary"
-            >
+            <Button onClick={() => window.location.reload()}>
               Sahifani qayta yuklash
-            </button>
+            </Button>
           </div>
         </div>
       );

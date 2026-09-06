@@ -1,6 +1,7 @@
 // tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -32,8 +33,22 @@ export default {
         success: "#10B981",
         warning: "#F59E0B",
         danger: "#EF4444",
-        background: "#F5F7FA",
-        card: "#FFFFFF",
+        background: {
+          DEFAULT: "#F5F7FA",
+          dark: "#0B0D12",
+        },
+        card: {
+          DEFAULT: "#FFFFFF",
+          dark: "#151822",
+        },
+        surface: {
+          DEFAULT: "#FFFFFF",
+          dark: "#12141B",
+        },
+        ink: {
+          DEFAULT: "#12141A",
+          hover: "#1E212B",
+        },
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

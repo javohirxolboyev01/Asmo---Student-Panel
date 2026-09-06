@@ -1,0 +1,257 @@
+// Prisma schema for the Asmo Learning Student Panel backend.
+// Uses SQLite for local development. To move to PostgreSQL later:
+// change `provider` below to "postgresql", point DATABASE_URL at a
+// Postgres connection string, and (optionally) turn the string "status"
+// fields below into real `enum` blocks — SQLite has no native enum type,
+// so this schema keeps them as validated strings for portability.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Role: STUDENT | TEACHER | ADMIN
+// UserStatus: ACTIVE | INACTIVE
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  avatar       String?
+  role         String     @default("STUDENT")
+  status       String     @default("ACTIVE")
+  coinBalance  Int        @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  refreshTokens     RefreshToken[]
+  enrollments       Enrollment[]
+  submissions       Submission[]
+  attendanceRecords AttendanceRecord[]
+  coinTransactions  CoinTransaction[]
+  notifications     Notification[]
+  wishlistItems     WishlistItem[]
+  purchases         Purchase[]
+  payments          Payment[]
+  teacherProfile    Teacher?
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Direction {
+  id     String  @id @default(cuid())
+  name   String
+  color  String  @default("#3B82F6")
+  groups Group[]
+}
+
+model Teacher {
+  id       String  @id @default(cuid())
+  userId   String? @unique
+  fullName String
+  avatar   String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  groups Group[]
+}
+
+// GroupStatus: ACTIVE | COMPLETED
+model Group {
+  id           String   @id @default(cuid())
+  name         String
+  courseName   String
+  directionId  String
+  teacherId    String
+  maxStudents  Int      @default(20)
+  scheduleDays String
+  scheduleTime String
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  direction   Direction    @relation(fields: [directionId], references: [id])
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  enrollments Enrollment[]
+  lessons     Lesson[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+}
+
+// LessonStatus: PLANNED | COMPLETED | CANCELLED
+model Lesson {
+  id          String   @id @default(cuid())
+  groupId     String
+  topic       String
+  description String?
+  lessonOrder Int
+  lessonDate  DateTime
+  status      String   @default("PLANNED")
+
+  group             Group              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  homework          Homework?
+  attendanceRecords AttendanceRecord[]
+
+  @@unique([groupId, lessonOrder])
+}
+
+// HomeworkStatus: ACTIVE | CLOSED
+model Homework {
+  id          String   @id @default(cuid())
+  lessonId    String   @unique
+  title       String
+  description String
+  maxScore    Int      @default(100)
+  deadline    DateTime
+  status      String   @default("ACTIVE")
+
+  lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+}
+
+// SubmissionStatus: SUBMITTED | GRADED
+model Submission {
+  id            String   @id @default(cuid())
+  homeworkId    String
+  userId        String
+  content       String?
+  attachmentUrl String?
+  submittedAt   DateTime @default(now())
+  score         Int?
+  feedback      String?
+  status        String   @default("SUBMITTED")
+
+  homework Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([homeworkId, userId])
+}
+
+// AttendanceStatus: PRESENT | ABSENT | LATE | EXCUSED
+model AttendanceRecord {
+  id       String   @id @default(cuid())
+  userId   String
+  lessonId String
+  status   String
+  markedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model CoinTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// NotificationType: HOMEWORK | LESSON | GRADE | SYSTEM
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("SYSTEM")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  description   String
+  price         Int
+  originalPrice Int?
+  category      String
+  image         String
+  rating        Float    @default(0)
+  reviews       Int      @default(0)
+  isPopular     Boolean  @default(false)
+  isNew         Boolean  @default(false)
+  isLimited     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  wishlistItems WishlistItem[]
+  purchases     Purchase[]
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  price     Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// PaymentStatus: PAID | PENDING | OVERDUE | CANCELLED
+// PaymentType: CASH | CLICK | PAYME | BANK | UZUM
+model Payment {
+  id            String    @id @default(cuid())
+  userId        String
+  orderNumber   Int
+  amountNumber  Int
+  status        String    @default("PENDING")
+  paymentType   String
+  paidAt        DateTime?
+  teacherName   String
+  description   String?
+  receiptNumber String?
+  createdAt     DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

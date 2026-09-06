@@ -1,10 +1,10 @@
 {
   "summary": {
-    "jamiDarslar": 20,
-    "qatnashgan": 17,
-    "qatnashmagan": 2,
-    "kechikkan": 1,
-    "foiz": 85
+    "totalLessons": 20,
+    "present": 17,
+    "absent": 2,
+    "late": 1,
+    "percentage": 85
   },
   "records": [
     {

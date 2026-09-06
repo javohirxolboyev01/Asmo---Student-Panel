@@ -12,11 +12,13 @@ export interface Homework {
 export interface HomeworkSummary {
   id: string;
   title: string;
-  status: "submitted" | "not_submitted" | "pending";
+  status?: "submitted" | "not_submitted" | "pending";
   deadline: string;
   isOverdue: boolean;
-  score: number;
+  score?: number;
   maxScore: number;
+  submittedCount?: number;
+  gradedCount?: number;
 }
 
 export interface HomeworkSubmission {

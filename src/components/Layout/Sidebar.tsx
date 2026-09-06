@@ -9,9 +9,16 @@ import {
   User,
   X,
   GraduationCap,
+  Users,
+  ShoppingBag,
+  CreditCard,
+  ClipboardCheck,
 } from "lucide-react";
-import { SIDEBAR_ITEMS } from "@/constans/route";
+import { SIDEBAR_ITEMS, TEACHER_SIDEBAR_ITEMS } from "@/constans/route";
 import { useAuthStore } from "@/stores/authStore";
+import { getAvatarUrl } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import { IconButton } from "@/components/ui";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -25,10 +32,18 @@ const iconMap = {
   Coins,
   Bell,
   User,
+  Users,
+  GraduationCap,
+  ShoppingBag,
+  CreditCard,
+  ClipboardCheck,
 };
 
 export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
+  const isTeacher = user?.role === "teacher" || user?.role === "admin";
+  const items = isTeacher ? TEACHER_SIDEBAR_ITEMS : SIDEBAR_ITEMS;
 
   return (
     <>
@@ -43,7 +58,7 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       <aside
         className={`
           fixed top-16 left-0 h-[calc(100vh-4rem)]
-          bg-white border-r border-gray-100 z-40
+          bg-white dark:bg-surface-dark border-r border-gray-100 dark:border-gray-800 z-40
           w-[260px] flex flex-col
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -51,36 +66,37 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       >
         {/* User info */}
         {user && (
-          <div className="px-4 py-4 border-b border-gray-100">
+          <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={user.avatar}
+                  src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
                   alt={user.firstName}
                   className="w-10 h-10 rounded-full"
                 />
                 <div>
-                  <p className="font-medium text-sm text-[#1A1D26]">
+                  <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
                     {user.firstName} {user.lastName}
                   </p>
-                  <p className="text-xs text-gray-400">Talaba</p>
+                  <p className="text-xs text-gray-400">{isTeacher ? t("nav.teacher") : t("nav.student")}</p>
                 </div>
               </div>
               {/* Close faqat mobilда ko'rinadi */}
-              <button
+              <IconButton
+                size="sm"
                 onClick={onClose}
-                className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                aria-label="Yopish"
+                className="md:hidden"
+                aria-label={t("nav.close")}
               >
-                <X className="w-4 h-4 text-gray-500" />
-              </button>
+                <X className="w-4 h-4" />
+              </IconButton>
             </div>
           </div>
         )}
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
-          {SIDEBAR_ITEMS.map((item) => {
+          {items.map((item) => {
             const Icon = iconMap[item.icon as keyof typeof iconMap];
             return (
               <NavLink
@@ -95,17 +111,17 @@ export const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 }}
               >
                 <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </NavLink>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-gray-100">
+        <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 mb-1">
-            <GraduationCap className="w-4 h-4 text-[#F59E0B]" />
-            <span className="text-sm font-semibold text-[#1A1D26]">
+            <GraduationCap className="w-4 h-4 text-warning" />
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
               Edu Center
             </span>
           </div>

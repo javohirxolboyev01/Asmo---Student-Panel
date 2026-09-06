@@ -12,6 +12,15 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      // Backend CORS sozlanmagan bo'lsa ham ishlashi uchun: brauzer /api'ga
+      // shu origin orqali murojaat qiladi, Vite esa uni server tomonda
+      // backendga (CORS'siz) yo'naltiradi.
+      "/api": {
+        target: "http://localhost:4001",
+        changeOrigin: true,
+      },
+    },
   },
   css: {
     postcss: "./postcss.config.js",

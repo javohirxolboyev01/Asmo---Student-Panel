@@ -7,6 +7,7 @@ interface GroupState {
   groups: Group[];
   selectedGroup: any;
   lessons: any[];
+  students: any[] | undefined;
   isLoading: boolean;
   error: string | null;
   fetchGroups: () => Promise<void>;
@@ -18,6 +19,7 @@ export const useGroupStore = create<GroupState>((set) => ({
   groups: [],
   selectedGroup: null,
   lessons: [],
+  students: undefined,
   isLoading: false,
   error: null,
 
@@ -33,11 +35,11 @@ export const useGroupStore = create<GroupState>((set) => ({
     }
   },
 
-  fetchGroupDetail: async (_id: string) => {
+  fetchGroupDetail: async (id: string) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await groupService.getGroupDetail();
-      set({ selectedGroup: data.group, lessons: data.lessons });
+      const data = await groupService.getGroupDetail(id);
+      set({ selectedGroup: data.group, lessons: data.lessons, students: data.students });
     } catch (error) {
       set({ error: "Failed to load group details" });
     } finally {
@@ -46,6 +48,6 @@ export const useGroupStore = create<GroupState>((set) => ({
   },
 
   clearSelectedGroup: () => {
-    set({ selectedGroup: null, lessons: [] });
+    set({ selectedGroup: null, lessons: [], students: undefined });
   },
 }));

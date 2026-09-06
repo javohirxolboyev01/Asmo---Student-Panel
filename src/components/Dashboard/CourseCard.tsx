@@ -1,6 +1,7 @@
 // src/components/Dashboard/CourseCard.tsx
 import { Calendar, Users, Award } from "lucide-react";
 import { formatDate, formatTime } from "@/utilist/formatData";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CourseCardProps {
   groupName: string;
@@ -28,12 +29,13 @@ export const CourseCard = ({
   nextLessonDate,
   teacherName,
 }: CourseCardProps) => {
+  const { t } = useTranslation();
   return (
     <div className="card">
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-text-secondary">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 dark:bg-white/10 text-text-secondary">
               {groupName}
             </span>
             <span
@@ -53,31 +55,36 @@ export const CourseCard = ({
       <div className="space-y-4">
         <div>
           <div className="flex justify-between text-sm mb-1.5">
-            <span className="text-text-secondary">Progress</span>
+            <span className="text-text-secondary">{t("dashboardWidgets.progress")}</span>
             <span className="font-medium text-text-primary">{progress}%</span>
           </div>
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary-500 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
           <p className="text-xs text-text-secondary mt-1.5">
-            {completedLessons}/{totalLessons} dars tugallangan
+            {t("dashboardWidgets.lessonsCompletedSuffix", {
+              completed: completedLessons,
+              total: totalLessons,
+            })}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-100">
+        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center gap-2 text-sm text-text-secondary">
             <Calendar className="w-4 h-4" />
             <span>
-              Keyingi dars: {formatDate(nextLessonDate)},{" "}
-              {formatTime(nextLessonDate)}
+              {t("dashboardWidgets.nextLesson", {
+                date: formatDate(nextLessonDate),
+                time: formatTime(nextLessonDate),
+              })}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-text-secondary">
             <Users className="w-4 h-4" />
-            <span>O'qituvchi: {teacherName}</span>
+            <span>{t("dashboardWidgets.teacher", { name: teacherName })}</span>
           </div>
         </div>
       </div>

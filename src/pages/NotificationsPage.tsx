@@ -1,12 +1,31 @@
 // src/pages/NotificationsPage.tsx
+import { useEffect } from "react";
 import { useNotificationStore } from "@/stores/notificationStore";
 import { Bell, Check, Clock } from "lucide-react";
 import { getRelativeTime } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
+import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui";
 
 export const NotificationsPage = () => {
-  const { notifications, markAsRead, markAllAsRead } = useNotificationStore();
+  const { t } = useTranslation();
+  const { notifications, isLoading, fetchNotifications, markAsRead, markAllAsRead } =
+    useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  if (isLoading && notifications.length === 0) {
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <SkeletonHeader />
+        <SkeletonCardGrid count={4} cols="grid-cols-1 lg:grid-cols-2" />
+      </div>
+    );
+  }
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -16,6 +35,8 @@ export const NotificationsPage = () => {
         return "📅";
       case "grade":
         return "⭐";
+      case "submission":
+        return "📩";
       default:
         return "🔔";
     }
@@ -25,45 +46,46 @@ export const NotificationsPage = () => {
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[#1A1D26]">
-            Xabarlar
+          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
+            {t("notifications.title")}
           </h1>
           <p className="text-gray-500 text-sm md:text-base">
             {unreadCount > 0
-              ? `${unreadCount} ta o'qilmagan`
-              : "Barchasi o'qilgan"}
+              ? t("notifications.unreadCount", { count: unreadCount })
+              : t("notifications.allRead")}
           </p>
         </div>
         {unreadCount > 0 && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={markAllAsRead}
-            className="text-sm text-[#2D6BFF] font-medium flex items-center gap-1"
+            leftIcon={<Check className="w-4 h-4" />}
           >
-            <Check className="w-4 h-4" />
-            Hammasini o'qish
-          </button>
+            {t("notifications.markAllRead")}
+          </Button>
         )}
       </div>
 
       {notifications.length === 0 ? (
         <div className="card p-12 text-center">
           <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-[#1A1D26] mb-1">
-            Xabarlar yo'q
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
+            {t("notifications.empty")}
           </h3>
           <p className="text-gray-500 text-sm">
-            Hali hech qanday xabar kelmagan
+            {t("notifications.emptyDesc")}
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {notifications.map((notification) => (
             <div
               key={notification.id}
               onClick={() => markAsRead(notification.id)}
               className={cn(
                 "card cursor-pointer hover:shadow-card-hover transition-all duration-200",
-                !notification.isRead && "border-l-4 border-l-[#2D6BFF]",
+                !notification.isRead && "border-l-4 border-l-primary-500",
               )}
             >
               <div className="p-4 md:p-5">
@@ -74,7 +96,7 @@ export const NotificationsPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <h4 className="font-semibold text-[#1A1D26]">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-100">
                           {notification.title}
                         </h4>
                         <p className="text-sm text-gray-500 mt-0.5">
@@ -82,7 +104,7 @@ export const NotificationsPage = () => {
                         </p>
                       </div>
                       {!notification.isRead && (
-                        <span className="w-2 h-2 bg-[#2D6BFF] rounded-full flex-shrink-0 mt-1.5" />
+                        <span className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-1.5" />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">

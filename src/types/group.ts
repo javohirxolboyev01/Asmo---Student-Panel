@@ -14,9 +14,9 @@ export interface Teacher {
 export interface Group {
   id: string;
   name: string;
-  direction: Direction;
-  teacher: Teacher;
-  studentCount: number;
+  direction?: Direction;
+  teacher?: Teacher;
+  studentCount?: number;
   status: "active" | "completed";
 }
 

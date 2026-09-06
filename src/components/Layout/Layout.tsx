@@ -5,11 +5,26 @@ import { BottomNav } from "./BottomNav";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { useNotificationStore } from "@/stores/notificationStore";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
+
+const NOTIFICATION_POLL_INTERVAL_MS = 30_000;
 
 export const Layout = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuthStore();
+  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
+
+  useTrackNavigationHistory();
+
+  useEffect(() => {
+    if (!user) return;
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, NOTIFICATION_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [user, fetchNotifications]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -23,7 +38,7 @@ export const Layout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-background-dark">
       <Header user={user} />
 
       {/* Desktop: sidebar + content yan-yonma */}
@@ -39,7 +54,9 @@ export const Layout = () => {
           `}
         >
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 md:py-6">
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </div>
         </main>
       </div>

@@ -49,7 +49,7 @@ export const useAuth = () => {
     // Error clearing would need to be implemented in authStore
   };
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('accessToken');
 
   return {
     user,

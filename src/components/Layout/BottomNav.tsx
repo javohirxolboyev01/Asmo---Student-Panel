@@ -6,25 +6,43 @@ import {
   Coins,
   CreditCard,
   ShoppingBag,
+  Users,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAuthStore } from "@/stores/authStore";
 
-const navItems = [
-  { path: "/", icon: LayoutDashboard, label: "Bosh" },
-  { path: "/groups", icon: BookOpen, label: "Guruh" },
-  { path: "/attendance", icon: Calendar, label: "Davomat" },
-  { path: "/shop", icon: ShoppingBag, label: "Do'kon" },
-  { path: "/coins", icon: Coins, label: "Coin" },
-  { path: "/payments", icon: CreditCard, label: "To'lov" },
+const studentNavItems = [
+  { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
+  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
+  { path: "/attendance", icon: Calendar, labelKey: "nav.attendance" },
+  { path: "/shop", icon: ShoppingBag, labelKey: "nav.shop" },
+  { path: "/coins", icon: Coins, labelKey: "nav.coins" },
+  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
+];
+
+const teacherNavItems = [
+  { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
+  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
+  { path: "/grading", icon: ClipboardCheck, labelKey: "nav.grading" },
+  { path: "/students", icon: Users, labelKey: "nav.students" },
+  { path: "/coins", icon: Coins, labelKey: "nav.coins" },
+  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
 ];
 
 export const BottomNav = () => {
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+  const isTeacher = user?.role === "teacher" || user?.role === "admin";
+  const navItems = isTeacher ? teacherNavItems : studentNavItems;
+
   return (
     <>
       <nav className="tb-nav" aria-label="Asosiy navigatsiya">
         <div className="tb-inner">
-          {navItems.map(({ path, icon: Icon, label }) => (
+          {navItems.map(({ path, icon: Icon, labelKey }) => (
             <NavLink
               key={path}
               to={path}
@@ -45,7 +63,7 @@ export const BottomNav = () => {
                   </span>
 
                   {/* Label */}
-                  <span className="tb-label">{label}</span>
+                  <span className="tb-label">{t(labelKey)}</span>
                 </>
               )}
             </NavLink>
@@ -54,6 +72,19 @@ export const BottomNav = () => {
       </nav>
 
       <style>{`
+        .dark .tb-nav {
+          background: rgba(18, 20, 27, 0.94);
+          border-top-color: rgba(255, 255, 255, 0.08);
+        }
+        .dark .tb-badge {
+          border-color: rgba(18, 20, 27, 0.94);
+        }
+        .dark .tb-icon {
+          color: #6b7280;
+        }
+        .dark .tb-label {
+          color: #6b7280;
+        }
         /* ── iOS Tab Bar: pastga yopishadi ── */
         .tb-nav {
           position: fixed;

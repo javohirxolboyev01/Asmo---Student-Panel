@@ -2,7 +2,10 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useState } from "react";
+import { AppShellSkeleton } from "@/components/common/Skeleton";
 
+// Bootstraps the session once (checkAuth) and gates the whole app on it.
+// Use once, at the top of the route tree.
 export const ProtectedRoute = () => {
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
   const [isChecking, setIsChecking] = useState(true);
@@ -16,15 +19,24 @@ export const ProtectedRoute = () => {
   }, [checkAuth]);
 
   if (isLoading || isChecking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#2D6BFF] border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-500">Yuklanmoqda...</p>
-        </div>
-      </div>
-    );
+    return <AppShellSkeleton />;
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
+
+interface RoleRouteProps {
+  roles: string[];
+}
+
+// Gates a nested subtree by role using the session ProtectedRoute already
+// established — no checkAuth call of its own, so it can't race/loop with it.
+export const RoleRoute = ({ roles }: RoleRouteProps) => {
+  const { user } = useAuthStore();
+
+  if (!user || !roles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };

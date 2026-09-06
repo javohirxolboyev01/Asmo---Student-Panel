@@ -1,0 +1,90 @@
+{
+  "products": [
+    {
+      "id": "prod-001",
+      "name": "IELTS Speaking Mock Test",
+      "description": "O'qituvchi bilan 1 soatlik shaxsiy IELTS Speaking mock imtihoni",
+      "price": 60,
+      "category": "Xizmatlar",
+      "image": "🎤",
+      "rating": 4.9,
+      "reviews": 34,
+      "isPopular": true
+    },
+    {
+      "id": "prod-002",
+      "name": "Qo'shimcha Grammar kursi",
+      "description": "4 haftalik intensiv grammatika kursi, kichik guruhlarda",
+      "price": 120,
+      "originalPrice": 150,
+      "category": "Kurslar",
+      "image": "📘",
+      "rating": 4.7,
+      "reviews": 21
+    },
+    {
+      "id": "prod-003",
+      "name": "Asmo Learning krujkasi",
+      "description": "Markazning rasmiy logotipli keramik krujka",
+      "price": 25,
+      "category": "Mahsulotlar",
+      "image": "☕",
+      "rating": 4.5,
+      "reviews": 58,
+      "isNew": true
+    },
+    {
+      "id": "prod-004",
+      "name": "Asmo Learning Futbolka",
+      "description": "100% paxta, markaz logotipi bilan",
+      "price": 40,
+      "category": "Mahsulotlar",
+      "image": "👕",
+      "rating": 4.6,
+      "reviews": 42
+    },
+    {
+      "id": "prod-005",
+      "name": "Yozgi lager - IELTS Bootcamp",
+      "description": "5 kunlik intensiv IELTS tayyorlov lageri",
+      "price": 300,
+      "originalPrice": 380,
+      "category": "Kurslar",
+      "image": "🏕️",
+      "rating": 5,
+      "reviews": 12,
+      "isLimited": true
+    },
+    {
+      "id": "prod-006",
+      "name": "Bitta darsni qayta ko'rish",
+      "description": "O'tkazib yuborilgan darsni yozuvda tomosha qilish huquqi",
+      "price": 15,
+      "category": "Xizmatlar",
+      "image": "🎬",
+      "rating": 4.4,
+      "reviews": 67
+    },
+    {
+      "id": "prod-007",
+      "name": "Keyingi oy uchun 10% chegirma",
+      "description": "Kelasi oylik to'lovga 10% chegirma kuponi",
+      "price": 80,
+      "category": "Chegirmalar",
+      "image": "🎟️",
+      "rating": 4.8,
+      "reviews": 29,
+      "isPopular": true
+    },
+    {
+      "id": "prod-008",
+      "name": "Yozuv daftari va qalam to'plami",
+      "description": "Asmo Learning brendli daftar va qalamlar to'plami",
+      "price": 18,
+      "category": "Mahsulotlar",
+      "image": "📓",
+      "rating": 4.3,
+      "reviews": 15
+    }
+  ]
+}

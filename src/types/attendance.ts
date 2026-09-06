@@ -8,15 +8,13 @@ export interface AttendanceRecord {
   markedAt: string;
 }
 
-export interface AttendanceSummary {
-  totalLessons: number;
+export interface AttendanceStats {
+  total: number;
   present: number;
-  absent: number;
-  late: number;
   percentage: number;
 }
 
 export interface AttendanceData {
-  summary: AttendanceSummary;
+  stats: AttendanceStats;
   records: AttendanceRecord[];
 }

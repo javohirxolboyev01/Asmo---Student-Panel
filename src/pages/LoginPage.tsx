@@ -1,8 +1,9 @@
 // src/pages/LoginPage.tsx
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   GraduationCap,
   Mail,
@@ -11,13 +12,20 @@ import {
   EyeOff,
   ArrowRight,
   Sparkles,
+  User,
+  Users,
 } from "lucide-react";
+import { Input, IconButton } from "@/components/ui";
+
+type AuthRole = "student" | "teacher";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading, error } = useAuthStore();
-  const [email, setEmail] = useState("ali@student.uz");
-  const [password, setPassword] = useState("password123");
+  const { login, logout, isLoading, error } = useAuthStore();
+  const { t } = useTranslation();
+  const [role, setRole] = useState<AuthRole>("student");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -26,121 +34,137 @@ export const LoginPage = () => {
     e.preventDefault();
     setLoginError(null);
     try {
-      await login(email, password);
+      await login(email.trim().toLowerCase(), password);
+      const loggedInUser = useAuthStore.getState().user;
+      if (loggedInUser && loggedInUser.role !== role) {
+        logout();
+        setLoginError(t("auth.roleMismatch"));
+        return;
+      }
       navigate("/");
     } catch (err) {
-      setLoginError("Email yoki parol noto'g'ri");
+      setLoginError(t("auth.invalidCredentials"));
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-white to-[#EBF0FF] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#F5F7FA] via-white to-[#EBF0FF] dark:from-background-dark dark:via-background-dark dark:to-[#111522] flex items-center justify-center px-4 relative overflow-hidden">
       {/* Decorative background elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#F59E0B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#F59E0B]/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#F59E0B]/[0.02] rounded-full blur-2xl" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-warning/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-warning/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-warning/[0.02] rounded-full blur-2xl" />
 
       {/* Floating particles */}
-      <div className="absolute top-10 left-10 w-2 h-2 bg-[#F59E0B]/30 rounded-full animate-pulse" />
+      <div className="absolute top-10 left-10 w-2 h-2 bg-warning/30 rounded-full animate-pulse" />
       <div
-        className="absolute top-20 right-20 w-3 h-3 bg-[#F59E0B]/30 rounded-full animate-pulse"
+        className="absolute top-20 right-20 w-3 h-3 bg-warning/30 rounded-full animate-pulse"
         style={{ animationDelay: "1s" }}
       />
       <div
-        className="absolute bottom-20 left-20 w-2 h-2 bg-[#F59E0B]/30 rounded-full animate-pulse"
+        className="absolute bottom-20 left-20 w-2 h-2 bg-warning/30 rounded-full animate-pulse"
         style={{ animationDelay: "2s" }}
       />
       <div
-        className="absolute bottom-10 right-10 w-3 h-3 bg-[#F59E0B]/30 rounded-full animate-pulse"
+        className="absolute bottom-10 right-10 w-3 h-3 bg-warning/30 rounded-full animate-pulse"
         style={{ animationDelay: "0.5s" }}
       />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl shadow-[#F59E0B]/10 border border-white/50 p-6 md:p-8">
+        <div className="bg-white/80 dark:bg-card-dark/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-warning/10 border border-white/50 dark:border-white/10 p-6 md:p-8">
           {/* Logo with Text */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-[#F59E0B] to-[#D97706] rounded-2xl flex items-center justify-center shadow-lg shadow-[#F59E0B]/30 animate-float">
+                <div className="w-14 h-14 bg-gradient-to-br from-warning to-[#D97706] rounded-2xl flex items-center justify-center shadow-lg shadow-warning/30 animate-float">
                   <GraduationCap className="w-8 h-8 text-white" />
                   <Sparkles className="w-3 h-3 text-white absolute -top-1 -right-1 animate-pulse" />
                 </div>
               </div>
               <div className="text-left">
                 <h1 className="text-3xl font-bold tracking-tight">
-                  <span className="text-[#1A1D26]">Asmo</span>
-                  <span className="text-[#F59E0B]"> Learning</span>
+                  <span className="text-gray-800 dark:text-gray-100">Asmo</span>
+                  <span className="text-warning"> Learning</span>
                 </h1>
                 <p className="text-xs text-gray-400 font-medium tracking-wider uppercase">
-                  Education Center
+                  {t("auth.educationCenter")}
                 </p>
               </div>
             </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Student paneliga xush kelibsiz
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+              {t("auth.welcomeBack")}
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-[#1A1D26] mb-1.5">
-                Email manzil
-              </label>
-              <div
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setRole("student")}
                 className={cn(
-                  "relative transition-all duration-300",
-                  isFocused && "scale-[1.01]",
+                  "flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-sm font-semibold transition-all",
+                  role === "student"
+                    ? "border-warning bg-warning/10 text-warning"
+                    : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400",
                 )}
               >
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  className="w-full pl-10 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#F59E0B] focus:ring-4 focus:ring-[#F59E0B]/10 outline-none transition-all bg-gray-50/50 text-[#1A1D26] placeholder:text-gray-400"
-                  placeholder="Email manzilingiz"
-                  required
-                />
-              </div>
+                <User className="w-4 h-4" />
+                {t("auth.roleStudent")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("teacher")}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-sm font-semibold transition-all",
+                  role === "teacher"
+                    ? "border-warning bg-warning/10 text-warning"
+                    : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400",
+                )}
+              >
+                <Users className="w-4 h-4" />
+                {t("auth.roleTeacher")}
+              </button>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-[#1A1D26] mb-1.5">
-                Parol
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3.5 rounded-2xl border-2 border-gray-200 focus:border-[#F59E0B] focus:ring-4 focus:ring-[#F59E0B]/10 outline-none transition-all bg-gray-50/50 text-[#1A1D26] placeholder:text-gray-400"
-                  placeholder="Parolingiz"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#1A1D26] transition-colors p-1 rounded-lg hover:bg-gray-100"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
+            <div className={cn("transition-all duration-300", isFocused && "scale-[1.01]")}>
+              <Input
+                type="email"
+                label={t("auth.email")}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+                leftIcon={<Mail className="w-4 h-4" />}
+                uiSize="lg"
+                className="rounded-2xl border-2 bg-gray-50/50 focus:border-warning focus:ring-4 focus:ring-warning/10"
+                placeholder={t("auth.emailPlaceholder")}
+                required
+              />
             </div>
+
+            <Input
+              type={showPassword ? "text" : "password"}
+              label={t("auth.password")}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              leftIcon={<Lock className="w-4 h-4" />}
+              uiSize="lg"
+              className="rounded-2xl border-2 bg-gray-50/50 focus:border-warning focus:ring-4 focus:ring-warning/10"
+              placeholder={t("auth.passwordPlaceholder")}
+              required
+              rightSlot={
+                <IconButton
+                  type="button"
+                  size="sm"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </IconButton>
+              }
+            />
 
             {(loginError || error) && (
-              <div className="text-sm text-[#C62828] text-center bg-[#FFEBEE] p-3 rounded-2xl border border-red-200 animate-shake">
+              <div className="text-sm text-[#C62828] text-center bg-[#FFEBEE] dark:bg-[#C62828]/15 p-3 rounded-2xl border border-red-200 dark:border-red-900/40 animate-shake">
                 {loginError || error}
               </div>
             )}
@@ -148,43 +172,36 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white py-3.5 rounded-2xl font-semibold text-base transition-all duration-300 hover:shadow-xl hover:shadow-[#F59E0B]/30 hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+              className="w-full bg-gradient-to-r from-warning to-[#D97706] text-white py-3.5 rounded-2xl font-semibold text-base transition-all duration-300 hover:shadow-xl hover:shadow-warning/30 hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
             >
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Kirish...
+                  {t("auth.loggingIn")}
                 </>
               ) : (
                 <>
-                  Kirish
+                  {t("auth.login")}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-[#F59E0B]/5 to-[#D97706]/5 rounded-2xl border border-[#F59E0B]/20">
-            <p className="text-center text-xs text-gray-400">
-              Demo hisob ma'lumotlari
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 mt-1.5 text-xs">
-              <span className="text-gray-500">
-                <span className="font-medium text-[#1A1D26]">Email:</span>{" "}
-                ali@student.uz
-              </span>
-              <span className="text-gray-300 hidden xs:inline">|</span>
-              <span className="text-gray-500">
-                <span className="font-medium text-[#1A1D26]">Parol:</span>{" "}
-                password123
-              </span>
-            </div>
-          </div>
+          {/* Register link */}
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+            {t("auth.noAccount")}{" "}
+            <Link
+              to="/register"
+              className="text-warning font-semibold hover:underline"
+            >
+              {t("auth.register")}
+            </Link>
+          </p>
 
           {/* Footer */}
           <p className="text-center text-xs text-gray-400 mt-4">
-            © 2026 Asmo Learning. Barcha huquqlar himoyalangan.
+            {t("auth.footer")}
           </p>
         </div>
       </div>

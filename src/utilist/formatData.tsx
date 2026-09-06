@@ -2,22 +2,28 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
 
-export const formatDate = (date: string | Date): string => {
+type DateInput = string | Date | null | undefined;
+
+export const formatDate = (date: DateInput): string => {
+  if (!date) return "-";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return format(dateObj, "dd.MM.yyyy", { locale: uz });
 };
 
-export const formatDateTime = (date: string | Date): string => {
+export const formatDateTime = (date: DateInput): string => {
+  if (!date) return "-";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return format(dateObj, "dd.MM.yyyy, HH:mm", { locale: uz });
 };
 
-export const formatTime = (date: string | Date): string => {
+export const formatTime = (date: DateInput): string => {
+  if (!date) return "-";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return format(dateObj, "HH:mm", { locale: uz });
 };
 
-export const getRelativeTime = (date: string | Date): string => {
+export const getRelativeTime = (date: DateInput): string => {
+  if (!date) return "-";
   const dateObj = typeof date === "string" ? parseISO(date) : date;
   return formatDistanceToNow(dateObj, { addSuffix: true, locale: uz });
 };
