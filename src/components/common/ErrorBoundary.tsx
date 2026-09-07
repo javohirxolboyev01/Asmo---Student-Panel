@@ -1,5 +1,6 @@
 // src/components/Common/ErrorBoundary.tsx
 import { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui";
 
 interface Props {
@@ -30,10 +31,13 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center py-12 px-4">
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-text-primary mb-2">
+            <div className="w-14 h-14 rounded-full bg-warning/10 dark:bg-warning/15 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-7 h-7 text-warning" />
+            </div>
+            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">
               Xatolik yuz berdi
             </h2>
-            <p className="text-text-secondary mb-6">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               Kechirasiz, kutilmagan xatolik yuz berdi. Iltimos, sahifani qayta
               yuklang.
             </p>

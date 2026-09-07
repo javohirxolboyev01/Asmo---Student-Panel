@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
-import { User, Phone, Settings, LogOut, ChevronRight, Pencil } from "lucide-react";
+import { User, Phone, Mail, Settings, LogOut, ChevronRight, Pencil } from "lucide-react";
 import { getAvatarUrl } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -55,105 +55,105 @@ export const ProfilePage = () => {
         </p>
       </div>
 
-      {/* Profile Card */}
+      {/* Profile header — avatar, name, role */}
       <div className="card">
-        <div className="p-5 md:p-6">
-          <div className="flex flex-col items-center text-center">
-            <button
-              type="button"
-              onClick={() => setIsAvatarPickerOpen(true)}
-              className="relative w-24 h-24 rounded-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
-              aria-label={t("profile.chooseAvatar")}
-            >
-              <img
-                src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
-                alt={user.firstName}
-                className="w-24 h-24 rounded-full border-4 border-primary-500/20"
-              />
-              <span className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-colors">
-                <Pencil className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </span>
-              <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-ink text-white flex items-center justify-center border-2 border-white dark:border-card-dark">
-                <Pencil className="w-3.5 h-3.5" />
-              </span>
-            </button>
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-3">
-              {user.firstName} {user.lastName}
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {isTeacher ? t("profile.teacher") : t("profile.student")}
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 mt-3 text-sm text-gray-500 dark:text-gray-400">
-              {user.phone && (
-                <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-full">
-                  <Phone className="w-4 h-4" />
-                  <span>{user.phone}</span>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="p-6 md:p-8 flex flex-col items-center text-center">
+          <button
+            type="button"
+            onClick={() => setIsAvatarPickerOpen(true)}
+            className="relative w-24 h-24 rounded-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-warning focus-visible:ring-offset-2"
+            aria-label={t("profile.chooseAvatar")}
+          >
+            <img
+              src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
+              alt={user.firstName}
+              className="w-24 h-24 rounded-full border-4 border-warning/20"
+            />
+            <span className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-colors">
+              <Pencil className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            </span>
+            <span className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-warning text-white flex items-center justify-center border-2 border-white dark:border-card-dark">
+              <Pencil className="w-3.5 h-3.5" />
+            </span>
+          </button>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-3">
+            {user.firstName} {user.lastName}
+          </h2>
+          <p className="text-warning text-sm font-medium mt-0.5">
+            {isTeacher ? t("profile.teacher") : t("profile.student")}
+          </p>
         </div>
       </div>
 
-      {/* Menu Items */}
-      <div className="space-y-2">
-        <button
-          onClick={() => navigate(ROUTES.PROFILE_EDIT)}
-          className="card w-full text-left hover:shadow-card-hover transition-shadow"
-        >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#E3F2FD] dark:bg-[#0D47A1]/20 rounded-xl flex items-center justify-center">
-                <User className="w-5 h-5 text-[#0D47A1] dark:text-[#5C9CFF]" />
+      {/* Info — Telegram-style grouped rows: caption above, value below */}
+      {(user.phone || user.email) && (
+        <div className="card divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+          {user.phone && (
+            <div className="p-4 flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-full bg-[#34C759] flex items-center justify-center flex-shrink-0">
+                <Phone className="w-4 h-4 text-white" />
               </div>
-              <div>
-                <p className="font-medium text-gray-800 dark:text-gray-100">
-                  {t("profile.editInfo")}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {t("profile.editInfoDesc")}
-                </p>
+              <div className="min-w-0 text-left">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t("profile.phoneLabel")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{user.phone}</p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+          )}
+          {user.email && (
+            <div className="p-4 flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-full bg-[#2196F3] flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4 text-white" />
+              </div>
+              <div className="min-w-0 text-left">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t("profile.emailLabel")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{user.email}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Actions — one grouped list, Telegram/iOS Settings style */}
+      <div className="card divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+        <button
+          onClick={() => navigate(ROUTES.PROFILE_EDIT)}
+          className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#0A84FF] flex items-center justify-center flex-shrink-0">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+              {t("profile.editInfo")}
+            </p>
           </div>
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
         </button>
 
         <button
           onClick={() => navigate(ROUTES.SETTINGS)}
-          className="card w-full text-left hover:shadow-card-hover transition-shadow"
+          className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 active:bg-gray-100 dark:active:bg-white/10 transition-colors"
         >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#F3E5F5] dark:bg-[#6A1B9A]/20 rounded-xl flex items-center justify-center">
-                <Settings className="w-5 h-5 text-[#6A1B9A] dark:text-[#C87AE6]" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-800 dark:text-gray-100">{t("profile.settings")}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {t("profile.settingsDesc")}
-                </p>
-              </div>
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#8E8E93] flex items-center justify-center flex-shrink-0">
+              <Settings className="w-4 h-4 text-white" />
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+              {t("profile.settings")}
+            </p>
           </div>
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
         </button>
 
         <button
           onClick={handleLogout}
-          className="card w-full text-left hover:shadow-card-hover transition-shadow border-red-100 dark:border-red-900/40"
+          className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/15 transition-colors"
         >
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#FFEBEE] dark:bg-[#C62828]/20 rounded-xl flex items-center justify-center">
-                <LogOut className="w-5 h-5 text-[#C62828]" />
-              </div>
-              <div>
-                <p className="font-medium text-[#C62828]">{t("profile.logout")}</p>
-                <p className="text-xs text-[#C62828]/70">{t("profile.logoutDesc")}</p>
-              </div>
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#FF3B30] flex items-center justify-center flex-shrink-0">
+              <LogOut className="w-4 h-4 text-white" />
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
+            <p className="text-sm font-medium text-[#FF3B30]">{t("profile.logout")}</p>
           </div>
         </button>
       </div>

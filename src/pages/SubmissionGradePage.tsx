@@ -107,7 +107,7 @@ export const SubmissionGradePage = () => {
 
         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-1">
           <p className="font-medium text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
-            <FileText className="w-4 h-4 text-primary-500" />
+            <FileText className="w-4 h-4 text-warning" />
             {homework.title}
           </p>
           <p className="text-xs text-gray-500 flex items-center gap-1.5">
@@ -131,7 +131,7 @@ export const SubmissionGradePage = () => {
             href={submission.attachmentUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary-500 hover:underline"
+            className="inline-flex items-center gap-1.5 mt-2 text-sm text-warning hover:underline"
           >
             <Paperclip className="w-3.5 h-3.5" />
             {t("lessonDetail.attachmentLabel")}

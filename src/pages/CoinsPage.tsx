@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { coinService } from "@/services/coinService";
 import { teacherService } from "@/services/teacherService";
 import { studentService } from "@/services/studentService";
-import { Coins, TrendingUp, TrendingDown, History } from "lucide-react";
+import { Coins, TrendingUp, TrendingDown } from "lucide-react";
 
 import { formatDate } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
@@ -250,8 +250,7 @@ const StudentCoinsView = () => {
       {/* History */}
       <div className="card">
         <div className="p-5">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <History className="w-4 h-4 text-primary-500" />
+          <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">
             {t("coins.history")}
           </h3>
           <div className="space-y-3">

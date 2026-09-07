@@ -39,7 +39,7 @@ export const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-background-dark">
-      <Header user={user} />
+      <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
 
       {/* Desktop: sidebar + content yan-yonma */}
       <div className="flex pt-16">

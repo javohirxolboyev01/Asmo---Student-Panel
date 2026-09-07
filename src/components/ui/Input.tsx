@@ -39,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={cn(
               "w-full bg-gray-50 dark:bg-white/5 rounded-xl border outline-none transition-all text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400",
-              "border-gray-200 dark:border-gray-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20",
+              "border-gray-200 dark:border-gray-700 focus:border-warning focus:ring-2 focus:ring-warning/20",
               error && "border-red-400 focus:border-red-400 focus:ring-red-400/20",
               uiSize === "lg" ? "py-3.5" : "py-2.5",
               leftIcon ? "pl-10 pr-4" : "px-4",

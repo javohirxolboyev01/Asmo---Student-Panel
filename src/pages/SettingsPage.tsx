@@ -85,7 +85,7 @@ export const SettingsPage = () => {
       <div className="card">
         <div className="card-header">
           <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-primary-500" />
+            <Mail className="w-4 h-4 text-warning" />
             <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
               {t("settings.accountSection")}
             </span>
@@ -125,7 +125,7 @@ export const SettingsPage = () => {
       <div className="card">
         <div className="card-header">
           <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-primary-500" />
+            <Lock className="w-4 h-4 text-warning" />
             <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
               {t("settings.passwordSection")}
             </span>
@@ -179,7 +179,7 @@ export const SettingsPage = () => {
       <div className="card">
         <div className="card-header">
           <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary-500" />
+            <Globe className="w-4 h-4 text-warning" />
             <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
               {t("settings.languageSection")}
             </span>
@@ -193,11 +193,10 @@ export const SettingsPage = () => {
               className={cn(
                 "flex items-center gap-1.5 justify-center px-3 py-2 text-xs rounded-xl border-2 font-medium transition-all sm:gap-2 sm:px-4 sm:py-3 sm:text-sm sm:rounded-2xl",
                 language === lang.code
-                  ? "border-primary-500 bg-primary-500/10 text-primary-500"
-                  : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-500/50",
+                  ? "border-warning bg-warning/10 text-warning"
+                  : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
               )}
             >
-              <span>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
@@ -209,9 +208,9 @@ export const SettingsPage = () => {
         <div className="card-header">
           <div className="flex items-center gap-2">
             {theme === "dark" ? (
-              <Moon className="w-4 h-4 text-primary-500" />
+              <Moon className="w-4 h-4 text-warning" />
             ) : (
-              <Sun className="w-4 h-4 text-primary-500" />
+              <Sun className="w-4 h-4 text-warning" />
             )}
             <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
               {t("settings.themeSection")}
@@ -224,8 +223,8 @@ export const SettingsPage = () => {
             className={cn(
               "flex items-center gap-2 justify-center px-4 py-3 rounded-2xl border-2 text-sm font-medium transition-all",
               theme === "light"
-                ? "border-primary-500 bg-primary-500/10 text-primary-500"
-                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-500/50",
+                ? "border-warning bg-warning/10 text-warning"
+                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
             )}
           >
             <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -236,8 +235,8 @@ export const SettingsPage = () => {
             className={cn(
               "flex items-center gap-2 justify-center px-4 py-3 rounded-2xl border-2 text-sm font-medium transition-all",
               theme === "dark"
-                ? "border-primary-500 bg-primary-500/10 text-primary-500"
-                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary-500/50",
+                ? "border-warning bg-warning/10 text-warning"
+                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
             )}
           >
             <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

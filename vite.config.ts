@@ -17,7 +17,7 @@ export default defineConfig({
       // shu origin orqali murojaat qiladi, Vite esa uni server tomonda
       // backendga (CORS'siz) yo'naltiradi.
       "/api": {
-        target: "http://localhost:4001",
+        target: "http://localhost:4000",
         changeOrigin: true,
       },
     },

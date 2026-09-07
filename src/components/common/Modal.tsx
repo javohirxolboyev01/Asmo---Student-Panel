@@ -16,9 +16,9 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 animate-overlay-in" onClick={onClose} />
       <div
-        className={`relative w-full ${maxWidth} bg-white dark:bg-card-dark rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto`}
+        className={`relative w-full ${maxWidth} bg-white dark:bg-card-dark rounded-2xl shadow-xl max-h-[90vh] overflow-y-auto animate-modal-in`}
       >
         <div className="sticky top-0 bg-white dark:bg-card-dark flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 rounded-t-2xl">
           <h3 className="font-semibold text-gray-800 dark:text-gray-100">{title}</h3>

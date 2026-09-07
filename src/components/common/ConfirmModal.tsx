@@ -32,16 +32,18 @@ export const ConfirmModal = ({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
-      <div className="relative w-full max-w-sm bg-white dark:bg-card-dark rounded-2xl shadow-xl p-5">
+      <div className="absolute inset-0 bg-black/50 animate-overlay-in" onClick={onCancel} />
+      <div className="relative w-full max-w-sm bg-white dark:bg-card-dark rounded-2xl shadow-xl p-5 animate-modal-in">
         <div className="flex flex-col items-center text-center gap-3">
           <div
             className={cn(
               "w-12 h-12 rounded-full flex items-center justify-center",
-              tone === "danger" ? "bg-[#FFEBEE] dark:bg-[#C62828]/15" : "bg-primary-50 dark:bg-primary-500/15",
+              tone === "danger" ? "bg-[#FFEBEE] dark:bg-[#C62828]/15" : "bg-warning/10 dark:bg-warning/15",
             )}
           >
-            <AlertTriangle className={cn("w-6 h-6", tone === "danger" ? "text-red-500" : "text-primary-500")} />
+            <AlertTriangle
+              className={cn("w-6 h-6", tone === "danger" ? "text-[#C62828] dark:text-[#EF5350]" : "text-warning")}
+            />
           </div>
           <h3 className="font-semibold text-gray-800 dark:text-gray-100">
             {title ?? t("common.deleteTitle")}

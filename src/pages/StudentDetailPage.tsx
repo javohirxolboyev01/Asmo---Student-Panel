@@ -166,7 +166,7 @@ export const StudentDetailPage = () => {
           <img
             src={getAvatarUrl(student.avatar, `${student.firstName} ${student.lastName}`)}
             alt={student.firstName}
-            className="w-20 h-20 rounded-full border-4 border-primary-500/20"
+            className="w-20 h-20 rounded-full border-4 border-warning/20"
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 justify-center sm:justify-start">
@@ -287,7 +287,7 @@ export const StudentDetailPage = () => {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <StatusBadge status={s.status} />
                   {s.status === "graded" && (
-                    <span className="font-semibold text-primary-500">
+                    <span className="font-semibold text-warning">
                       {s.score ?? 0}/{s.maxScore}
                     </span>
                   )}

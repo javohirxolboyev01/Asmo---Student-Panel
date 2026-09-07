@@ -12,18 +12,13 @@ import {
   EyeOff,
   ArrowRight,
   Sparkles,
-  User,
-  Users,
 } from "lucide-react";
 import { Input, IconButton } from "@/components/ui";
 
-type AuthRole = "student" | "teacher";
-
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, logout, isLoading, error } = useAuthStore();
+  const { login, isLoading, error } = useAuthStore();
   const { t } = useTranslation();
-  const [role, setRole] = useState<AuthRole>("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,13 +29,9 @@ export const LoginPage = () => {
     e.preventDefault();
     setLoginError(null);
     try {
+      // The account's role comes from the server; the dashboard and route
+      // guards already branch on it, so login doesn't need to guess it too.
       await login(email.trim().toLowerCase(), password);
-      const loggedInUser = useAuthStore.getState().user;
-      if (loggedInUser && loggedInUser.role !== role) {
-        logout();
-        setLoginError(t("auth.roleMismatch"));
-        return;
-      }
       navigate("/");
     } catch (err) {
       setLoginError(t("auth.invalidCredentials"));
@@ -97,35 +88,6 @@ export const LoginPage = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole("student")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-sm font-semibold transition-all",
-                  role === "student"
-                    ? "border-warning bg-warning/10 text-warning"
-                    : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400",
-                )}
-              >
-                <User className="w-4 h-4" />
-                {t("auth.roleStudent")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("teacher")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-2xl border-2 py-3 text-sm font-semibold transition-all",
-                  role === "teacher"
-                    ? "border-warning bg-warning/10 text-warning"
-                    : "border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400",
-                )}
-              >
-                <Users className="w-4 h-4" />
-                {t("auth.roleTeacher")}
-              </button>
-            </div>
-
             <div className={cn("transition-all duration-300", isFocused && "scale-[1.01]")}>
               <Input
                 type="email"

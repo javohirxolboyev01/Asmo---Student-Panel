@@ -174,7 +174,7 @@ export const ShopPage = () => {
       <div className={cn('flex', 'items-center', 'justify-between')}>
         <div>
           <h1 className={cn('text-lg', 'md:text-xl', 'font-bold', 'text-gray-800 dark:text-gray-100', 'flex', 'items-center', 'gap-2')}>
-            <ShoppingBag className={cn('w-7', 'h-7', 'text-primary-500')} />
+            <ShoppingBag className={cn('w-7', 'h-7', 'text-warning')} />
             {t("shop.title")}
           </h1>
           <p className={cn('text-gray-500', 'text-sm', 'md:text-base')}>
@@ -196,7 +196,7 @@ export const ShopPage = () => {
                 <IconButton
                   onClick={() => navigate("/wishlist")}
                   size="lg"
-                  className={cn('rounded-2xl', 'bg-primary-500/10', 'hover:bg-primary-500/20', 'text-primary-500')}
+                  className={cn('rounded-2xl', 'bg-warning/10', 'hover:bg-warning/20', 'text-warning')}
                 >
                   <ShoppingBag className={cn('w-5', 'h-5')} />
                   {getTotalItems() > 0 && (
@@ -223,7 +223,7 @@ export const ShopPage = () => {
         />
         {/* <button
           onClick={() => setShowFilters(!showFilters)}
-          className={cn('px-5', 'py-3.5', 'bg-white dark:bg-card-dark', 'rounded-2xl', 'border', 'border-gray-200 dark:border-gray-700', 'flex', 'items-center', 'gap-2', 'hover:border-primary-500', 'transition-colors')}
+          className={cn('px-5', 'py-3.5', 'bg-white dark:bg-card-dark', 'rounded-2xl', 'border', 'border-gray-200 dark:border-gray-700', 'flex', 'items-center', 'gap-2', 'hover:border-warning', 'transition-colors')}
         >
           <Filter className={cn('w-4', 'h-4', 'text-gray-500')} />
           <span className={cn('text-sm', 'text-gray-500')}>Filter</span>
@@ -283,7 +283,7 @@ export const ShopPage = () => {
                 {/* Badges */}
                 <div className={cn('absolute', 'top-3', 'left-3', 'flex', 'gap-1.5')}>
                   {product.isPopular && (
-                    <span className={cn('px-2', 'py-1', 'bg-primary-500', 'text-white', 'text-xs', 'font-medium', 'rounded-full', 'flex', 'items-center', 'gap-1')}>
+                    <span className={cn('px-2', 'py-1', 'bg-warning', 'text-white', 'text-xs', 'font-medium', 'rounded-full', 'flex', 'items-center', 'gap-1')}>
                       <Zap className={cn('w-3', 'h-3')} />
                       {t("shop.popular")}
                     </span>
@@ -317,7 +317,7 @@ export const ShopPage = () => {
               <div className="mt-4">
                 <div className={cn('flex', 'items-start', 'justify-between')}>
                   <div className={cn('flex-1', 'min-w-0')}>
-                    <h3 className={cn('font-bold', 'text-gray-800 dark:text-gray-100', 'text-lg', 'group-hover:text-primary-500', 'transition-colors')}>
+                    <h3 className={cn('font-bold', 'text-gray-800 dark:text-gray-100', 'text-lg', 'group-hover:text-warning', 'transition-colors')}>
                       {product.name}
                     </h3>
                     <p className={cn('text-sm', 'text-gray-500', 'mt-1', 'line-clamp-2')}>
@@ -427,7 +427,7 @@ export const ShopPage = () => {
           onClick={() => navigate("/wishlist")}
           leftIcon={<ShoppingBag className={cn('w-5', 'h-5')} />}
           rightIcon={<ChevronRight className={cn('w-5', 'h-5')} />}
-          className={cn('fixed', 'bottom-24', 'md:bottom-8', 'left-1/2', '-translate-x-1/2', 'shadow-lg', 'shadow-primary-500/30', 'gap-3', 'animate-bounce-in', 'z-30')}
+          className={cn('fixed', 'bottom-24', 'md:bottom-8', 'left-1/2', '-translate-x-1/2', 'shadow-lg', 'shadow-warning/30', 'gap-3', 'animate-bounce-in', 'z-30')}
         >
           {t("shop.cartItems", { count: getTotalItems() })}
         </Button>

@@ -1,7 +1,7 @@
 // src/components/Layout/Header.tsx
 import { useEffect, useRef, useState } from "react";
 import { User } from "@/types/user";
-import { Bell } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import Logo from "@/images/logo.png";
 import { Link } from "react-router-dom";
 import { cn, getAvatarUrl } from "@/lib/utils";
@@ -9,9 +9,10 @@ import { useNotificationStore } from "@/stores/notificationStore";
 
 interface HeaderProps {
   user: User | null;
+  onMenuClick?: () => void;
 }
 
-export const Header = ({ user }: HeaderProps) => {
+export const Header = ({ user, onMenuClick }: HeaderProps) => {
   const unreadCount = useNotificationStore((state) => state.unreadCount);
   const [justBumped, setJustBumped] = useState(false);
   const previousCount = useRef(unreadCount);
@@ -29,12 +30,22 @@ export const Header = ({ user }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800 z-40">
       <div className="flex items-center justify-between h-16 px-4 md:px-6 max-w-[1400px] mx-auto">
+        {/* Mobile menu toggle — opens the Sidebar drawer with all pages */}
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="md:hidden p-2 -ml-2 mr-1 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors flex-shrink-0"
+          aria-label="Menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
         {/* Logo */}
         <Link to="/" className="flex items-center">
           <img
             src={Logo}
             alt="ASMO Learning Platform"
-            className="w-[240px] md:w-[300px] h-auto object-contain -ml-12 text-warning dark:brightness-0 dark:invert"
+            className="w-[180px] md:w-[300px] h-auto object-contain md:-ml-12 text-warning dark:brightness-0 dark:invert"
           />
         </Link>
 
@@ -68,7 +79,7 @@ export const Header = ({ user }: HeaderProps) => {
               <img
                 src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
                 alt={user.firstName}
-                className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 transition-colors"
+                className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-gray-700 hover:border-warning transition-colors"
               />
             </Link>
           )}

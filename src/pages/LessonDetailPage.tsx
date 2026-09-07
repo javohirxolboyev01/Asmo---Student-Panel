@@ -51,7 +51,7 @@ const RosterTableRow = ({
       </td>
       <td className="py-3 pr-3 whitespace-nowrap">
         {student.submission?.status === "graded" ? (
-          <span className="text-sm font-semibold text-primary-500">{student.submission.score}</span>
+          <span className="text-sm font-semibold text-warning">{student.submission.score}</span>
         ) : (
           <span className="text-xs text-gray-300">—</span>
         )}
@@ -209,7 +209,7 @@ export const LessonDetailPage = () => {
                 <span className="text-xs font-medium px-2.5 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-full">
                   {t("lessonDetail.lessonNumber", { order: lesson.lessonOrder })}
                 </span>
-                <span className="text-xs font-medium px-2.5 py-1 bg-primary-500/10 text-primary-500 rounded-full">
+                <span className="text-xs font-medium px-2.5 py-1 bg-warning/10 text-warning rounded-full">
                   {lesson.groupName}
                 </span>
               </div>
@@ -246,7 +246,7 @@ export const LessonDetailPage = () => {
           {/* Homework (teacher) */}
           <div className="card p-5 md:p-6">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-primary-500" />
+              <FileText className="w-4 h-4 text-warning" />
               {t("lessonDetail.homeworkTitle")}
             </h2>
             {homework ? (
@@ -349,7 +349,7 @@ export const LessonDetailPage = () => {
           <div className="card">
             <div className="p-5 md:p-6">
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary-500" />
+                <FileText className="w-4 h-4 text-warning" />
                 {t("lessonDetail.homeworkTitle")}
               </h2>
 
@@ -381,7 +381,7 @@ export const LessonDetailPage = () => {
                 <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-white/5 rounded-2xl p-6 min-h-[120px]">
                   {submission && submission.status === "graded" ? (
                     <div className="text-center">
-                      <span className="text-5xl font-bold text-primary-500">
+                      <span className="text-5xl font-bold text-warning">
                         {submission.score}
                       </span>
                       <span className="text-gray-400 text-xl">
@@ -396,7 +396,7 @@ export const LessonDetailPage = () => {
                     </div>
                   ) : submission && submission.status === "submitted" ? (
                     <div className="text-center">
-                      <Hourglass className="w-9 h-9 text-primary-400 mx-auto mb-2" />
+                      <Hourglass className="w-9 h-9 text-warning mx-auto mb-2" />
                       <p className="text-gray-500">{t("lessonDetail.waiting")}</p>
                       <p className="text-sm text-gray-400">{t("lessonDetail.checking")}</p>
                     </div>
@@ -444,7 +444,7 @@ export const LessonDetailPage = () => {
                       href={submission.attachmentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-block mt-2 text-sm text-primary-500 hover:underline"
+                      className="inline-block mt-2 text-sm text-warning hover:underline"
                     >
                       {t("lessonDetail.attachmentLabel")}
                     </a>

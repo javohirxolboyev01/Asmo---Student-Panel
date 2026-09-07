@@ -71,15 +71,15 @@
 
   .card {
     background: white;
-    border-radius: 1rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border-radius: 1.25rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(241, 242, 244, 0.8);
   }
 
   .dark .card {
     background: theme("colors.card.dark");
     border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.24);
   }
 
   .card-header {
@@ -336,8 +336,8 @@
   }
 
   .sidebar-link.active {
-    background: #ebf0ff;
-    color: theme("colors.primary.500");
+    background: rgba(245, 158, 11, 0.12);
+    color: theme("colors.warning");
     font-weight: 600;
   }
 
@@ -351,7 +351,35 @@
   }
 
   .dark .sidebar-link.active {
-    background: rgba(45, 107, 255, 0.15);
-    color: #5c83ff;
+    background: rgba(245, 158, 11, 0.15);
+    color: theme("colors.warning");
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-modal-in {
+    animation: modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-overlay-in {
+    animation: overlay-in 0.15s ease-out;
   }
 }

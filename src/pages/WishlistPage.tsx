@@ -56,7 +56,7 @@ export const WishlistPage = () => {
       <div className={cn('flex', 'items-center', 'justify-between')}>
         <div>
           <h1 className={cn('text-lg', 'md:text-xl', 'font-bold', 'text-gray-800 dark:text-gray-100', 'flex', 'items-center', 'gap-2')}>
-            <ShoppingBag className={cn('w-7', 'h-7', 'text-primary-500')} />
+            <ShoppingBag className={cn('w-7', 'h-7', 'text-warning')} />
             {t("wishlist.title")}
           </h1>
           <p className={cn('text-gray-500', 'text-sm', 'md:text-base')}>

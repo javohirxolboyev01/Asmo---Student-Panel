@@ -325,7 +325,7 @@ export const GroupDetailPage = () => {
                         "text-xs font-medium px-2.5 py-1 rounded-full",
                         lesson.homework.isOverdue
                           ? "bg-[#FFEBEE] dark:bg-[#C62828]/15 text-[#C62828]"
-                          : "bg-primary-500/10 text-primary-500",
+                          : "bg-warning/10 text-warning",
                       )}
                     >
                       {t("groupDetail.hasHomework")}

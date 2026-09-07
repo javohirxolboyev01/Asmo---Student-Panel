@@ -85,7 +85,7 @@ export const NotificationsPage = () => {
               onClick={() => markAsRead(notification.id)}
               className={cn(
                 "card cursor-pointer hover:shadow-card-hover transition-all duration-200",
-                !notification.isRead && "border-l-4 border-l-primary-500",
+                !notification.isRead && "border-l-4 border-l-warning",
               )}
             >
               <div className="p-4 md:p-5">
@@ -104,7 +104,7 @@ export const NotificationsPage = () => {
                         </p>
                       </div>
                       {!notification.isRead && (
-                        <span className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-1.5" />
+                        <span className="w-2 h-2 bg-warning rounded-full flex-shrink-0 mt-1.5" />
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">

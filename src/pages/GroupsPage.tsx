@@ -229,7 +229,7 @@ export const GroupsPage = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1.5">
-                      <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base md:text-lg group-hover:text-primary-500 transition-colors">
+                      <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base md:text-lg group-hover:text-warning transition-colors">
                         {group.name}
                       </h3>
                       <span
@@ -264,7 +264,7 @@ export const GroupsPage = () => {
                       )}
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 group-hover:text-primary-500 group-hover:translate-x-1 transition-all duration-200" />
+                  <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0 group-hover:text-warning group-hover:translate-x-1 transition-all duration-200" />
                 </div>
               </div>
             </Link>

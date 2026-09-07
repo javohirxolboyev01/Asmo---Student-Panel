@@ -273,7 +273,7 @@ export const PaymentsPage = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-              <CreditCard className="w-7 h-7 text-primary-500" />
+              <CreditCard className="w-7 h-7 text-warning" />
               {t("payments.title")}
             </h1>
             <p className="text-gray-500 text-sm md:text-base">
@@ -374,7 +374,7 @@ export const PaymentsPage = () => {
         <Button variant="outline" size="lg" leftIcon={<Filter className="w-4 h-4" />} onClick={() => setShowFilters(!showFilters)}>
           {t("payments.filter")}
           {(filterStatus !== "all" || filterType !== "all") && (
-            <span className="w-2 h-2 bg-primary-500 rounded-full" />
+            <span className="w-2 h-2 bg-warning rounded-full" />
           )}
         </Button>
       </div>
@@ -456,7 +456,6 @@ export const PaymentsPage = () => {
       <div className="card">
         <div className="p-5">
           <h3 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 mb-4">
-            <Receipt className="w-4 h-4 text-gray-400" />
             {t("payments.list")}
             <span className="text-xs font-medium text-gray-400 ml-2">
               ({t("payments.countSuffix", { count: filteredPayments.length })})
@@ -561,7 +560,7 @@ export const PaymentsPage = () => {
                           <IconButton size="sm">
                             <Eye className="w-4 h-4" />
                           </IconButton>
-                          <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 hover:text-primary-500 transition-colors cursor-pointer" />
+                          <ChevronRight className="w-5 h-5 text-gray-300 flex-shrink-0 hover:text-warning transition-colors cursor-pointer" />
                         </>
                       )}
                     </div>
@@ -594,7 +593,7 @@ export const PaymentsPage = () => {
       </div>
 
       {/* Payment Summary */}
-      {/* <div className="card bg-gradient-to-br from-primary-500 to-primary-600 text-white">
+      {/* <div className="card bg-gradient-to-br from-warning to-warning text-white">
         <div className="p-5">
           <div className="flex items-center justify-between">
             <div>

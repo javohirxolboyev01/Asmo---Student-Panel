@@ -146,7 +146,7 @@ export const StudentsPage = () => {
                     className="w-11 h-11 rounded-full flex-shrink-0"
                   />
                   <div className="min-w-0">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm md:text-base group-hover:text-primary-500 transition-colors truncate">
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm md:text-base group-hover:text-warning transition-colors truncate">
                       {student.firstName} {student.lastName}
                     </h3>
                     <p className="text-xs text-gray-500 truncate">
@@ -163,7 +163,7 @@ export const StudentsPage = () => {
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </IconButton>
-                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all duration-200" />
+                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-warning group-hover:translate-x-1 transition-all duration-200" />
                 </div>
               </div>
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500">
