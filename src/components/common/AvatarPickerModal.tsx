@@ -39,7 +39,7 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
         {AVATAR_OPTIONS.filter((a) => a.gender === gender).map((avatar) => {
           const isSelected = selectedId === avatar.id;
-          const isCurrent = !selectedId && currentAvatar === avatar.path;
+          const isCurrent = !selectedId && !!currentAvatar && currentAvatar.endsWith(avatar.path);
           const isActive = isSelected || isCurrent;
           return (
             <button

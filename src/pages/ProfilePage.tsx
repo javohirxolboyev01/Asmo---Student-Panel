@@ -31,7 +31,9 @@ export const ProfilePage = () => {
 
   const handleAvatarSave = async (avatarPath: string) => {
     try {
-      await updateProfile({ avatar: avatarPath });
+      // Backend faqat http(s) URL yoki data:image qabul qiladi — nisbiy yo'lni to'liq URL'ga aylantiramiz.
+      const absoluteUrl = `${window.location.origin}${avatarPath}`;
+      await updateProfile({ avatar: absoluteUrl });
       toast.success(t("profile.avatarSaved"));
       setIsAvatarPickerOpen(false);
     } catch (err) {
