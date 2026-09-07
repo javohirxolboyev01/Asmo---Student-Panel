@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
-import { User, Phone, Mail, Settings, LogOut, ChevronRight, Pencil } from "lucide-react";
+import { User, Phone, Mail, Settings, LogOut, ChevronRight, Pencil, Calendar, ShoppingBag, GraduationCap } from "lucide-react";
 import { getAvatarUrl } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -140,6 +140,53 @@ export const ProfilePage = () => {
             </div>
             <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
               {t("profile.settings")}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        </button>
+
+        {isTeacher && (
+          <button
+            onClick={() => navigate("/teachers")}
+            className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+          >
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#34C759] flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-4 h-4 text-white" />
+              </div>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                {t("nav.teachers")}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          </button>
+        )}
+
+        <button
+          onClick={() => navigate("/attendance")}
+          className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#FF9500] flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+              {t("nav.attendance")}
+            </p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        </button>
+
+        <button
+          onClick={() => navigate("/shop")}
+          className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-gray-50 dark:hover:bg-white/5 active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+        >
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#AF52DE] flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-4 h-4 text-white" />
+            </div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+              {t("nav.shop")}
             </p>
           </div>
           <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />

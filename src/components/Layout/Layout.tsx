@@ -13,7 +13,6 @@ const NOTIFICATION_POLL_INTERVAL_MS = 30_000;
 
 export const Layout = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuthStore();
   const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
@@ -27,24 +26,19 @@ export const Layout = () => {
   }, [user, fetchNotifications]);
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      // Desktop'ga o'tganda sidebar overlay'ni yop
-      if (!mobile) setSidebarOpen(false);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div className="min-h-screen bg-background dark:bg-background-dark">
-      <Header user={user} onMenuClick={() => setSidebarOpen(true)} />
+      <Header user={user} />
 
       {/* Desktop: sidebar + content yan-yonma */}
       <div className="flex pt-16">
-        {/* Sidebar — desktop'da har doim ko'rinadi, mobilда drawer */}
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        {/* Sidebar — faqat desktop'da ko'rinadi */}
+        <Sidebar />
 
         {/* Main content */}
         <main
