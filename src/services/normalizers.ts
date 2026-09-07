@@ -41,6 +41,6 @@ export const normalizeAttendanceRecord = (raw: RawAttendanceRecord): AttendanceR
   lessonTopic: raw.lessonTopic ?? raw.topic ?? raw.lesson?.topic ?? "Dars",
   lessonDate:
     raw.lessonDate ?? raw.date ?? raw.lesson?.lessonDate ?? raw.lesson?.date ?? raw.createdAt ?? "",
-  status: (raw.status?.toLowerCase() as AttendanceRecord["status"]) ?? "excused",
+  status: (raw.status?.toLowerCase() as AttendanceRecord["status"]) ?? "absent",
   markedAt: raw.markedAt ?? raw.createdAt ?? "",
 });

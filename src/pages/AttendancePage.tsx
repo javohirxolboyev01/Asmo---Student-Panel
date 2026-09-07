@@ -32,7 +32,7 @@ interface AttendanceRecord {
   lessonId: string;
   lessonTopic: string;
   lessonDate: string;
-  status: "present" | "absent" | "late" | "excused";
+  status: "present" | "absent";
   markedAt: string;
 }
 

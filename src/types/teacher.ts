@@ -39,7 +39,7 @@ export interface AttendanceRecordEntry {
   lessonTopic?: string;
   lessonDate?: string;
   groupId?: string;
-  status: "present" | "absent" | "late" | "excused";
+  status: "present" | "absent";
   markedAt: string;
 }
 
@@ -101,7 +101,7 @@ export interface LessonRosterEntry {
   firstName: string;
   lastName: string;
   avatar: string | null;
-  attendanceStatus: "present" | "absent" | "late" | "excused" | null;
+  attendanceStatus: "present" | "absent" | null;
   submission: {
     id: string;
     content?: string | null;
@@ -158,7 +158,7 @@ export interface WeeklyAttendanceStudent {
   lastName: string;
   avatar: string | null;
   coinBalance: number;
-  attendance: Record<string, "present" | "absent" | "late" | "excused">;
+  attendance: Record<string, "present" | "absent">;
 }
 
 export interface WeeklyAttendanceData {

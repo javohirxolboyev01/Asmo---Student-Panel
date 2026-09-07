@@ -11,8 +11,6 @@ interface StatusBadgeProps {
 const statusMap: Record<string, string> = {
   present: "badge-present",
   absent: "badge-absent",
-  late: "badge-late",
-  excused: "badge-excused",
   submitted: "badge-submitted",
   not_submitted: "badge-not_submitted",
   pending: "badge-pending",
