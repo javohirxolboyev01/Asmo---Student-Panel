@@ -26,8 +26,14 @@ const PAYMENT_STATUS_KEYS: Record<string, "payments.statusPaid" | "payments.stat
 export const StudentDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const { selectedStudent, isLoading, error, fetchStudentDetail, updateStudent, clearSelectedStudent } = useStudentsStore();
-  const { groups, fetchGroups } = useGroupStore();
+  const selectedStudent = useStudentsStore((state) => state.selectedStudent);
+  const isLoading = useStudentsStore((state) => state.isLoading);
+  const error = useStudentsStore((state) => state.error);
+  const fetchStudentDetail = useStudentsStore((state) => state.fetchStudentDetail);
+  const updateStudent = useStudentsStore((state) => state.updateStudent);
+  const clearSelectedStudent = useStudentsStore((state) => state.clearSelectedStudent);
+  const groups = useGroupStore((state) => state.groups);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
 
   const [isCoinModalOpen, setIsCoinModalOpen] = useState(false);
   const [coinForm, setCoinForm] = useState({ amount: "", reason: "" });

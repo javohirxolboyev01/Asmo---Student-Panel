@@ -115,7 +115,9 @@ export const StreakCard = ({ onClick }: StreakCardProps) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    // Displayed time only has minute precision, so a 1s tick was re-rendering
+    // this card (and its animated background) 60x more often than the UI needs.
+    const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
     return () => clearInterval(timer);
   }, []);
 

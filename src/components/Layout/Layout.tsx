@@ -13,7 +13,7 @@ const NOTIFICATION_POLL_INTERVAL_MS = 30_000;
 
 export const Layout = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   useTrackNavigationHistory();

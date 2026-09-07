@@ -308,7 +308,7 @@ const StudentCoinsView = () => {
 };
 
 export const CoinsPage = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   return isTeacher ? <TeacherCoinsView /> : <StudentCoinsView />;
 };

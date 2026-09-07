@@ -47,7 +47,9 @@ interface AttendanceData {
 
 const TeacherAttendanceOverview = () => {
   const { t } = useTranslation();
-  const { groups, isLoading: groupsLoading, fetchGroups } = useGroupStore();
+  const groups = useGroupStore((state) => state.groups);
+  const groupsLoading = useGroupStore((state) => state.isLoading);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
   const [stats, setStats] = useState<Record<string, { percentage: number; studentCount: number }>>({});
   const [isLoading, setIsLoading] = useState(true);
 
@@ -532,7 +534,7 @@ const StudentAttendanceView = () => {
 };
 
 export const AttendancePage = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   return isTeacher ? <TeacherAttendanceOverview /> : <StudentAttendanceView />;
 };

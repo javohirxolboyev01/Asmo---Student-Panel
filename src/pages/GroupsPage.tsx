@@ -16,9 +16,12 @@ import { useConfirm } from "@/hooks/useConfirm";
 
 export const GroupsPage = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const { groups, isLoading, error, fetchGroups } = useGroupStore();
+  const groups = useGroupStore((state) => state.groups);
+  const isLoading = useGroupStore((state) => state.isLoading);
+  const error = useGroupStore((state) => state.error);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"active">("active");
 

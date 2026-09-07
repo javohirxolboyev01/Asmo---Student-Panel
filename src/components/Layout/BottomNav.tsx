@@ -34,7 +34,7 @@ const teacherNavItems = [
 
 export const BottomNav = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const navItems = isTeacher ? teacherNavItems : studentNavItems;
 

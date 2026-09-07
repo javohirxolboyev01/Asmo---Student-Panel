@@ -5,14 +5,14 @@ import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { AVATAR_OPTIONS, avatarSvgToDataUri } from "@/components/common/avatars";
+import { AVATAR_OPTIONS } from "@/components/common/avatars";
 
 interface AvatarPickerModalProps {
   isOpen: boolean;
   currentAvatar: string | null | undefined;
   isSaving?: boolean;
   onClose: () => void;
-  onSave: (dataUri: string) => void;
+  onSave: (avatarPath: string) => void;
 }
 
 export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, onSave }: AvatarPickerModalProps) => {
@@ -28,7 +28,7 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
 
   const handleSave = () => {
     if (!selected) return;
-    onSave(avatarSvgToDataUri(selected.svg));
+    onSave(selected.path);
   };
 
   const renderGroup = (gender: "boy" | "girl", heading: string) => (
@@ -38,9 +38,8 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
       </p>
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
         {AVATAR_OPTIONS.filter((a) => a.gender === gender).map((avatar) => {
-          const dataUri = avatarSvgToDataUri(avatar.svg);
           const isSelected = selectedId === avatar.id;
-          const isCurrent = !selectedId && currentAvatar === dataUri;
+          const isCurrent = !selectedId && currentAvatar === avatar.path;
           const isActive = isSelected || isCurrent;
           return (
             <button
@@ -59,7 +58,7 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
                     : "ring-transparent group-hover:ring-gray-200 dark:group-hover:ring-gray-700 group-hover:scale-105 group-active:scale-95",
                 )}
               >
-                <img src={dataUri} alt="" className="w-full h-full" />
+                <img src={avatar.path} alt="" className="w-full h-full" />
                 {isActive && (
                   <span className="absolute inset-0 flex items-end justify-end p-1">
                     <span className="w-5 h-5 rounded-full bg-warning text-white flex items-center justify-center ring-2 ring-white dark:ring-card-dark">

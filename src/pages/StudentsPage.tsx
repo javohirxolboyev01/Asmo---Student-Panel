@@ -15,9 +15,14 @@ import { useConfirm } from "@/hooks/useConfirm";
 
 export const StudentsPage = () => {
   const { t } = useTranslation();
-  const { students, isLoading, error, fetchStudents, deleteStudent } = useStudentsStore();
+  const students = useStudentsStore((state) => state.students);
+  const isLoading = useStudentsStore((state) => state.isLoading);
+  const error = useStudentsStore((state) => state.error);
+  const fetchStudents = useStudentsStore((state) => state.fetchStudents);
+  const deleteStudent = useStudentsStore((state) => state.deleteStudent);
   const { confirm, confirmModal } = useConfirm();
-  const { groups, fetchGroups } = useGroupStore();
+  const groups = useGroupStore((state) => state.groups);
+  const fetchGroups = useGroupStore((state) => state.fetchGroups);
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);

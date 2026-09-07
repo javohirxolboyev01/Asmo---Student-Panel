@@ -6,6 +6,9 @@ export interface Notification {
   type: "homework" | "lesson" | "grade" | "system" | "submission";
   isRead: boolean;
   createdAt: string;
+  // Backend hali to'liq hujjatlanmagan — "submission" turidagi xabarnoma qaysi
+  // topshiriqqa tegishli ekanini bildiruvchi maydon turli nom bilan kelishi mumkin.
+  [key: string]: unknown;
 }
 
 // Haqiqiy backend /dashboard javobi (guruh/dars maydonlari hali aniq hujjatlanmagan

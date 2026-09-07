@@ -20,17 +20,15 @@ export const GroupDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const {
-    selectedGroup,
-    lessons,
-    students,
-    isLoading,
-    error,
-    fetchGroupDetail,
-    clearSelectedGroup,
-  } = useGroupStore();
+  const selectedGroup = useGroupStore((state) => state.selectedGroup);
+  const lessons = useGroupStore((state) => state.lessons);
+  const students = useGroupStore((state) => state.students);
+  const isLoading = useGroupStore((state) => state.isLoading);
+  const error = useGroupStore((state) => state.error);
+  const fetchGroupDetail = useGroupStore((state) => state.fetchGroupDetail);
+  const clearSelectedGroup = useGroupStore((state) => state.clearSelectedGroup);
 
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [lessonForm, setLessonForm] = useState({ topic: "", description: "", lessonDate: "" });

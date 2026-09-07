@@ -17,8 +17,12 @@ import { Button, Input } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 
 export const SettingsPage = () => {
-  const { user, updateEmail, updatePassword, isLoading } = useAuthStore();
-  const { theme, setTheme } = useSettingsStore();
+  const user = useAuthStore((state) => state.user);
+  const updateEmail = useAuthStore((state) => state.updateEmail);
+  const updatePassword = useAuthStore((state) => state.updatePassword);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const theme = useSettingsStore((state) => state.theme);
+  const setTheme = useSettingsStore((state) => state.setTheme);
   const { t, language, setLanguage } = useTranslation();
 
   const [email, setEmail] = useState(user?.email ?? "");

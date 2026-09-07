@@ -96,7 +96,7 @@ export const teacherService = {
 
   // ── Submissions (grading) ──
   getPendingSubmissions: async () => {
-    const data = await apiGet<{ submissions: SubmissionWithContext[] }>("/submissions?status=SUBMITTED");
+    const data = await apiGet<{ submissions: SubmissionWithContext[] }>("/submissions?status=submitted");
     return data.submissions ?? [];
   },
   getSubmission: async (id: string) => apiGet<SubmissionWithContext>(`/submissions/${id}`),

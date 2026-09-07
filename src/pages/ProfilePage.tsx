@@ -11,7 +11,10 @@ import { AvatarPickerModal } from "@/components/common/AvatarPickerModal";
 import { toast, getErrorMessage } from "@/lib/toast";
 
 export const ProfilePage = () => {
-  const { user, logout, updateProfile, isLoading } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const updateProfile = useAuthStore((state) => state.updateProfile);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { confirm, confirmModal } = useConfirm();
@@ -26,9 +29,9 @@ export const ProfilePage = () => {
     if (confirmed) logout();
   };
 
-  const handleAvatarSave = async (dataUri: string) => {
+  const handleAvatarSave = async (avatarPath: string) => {
     try {
-      await updateProfile({ avatar: dataUri });
+      await updateProfile({ avatar: avatarPath });
       toast.success(t("profile.avatarSaved"));
       setIsAvatarPickerOpen(false);
     } catch (err) {

@@ -37,7 +37,9 @@ const FieldRow = ({
 );
 
 export const EditProfilePage = () => {
-  const { user, updateProfile, isLoading } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const updateProfile = useAuthStore((state) => state.updateProfile);
+  const isLoading = useAuthStore((state) => state.isLoading);
   const { t } = useTranslation();
   const navigate = useNavigate();
 

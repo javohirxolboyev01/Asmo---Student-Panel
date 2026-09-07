@@ -121,7 +121,7 @@ const statusConfig = {
 
 export const PaymentsPage = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const getLabel = (item: { label?: string; labelKey?: string }) =>
     item.labelKey ? t(item.labelKey) : item.label ?? "";

@@ -21,7 +21,14 @@ import { toast, getErrorMessage } from "@/lib/toast";
 export const WishlistPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { items, isLoading, removeFromWishlist, updateQuantity, getTotalCoins, getTotalItems, clearWishlist, fetchWishlist } = useWishlistStore();
+  const items = useWishlistStore((state) => state.items);
+  const isLoading = useWishlistStore((state) => state.isLoading);
+  const removeFromWishlist = useWishlistStore((state) => state.removeFromWishlist);
+  const updateQuantity = useWishlistStore((state) => state.updateQuantity);
+  const getTotalCoins = useWishlistStore((state) => state.getTotalCoins);
+  const getTotalItems = useWishlistStore((state) => state.getTotalItems);
+  const clearWishlist = useWishlistStore((state) => state.clearWishlist);
+  const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
   const [coinBalance, setCoinBalance] = useState(0);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);

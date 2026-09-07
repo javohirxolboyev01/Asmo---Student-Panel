@@ -33,7 +33,7 @@ const iconMap = {
 };
 
 export const Sidebar = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const { t } = useTranslation();
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const items = isTeacher ? TEACHER_SIDEBAR_ITEMS : SIDEBAR_ITEMS;

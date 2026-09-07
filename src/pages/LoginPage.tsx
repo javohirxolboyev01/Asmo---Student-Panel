@@ -21,7 +21,10 @@ type AuthRole = "student" | "teacher";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, logout, isLoading, error } = useAuthStore();
+  const login = useAuthStore((state) => state.login);
+  const logout = useAuthStore((state) => state.logout);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
   const { t } = useTranslation();
   const [role, setRole] = useState<AuthRole>("student");
   const [email, setEmail] = useState("");

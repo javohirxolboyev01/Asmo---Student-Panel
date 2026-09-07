@@ -42,7 +42,7 @@ const EMPTY_PRODUCT_FORM = {
 export const ShopPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Hammasi");
@@ -55,7 +55,11 @@ export const ShopPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { confirm, confirmModal } = useConfirm();
   // const [showFilters, setShowFilters] = useState(false);
-  const { addToWishlist, getTotalItems, getItemQuantity, decrementQuantity, fetchWishlist } = useWishlistStore();
+  const addToWishlist = useWishlistStore((state) => state.addToWishlist);
+  const getTotalItems = useWishlistStore((state) => state.getTotalItems);
+  const getItemQuantity = useWishlistStore((state) => state.getItemQuantity);
+  const decrementQuantity = useWishlistStore((state) => state.decrementQuantity);
+  const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
 
   const categories = useMemo(
     () => ["Hammasi", ...Array.from(new Set(products.map((p) => p.category))).sort()],

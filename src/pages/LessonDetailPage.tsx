@@ -67,7 +67,7 @@ export const LessonDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);

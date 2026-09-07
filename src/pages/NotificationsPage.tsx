@@ -1,6 +1,8 @@
 // src/pages/NotificationsPage.tsx
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { Notification } from "@/types/notification";
 import { Bell, Check, Clock } from "lucide-react";
 import { getRelativeTime } from "@/utilist/formatData";
 import { cn } from "@/lib/utils";
@@ -8,11 +10,30 @@ import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui";
 
+// Backend "submission" xabarnomasida qaysi topshiriqqa tegishli ekanini
+// turli nom bilan yuborishi mumkin — hammasini sinab ko'ramiz.
+const getSubmissionId = (n: Notification): string | undefined => {
+  const candidate = n.submissionId ?? n.relatedId ?? n.entityId ?? n.targetId;
+  return typeof candidate === "string" ? candidate : undefined;
+};
+
 export const NotificationsPage = () => {
   const { t } = useTranslation();
-  const { notifications, isLoading, fetchNotifications, markAsRead, markAllAsRead } =
-    useNotificationStore();
+  const navigate = useNavigate();
+  const notifications = useNotificationStore((state) => state.notifications);
+  const isLoading = useNotificationStore((state) => state.isLoading);
+  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
+  const markAsRead = useNotificationStore((state) => state.markAsRead);
+  const markAllAsRead = useNotificationStore((state) => state.markAllAsRead);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  const handleOpen = (notification: Notification) => {
+    markAsRead(notification.id);
+    if (notification.type === "submission") {
+      const submissionId = getSubmissionId(notification);
+      navigate(submissionId ? `/submissions/${submissionId}` : "/grading");
+    }
+  };
 
   useEffect(() => {
     fetchNotifications();
@@ -82,7 +103,7 @@ export const NotificationsPage = () => {
           {notifications.map((notification) => (
             <div
               key={notification.id}
-              onClick={() => markAsRead(notification.id)}
+              onClick={() => handleOpen(notification)}
               className={cn(
                 "card cursor-pointer hover:shadow-card-hover transition-all duration-200",
                 !notification.isRead && "border-l-4 border-l-warning",

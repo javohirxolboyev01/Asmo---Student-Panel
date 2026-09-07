@@ -70,16 +70,14 @@ const getGroupName = (group: DashboardGroup): string =>
   group.groupName ?? group.name ?? "Guruh";
 
 const StudentDashboard = () => {
-  const {
-    data,
-    isLoading,
-    error,
-    fetchDashboard,
-    leaderboard,
-    setLeaderboardFilter,
-  } = useDashboardStore();
+  const data = useDashboardStore((state) => state.data);
+  const isLoading = useDashboardStore((state) => state.isLoading);
+  const error = useDashboardStore((state) => state.error);
+  const fetchDashboard = useDashboardStore((state) => state.fetchDashboard);
+  const leaderboard = useDashboardStore((state) => state.leaderboard);
+  const setLeaderboardFilter = useDashboardStore((state) => state.setLeaderboardFilter);
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const { t } = useTranslation();
   const [attendance, setAttendance] = useState({ present: 0, total: 0 });
 
@@ -270,8 +268,11 @@ const StudentDashboard = () => {
 
 const TeacherDashboard = () => {
   const { t } = useTranslation();
-  const { user } = useAuthStore();
-  const { data, isLoading, error, fetchDashboard } = useTeacherDashboardStore();
+  const user = useAuthStore((state) => state.user);
+  const data = useTeacherDashboardStore((state) => state.data);
+  const isLoading = useTeacherDashboardStore((state) => state.isLoading);
+  const error = useTeacherDashboardStore((state) => state.error);
+  const fetchDashboard = useTeacherDashboardStore((state) => state.fetchDashboard);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -377,7 +378,7 @@ const TeacherDashboard = () => {
 };
 
 export const DashboardPage = () => {
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   return isTeacher ? <TeacherDashboard /> : <StudentDashboard />;
 };
