@@ -1,7 +1,12 @@
 // src/pages/TeachersPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, Pencil, Trash2, GraduationCap, Mail } from "lucide-react";
-import { teacherService } from "@/services/teacherService";
+import {
+  useTeachersQuery,
+  useCreateTeacherMutation,
+  useUpdateTeacherMutation,
+  useDeleteTeacherMutation,
+} from "@/hooks/queries/useTeachers";
 import { TeacherProfile } from "@/types/teacher";
 import { Skeleton, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { Modal } from "@/components/common/Modal";
@@ -13,8 +18,10 @@ import { useConfirm } from "@/hooks/useConfirm";
 
 export const TeachersPage = () => {
   const { t } = useTranslation();
-  const [teachers, setTeachers] = useState<TeacherProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: teachers = [], isLoading } = useTeachersQuery();
+  const createTeacher = useCreateTeacherMutation();
+  const updateTeacher = useUpdateTeacherMutation();
+  const deleteTeacher = useDeleteTeacherMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<TeacherProfile | null>(null);
   const [form, setForm] = useState({ fullName: "", avatar: "", email: "", password: "" });
@@ -22,20 +29,6 @@ export const TeachersPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { confirm, confirmModal } = useConfirm();
-
-  const load = async () => {
-    setIsLoading(true);
-    try {
-      const data = await teacherService.getTeachers();
-      setTeachers(data);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -59,9 +52,12 @@ export const TeachersPage = () => {
     setIsSubmitting(true);
     try {
       if (editing) {
-        await teacherService.updateTeacher(editing.id, { fullName: form.fullName, avatar: form.avatar || undefined });
+        await updateTeacher.mutateAsync({
+          id: editing.id,
+          payload: { fullName: form.fullName, avatar: form.avatar || undefined },
+        });
       } else {
-        await teacherService.createTeacher({
+        await createTeacher.mutateAsync({
           fullName: form.fullName,
           avatar: form.avatar || undefined,
           email: wantsLogin ? form.email : undefined,
@@ -69,7 +65,6 @@ export const TeachersPage = () => {
         });
       }
       setIsModalOpen(false);
-      load();
       toast.success(editing ? t("common.updateSuccess") : t("common.createSuccess"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
@@ -84,8 +79,7 @@ export const TeachersPage = () => {
     const confirmed = await confirm(t("teachers.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await teacherService.deleteTeacher(id);
-      load();
+      await deleteTeacher.mutateAsync(id);
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));

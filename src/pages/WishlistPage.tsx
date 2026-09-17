@@ -1,5 +1,5 @@
 // src/pages/WishlistPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
@@ -10,9 +10,8 @@ import {
   Check,
 } from "lucide-react";
 import { cn, isImageUrl } from "@/lib/utils";
-import { useWishlistStore } from "@/stores/wishlistStore";
-import { shopService } from "@/services/shopService";
-import { coinService } from "@/services/coinService";
+import { useWishlistCart, useCheckoutMutation } from "@/hooks/queries/useWishlist";
+import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Skeleton, SkeletonList } from "@/components/common/Skeleton";
 import { Button, IconButton } from "@/components/ui";
@@ -21,32 +20,20 @@ import { toast, getErrorMessage } from "@/lib/toast";
 export const WishlistPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const items = useWishlistStore((state) => state.items);
-  const isLoading = useWishlistStore((state) => state.isLoading);
-  const removeFromWishlist = useWishlistStore((state) => state.removeFromWishlist);
-  const updateQuantity = useWishlistStore((state) => state.updateQuantity);
-  const getTotalCoins = useWishlistStore((state) => state.getTotalCoins);
-  const getTotalItems = useWishlistStore((state) => state.getTotalItems);
-  const clearWishlist = useWishlistStore((state) => state.clearWishlist);
-  const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
-  const [coinBalance, setCoinBalance] = useState(0);
+  const { items, isLoading, removeFromWishlist, updateQuantity, getTotalCoins, getTotalItems } =
+    useWishlistCart();
+  const { data: coinData } = useCoinsQuery();
+  const coinBalance = coinData?.balance ?? 0;
+  const checkout = useCheckoutMutation();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchWishlist();
-    coinService.getCoins().then((result) => setCoinBalance(result.balance));
-  }, [fetchWishlist]);
 
   const handleCheckout = async () => {
     setIsCheckingOut(true);
     setCheckoutError(null);
     try {
-      await shopService.checkout(
-        items.map((item) => ({ productId: item.id, quantity: item.quantity })),
-      );
+      await checkout.mutateAsync(items.map((item) => ({ productId: item.id, quantity: item.quantity })));
       toast.success(t("wishlist.checkoutSuccess"));
-      clearWishlist();
       navigate("/shop");
     } catch (error) {
       const message = getErrorMessage(error, t("wishlist.checkoutError"));

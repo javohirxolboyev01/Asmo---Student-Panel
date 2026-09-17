@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
 import { Coins, Pencil, Save, X } from "lucide-react";
-import { teacherService } from "@/services/teacherService";
-import { WeeklyAttendanceData, WeeklyAttendanceLesson, WeeklyAttendanceStudent } from "@/types/teacher";
+import { useWeeklyAttendanceQuery, useSaveAttendanceMutation } from "@/hooks/queries/useWeeklyAttendance";
+import { useAwardCoinsMutation } from "@/hooks/queries/useCoins";
+import { WeeklyAttendanceLesson, WeeklyAttendanceStudent } from "@/types/teacher";
 import { cn, getAvatarUrl } from "@/lib/utils";
 import { Button, IconButton, Input } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
@@ -15,7 +16,6 @@ const formatDayColumn = (isoDate: string) => format(parseISO(isoDate), "EEEEEE, 
 interface WeeklyAttendanceRowProps {
   student: WeeklyAttendanceStudent;
   lessons: WeeklyAttendanceLesson[];
-  onSaved: () => void;
 }
 
 const buildInitialChecks = (student: WeeklyAttendanceStudent, lessons: WeeklyAttendanceLesson[]) => {
@@ -26,12 +26,14 @@ const buildInitialChecks = (student: WeeklyAttendanceStudent, lessons: WeeklyAtt
   return initial;
 };
 
-const WeeklyAttendanceRow = ({ student, lessons, onSaved }: WeeklyAttendanceRowProps) => {
+const WeeklyAttendanceRow = ({ student, lessons }: WeeklyAttendanceRowProps) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [checks, setChecks] = useState<Record<string, boolean>>(() => buildInitialChecks(student, lessons));
   const [coin, setCoin] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const saveAttendance = useSaveAttendanceMutation();
+  const awardCoins = useAwardCoinsMutation();
 
   useEffect(() => {
     setChecks(buildInitialChecks(student, lessons));
@@ -49,14 +51,16 @@ const WeeklyAttendanceRow = ({ student, lessons, onSaved }: WeeklyAttendanceRowP
     try {
       await Promise.all(
         lessons.map((lesson) =>
-          teacherService.saveAttendance(lesson.id, [
-            { userId: student.id, status: checks[lesson.id] ? "PRESENT" : "ABSENT" },
-          ]),
+          saveAttendance.mutateAsync({
+            lessonId: lesson.id,
+            records: [{ userId: student.id, status: checks[lesson.id] ? "PRESENT" : "ABSENT" }],
+          }),
         ),
       );
       const coinAmount = Number(coin);
       if (coin.trim() !== "" && !Number.isNaN(coinAmount) && coinAmount !== 0) {
-        await teacherService.awardCoins(student.id, {
+        await awardCoins.mutateAsync({
+          studentId: student.id,
           amount: coinAmount,
           reason: t("lessonDetail.weeklyAttendanceCoinReason"),
         });
@@ -64,7 +68,6 @@ const WeeklyAttendanceRow = ({ student, lessons, onSaved }: WeeklyAttendanceRowP
       toast.success(t("common.updateSuccess"));
       setCoin("");
       setIsEditing(false);
-      onSaved();
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
     } finally {
@@ -142,21 +145,7 @@ interface WeeklyAttendanceTableProps {
 
 export const WeeklyAttendanceTable = ({ groupId, referenceDate }: WeeklyAttendanceTableProps) => {
   const { t } = useTranslation();
-  const [data, setData] = useState<WeeklyAttendanceData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const load = () => {
-    setIsLoading(true);
-    teacherService
-      .getWeeklyAttendance(groupId, referenceDate)
-      .then(setData)
-      .finally(() => setIsLoading(false));
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupId, referenceDate]);
+  const { data, isLoading } = useWeeklyAttendanceQuery(groupId, referenceDate);
 
   if (isLoading) {
     return <div className="h-24 animate-pulse bg-gray-100 dark:bg-white/5 rounded-2xl" />;
@@ -183,7 +172,7 @@ export const WeeklyAttendanceTable = ({ groupId, referenceDate }: WeeklyAttendan
         </thead>
         <tbody>
           {data.roster.map((student) => (
-            <WeeklyAttendanceRow key={student.id} student={student} lessons={data.lessons} onSaved={load} />
+            <WeeklyAttendanceRow key={student.id} student={student} lessons={data.lessons} />
           ))}
         </tbody>
       </table>

@@ -3,8 +3,11 @@
 import { cn } from "@/lib/utils";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { isOverdue } from "@/utilist/calculateDeadline";
-import { lessonService } from "@/services/lessonService";
-import { teacherService } from "@/services/teacherService";
+import {
+  useLessonDetailQuery,
+  useSubmitHomeworkMutation,
+  useCreateHomeworkMutation,
+} from "@/hooks/queries/useLessons";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDate, formatDateTime } from "@/utilist//formatData";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
@@ -69,9 +72,9 @@ export const LessonDetailPage = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const [data, setData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useLessonDetailQuery(id);
+  const submitHomework = useSubmitHomeworkMutation(id ?? "");
+  const createHomework = useCreateHomeworkMutation(id ?? "");
   const [submissionContent, setSubmissionContent] = useState("");
   const [pendingAttachment, setPendingAttachment] = useState<{ name: string; dataUrl: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,44 +87,31 @@ export const LessonDetailPage = () => {
   const [homeworkForm, setHomeworkForm] = useState({ title: "", description: "", maxScore: "100", deadline: "" });
   const [isSavingHomework, setIsSavingHomework] = useState(false);
 
-  const loadLesson = async () => {
-    if (!id) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const lessonData = await lessonService.getLesson(id);
-      setData(lessonData);
-      const loadedSubmission = (lessonData as any).submission;
-      if (loadedSubmission && loadedSubmission.status !== "graded") {
-        setSubmissionContent(loadedSubmission.content ?? "");
-      }
-    } catch (err) {
-      setError(t("lessonDetail.loadError"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadLesson();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    const loadedSubmission = data?.submission;
+    if (loadedSubmission && loadedSubmission.status !== "graded") {
+      setSubmissionContent(loadedSubmission.content ?? "");
+    }
+  }, [data]);
 
   const handleSubmit = async () => {
-    if (!data || !submissionContent.trim() || !id) return;
+    if (!data || !data.homework || !submissionContent.trim() || !id) return;
 
     setIsSubmitting(true);
     setSubmitMessage(null);
 
     try {
-      await lessonService.submitHomework(data.homework.id, submissionContent, pendingAttachment?.dataUrl);
+      await submitHomework.mutateAsync({
+        homeworkId: data.homework.id,
+        content: submissionContent,
+        attachmentUrl: pendingAttachment?.dataUrl,
+      });
       setSubmitMessage({
         type: "success",
         text: t("lessonDetail.submitSuccess"),
       });
       toast.success(t("lessonDetail.submitSuccess"));
       setPendingAttachment(null);
-      await loadLesson();
     } catch (err) {
       setSubmitMessage({
         type: "error",
@@ -152,13 +142,12 @@ export const LessonDetailPage = () => {
     if (!id || !homeworkForm.title || !homeworkForm.description || !homeworkForm.deadline) return;
     setIsSavingHomework(true);
     try {
-      await teacherService.createHomework(id, {
+      await createHomework.mutateAsync({
         title: homeworkForm.title,
         description: homeworkForm.description,
         maxScore: Number(homeworkForm.maxScore) || undefined,
         deadline: homeworkForm.deadline,
       });
-      await loadLesson();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -184,7 +173,7 @@ export const LessonDetailPage = () => {
   if (error || !data || !data.lesson) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("lessonDetail.notFound")}</p>
+        <p className="text-red-500">{error ? getErrorMessage(error, t("lessonDetail.notFound")) : t("lessonDetail.notFound")}</p>
       </div>
     );
   }
@@ -233,7 +222,7 @@ export const LessonDetailPage = () => {
                   {submission.score}
                 </span>
                 <span className="text-sm text-[#2E7D32]/70">
-                  /{homework.maxScore}
+                  /{homework?.maxScore}
                 </span>
               </div>
             )}

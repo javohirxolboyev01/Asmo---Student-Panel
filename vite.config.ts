@@ -82,4 +82,20 @@ export default defineConfig({
   css: {
     postcss: "./postcss.config.js",
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: [
+            "react",
+            "react-dom",
+            "react-router-dom",
+            "zustand",
+            "react-toastify",
+            "@tanstack/react-query",
+          ],
+        },
+      },
+    },
+  },
 });

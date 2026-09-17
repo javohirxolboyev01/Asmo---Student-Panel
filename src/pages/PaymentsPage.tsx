@@ -1,5 +1,5 @@
 // src/pages/PaymentsPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   CreditCard,
   AlertCircle,
@@ -21,10 +21,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { paymentService } from "@/services/paymentService";
-import { studentService } from "@/services/studentService";
+import {
+  usePaymentsQuery,
+  useAddPaymentMutation,
+  useUpdatePaymentMutation,
+  useDeletePaymentMutation,
+} from "@/hooks/queries/usePayments";
+import { useStudentsQuery } from "@/hooks/queries/useStudents";
 import { useAuthStore } from "@/stores/authStore";
-import { StudentSummary } from "@/types/teacher";
 import { Modal } from "@/components/common/Modal";
 import { formatDate, formatTime } from "@/utilist/formatData";
 import { Skeleton, SkeletonHeader, SkeletonStatGrid, SkeletonList } from "@/components/common/Skeleton";
@@ -125,14 +129,10 @@ export const PaymentsPage = () => {
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const getLabel = (item: { label?: string; labelKey?: string }) =>
     item.labelKey ? t(item.labelKey) : item.label ?? "";
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
-  const [students, setStudents] = useState<StudentSummary[]>([]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ studentId: "", amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,54 +142,43 @@ export const PaymentsPage = () => {
     return new Intl.NumberFormat("uz-UZ").format(amount) + " so'm";
   };
 
-  const loadPayments = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const raw: RawPayment[] = await paymentService.getPayments();
-      setPayments(
-        raw.map((p) => ({
-          id: p.id,
-          orderNumber: p.orderNumber,
-          amount: formatAmount(p.amountNumber),
-          amountNumber: p.amountNumber,
-          status: p.status,
-          paymentType: p.paymentType,
-          date: formatDate(p.paidAt),
-          time: formatTime(p.paidAt),
-          teacherName: p.teacherName,
-          description: p.description,
-          receiptNumber: p.receiptNumber,
-          userId: p.userId,
-          studentName: p.studentName,
-        })),
-      );
-    } catch {
-      setError(t("payments.loadError"));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: rawPayments = [], isLoading, error, refetch } = usePaymentsQuery();
+  const { data: students = [] } = useStudentsQuery(undefined, isTeacher);
+  const addPayment = useAddPaymentMutation();
+  const updatePayment = useUpdatePaymentMutation();
+  const deletePayment = useDeletePaymentMutation();
 
-  useEffect(() => {
-    loadPayments();
-    if (isTeacher) studentService.getStudents().then(setStudents);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const payments: Payment[] = (rawPayments as RawPayment[]).map((p) => ({
+    id: p.id,
+    orderNumber: p.orderNumber,
+    amount: formatAmount(p.amountNumber),
+    amountNumber: p.amountNumber,
+    status: p.status,
+    paymentType: p.paymentType,
+    date: formatDate(p.paidAt),
+    time: formatTime(p.paidAt),
+    teacherName: p.teacherName,
+    description: p.description,
+    receiptNumber: p.receiptNumber,
+    userId: p.userId,
+    studentName: p.studentName,
+  }));
 
   const handleAddPayment = async () => {
     if (!paymentForm.studentId || !paymentForm.amountNumber) return;
     setIsSubmitting(true);
     try {
-      await paymentService.addPayment(paymentForm.studentId, {
-        amountNumber: Number(paymentForm.amountNumber),
-        paymentType: paymentForm.paymentType,
-        status: paymentForm.status,
-        description: paymentForm.description || undefined,
+      await addPayment.mutateAsync({
+        studentId: paymentForm.studentId,
+        payload: {
+          amountNumber: Number(paymentForm.amountNumber),
+          paymentType: paymentForm.paymentType,
+          status: paymentForm.status,
+          description: paymentForm.description || undefined,
+        },
       });
       setIsPaymentModalOpen(false);
       setPaymentForm({ studentId: "", amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
-      loadPayments();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -200,8 +189,7 @@ export const PaymentsPage = () => {
 
   const handleStatusChange = async (paymentId: string, status: string) => {
     try {
-      await paymentService.updatePayment(paymentId, { status });
-      loadPayments();
+      await updatePayment.mutateAsync({ id: paymentId, payload: { status } });
       toast.success(t("common.updateSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -212,8 +200,7 @@ export const PaymentsPage = () => {
     const confirmed = await confirm(t("payments.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await paymentService.deletePayment(paymentId);
-      loadPayments();
+      await deletePayment.mutateAsync(paymentId);
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -258,8 +245,8 @@ export const PaymentsPage = () => {
   if (error) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
+        <p className="text-red-500">{getErrorMessage(error, t("payments.loadError"))}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

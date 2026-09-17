@@ -3,16 +3,21 @@ import { cn, getAvatarUrl } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Users, Calendar, Clock, Plus, X, Coins, Pencil, Trash2 } from "lucide-react";
 import { formatDate } from "@/utilist/formatData";
-import { useGroupStore } from "@/stores/groupStore";
+import {
+  useGroupDetailQuery,
+  useUpdateGroupMutation,
+  useDeleteGroupMutation,
+  useCreateLessonMutation,
+  useEnrollStudentMutation,
+  useUnenrollStudentMutation,
+} from "@/hooks/queries/useGroups";
 import { useAuthStore } from "@/stores/authStore";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Skeleton, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Modal } from "@/components/common/Modal";
 import { Button, IconButton, Input, Textarea, Select } from "@/components/ui";
-import { teacherService } from "@/services/teacherService";
-import { studentService } from "@/services/studentService";
-import { StudentSummary } from "@/types/teacher";
+import { useStudentsQuery } from "@/hooks/queries/useStudents";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -22,18 +27,20 @@ export const GroupDetailPage = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const selectedGroup = useGroupStore((state) => state.selectedGroup);
-  const lessons = useGroupStore((state) => state.lessons);
-  const students = useGroupStore((state) => state.students);
-  const isLoading = useGroupStore((state) => state.isLoading);
-  const error = useGroupStore((state) => state.error);
-  const fetchGroupDetail = useGroupStore((state) => state.fetchGroupDetail);
-  const clearSelectedGroup = useGroupStore((state) => state.clearSelectedGroup);
+  const { data, isLoading, error } = useGroupDetailQuery(id);
+  const selectedGroup = data?.group;
+  const lessons = data?.lessons ?? [];
+  const students = data?.students;
+  const updateGroup = useUpdateGroupMutation(id ?? "");
+  const deleteGroupMutation = useDeleteGroupMutation();
+  const createLesson = useCreateLessonMutation(id ?? "");
+  const enrollStudent = useEnrollStudentMutation();
+  const unenrollStudent = useUnenrollStudentMutation();
+  const { data: allStudents = [] } = useStudentsQuery(undefined, isTeacher);
 
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [lessonForm, setLessonForm] = useState({ topic: "", description: "", lessonDate: "" });
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
-  const [allStudents, setAllStudents] = useState<StudentSummary[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -51,11 +58,6 @@ export const GroupDetailPage = () => {
   const { confirm, confirmModal } = useConfirm();
 
   useEffect(() => {
-    if (id) fetchGroupDetail(id);
-    return () => clearSelectedGroup();
-  }, [id, fetchGroupDetail, clearSelectedGroup]);
-
-  useEffect(() => {
     if (!selectedGroup) return;
     setEditForm({
       name: selectedGroup.name ?? "",
@@ -67,27 +69,19 @@ export const GroupDetailPage = () => {
     });
   }, [selectedGroup]);
 
-  const refresh = () => id && fetchGroupDetail(id);
-
-  const openStudentModal = async () => {
-    setIsStudentModalOpen(true);
-    const data = await studentService.getStudents();
-    setAllStudents(data);
-  };
 
   const handleAddLesson = async () => {
     setFormError(null);
     if (!id || !lessonForm.topic || !lessonForm.lessonDate) return;
     setIsSubmitting(true);
     try {
-      await teacherService.createLesson(id, {
+      await createLesson.mutateAsync({
         topic: lessonForm.topic,
         description: lessonForm.description || undefined,
         lessonDate: lessonForm.lessonDate,
       });
       setIsLessonModalOpen(false);
       setLessonForm({ topic: "", description: "", lessonDate: "" });
-      refresh();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
@@ -101,10 +95,9 @@ export const GroupDetailPage = () => {
   const handleAddStudent = async () => {
     if (!id || !selectedStudentId) return;
     try {
-      await teacherService.enrollStudent(id, selectedStudentId);
+      await enrollStudent.mutateAsync({ groupId: id, userId: selectedStudentId });
       setIsStudentModalOpen(false);
       setSelectedStudentId("");
-      refresh();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -116,8 +109,7 @@ export const GroupDetailPage = () => {
     const confirmed = await confirm(t("common.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await teacherService.unenrollStudent(id, studentId);
-      refresh();
+      await unenrollStudent.mutateAsync({ groupId: id, userId: studentId });
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -128,7 +120,7 @@ export const GroupDetailPage = () => {
     if (!id) return;
     setIsSavingGroup(true);
     try {
-      await teacherService.updateGroup(id, {
+      await updateGroup.mutateAsync({
         name: editForm.name,
         courseName: editForm.courseName,
         maxStudents: Number(editForm.maxStudents) || undefined,
@@ -137,7 +129,6 @@ export const GroupDetailPage = () => {
         status: editForm.status,
       });
       setIsEditModalOpen(false);
-      refresh();
       toast.success(t("common.updateSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -151,7 +142,7 @@ export const GroupDetailPage = () => {
     const confirmed = await confirm(t("groups.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await teacherService.deleteGroup(id);
+      await deleteGroupMutation.mutateAsync(id);
       toast.success(t("common.deleteSuccess"));
       navigate("/groups");
     } catch (err) {
@@ -171,7 +162,7 @@ export const GroupDetailPage = () => {
   if (error || !selectedGroup) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("groupDetail.notFound")}</p>
+        <p className="text-red-500">{error ? getErrorMessage(error, t("groupDetail.notFound")) : t("groupDetail.notFound")}</p>
         <Button onClick={() => navigate("/groups")} className="mt-4">
           {t("groupDetail.backToGroups")}
         </Button>
@@ -231,7 +222,7 @@ export const GroupDetailPage = () => {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800 dark:text-gray-100">{t("groupDetail.studentsTitle")}</h3>
-            <Button variant="outline" size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={openStudentModal}>
+            <Button variant="outline" size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setIsStudentModalOpen(true)}>
               {t("groupDetail.addStudent")}
             </Button>
           </div>

@@ -2,10 +2,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Phone, Mail, Plus, X, CreditCard, Pencil } from "lucide-react";
-import { useStudentsStore } from "@/stores/studentsStore";
-import { useGroupStore } from "@/stores/groupStore";
-import { teacherService } from "@/services/teacherService";
-import { paymentService } from "@/services/paymentService";
+import {
+  useStudentDetailQuery,
+  useUpdateStudentMutation,
+} from "@/hooks/queries/useStudents";
+import { useGroupsQuery, useEnrollStudentMutation, useUnenrollStudentMutation } from "@/hooks/queries/useGroups";
+import { useAwardCoinsMutation } from "@/hooks/queries/useCoins";
+import { useAddPaymentMutation } from "@/hooks/queries/usePayments";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Modal } from "@/components/common/Modal";
@@ -26,14 +29,13 @@ const PAYMENT_STATUS_KEYS: Record<string, "payments.statusPaid" | "payments.stat
 export const StudentDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const selectedStudent = useStudentsStore((state) => state.selectedStudent);
-  const isLoading = useStudentsStore((state) => state.isLoading);
-  const error = useStudentsStore((state) => state.error);
-  const fetchStudentDetail = useStudentsStore((state) => state.fetchStudentDetail);
-  const updateStudent = useStudentsStore((state) => state.updateStudent);
-  const clearSelectedStudent = useStudentsStore((state) => state.clearSelectedStudent);
-  const groups = useGroupStore((state) => state.groups);
-  const fetchGroups = useGroupStore((state) => state.fetchGroups);
+  const { data: selectedStudent, isLoading, error } = useStudentDetailQuery(id);
+  const updateStudent = useUpdateStudentMutation();
+  const { data: groups = [] } = useGroupsQuery();
+  const enrollStudent = useEnrollStudentMutation();
+  const unenrollStudent = useUnenrollStudentMutation();
+  const awardCoins = useAwardCoinsMutation();
+  const addPayment = useAddPaymentMutation();
 
   const [isCoinModalOpen, setIsCoinModalOpen] = useState(false);
   const [coinForm, setCoinForm] = useState({ amount: "", reason: "" });
@@ -47,12 +49,6 @@ export const StudentDetailPage = () => {
   const { confirm, confirmModal } = useConfirm();
 
   useEffect(() => {
-    if (id) fetchStudentDetail(id);
-    fetchGroups();
-    return () => clearSelectedStudent();
-  }, [id, fetchStudentDetail, fetchGroups, clearSelectedStudent]);
-
-  useEffect(() => {
     if (!selectedStudent) return;
     setEditForm({
       firstName: selectedStudent.student.firstName,
@@ -62,17 +58,18 @@ export const StudentDetailPage = () => {
     });
   }, [selectedStudent]);
 
-  const refresh = () => id && fetchStudentDetail(id);
-
   const handleSaveStudent = async () => {
     if (!id || !editForm.firstName || !editForm.lastName) return;
     setIsSavingStudent(true);
     try {
-      await updateStudent(id, {
-        firstName: editForm.firstName,
-        lastName: editForm.lastName,
-        phone: editForm.phone || null,
-        status: editForm.status,
+      await updateStudent.mutateAsync({
+        id,
+        payload: {
+          firstName: editForm.firstName,
+          lastName: editForm.lastName,
+          phone: editForm.phone || null,
+          status: editForm.status,
+        },
       });
       setIsEditModalOpen(false);
       toast.success(t("common.updateSuccess"));
@@ -87,10 +84,9 @@ export const StudentDetailPage = () => {
     if (!id || !coinForm.amount || !coinForm.reason) return;
     setIsSubmitting(true);
     try {
-      await teacherService.awardCoins(id, { amount: Number(coinForm.amount), reason: coinForm.reason });
+      await awardCoins.mutateAsync({ studentId: id, amount: Number(coinForm.amount), reason: coinForm.reason });
       setIsCoinModalOpen(false);
       setCoinForm({ amount: "", reason: "" });
-      refresh();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -103,15 +99,17 @@ export const StudentDetailPage = () => {
     if (!id || !paymentForm.amountNumber) return;
     setIsSubmitting(true);
     try {
-      await paymentService.addPayment(id, {
-        amountNumber: Number(paymentForm.amountNumber),
-        paymentType: paymentForm.paymentType,
-        status: paymentForm.status,
-        description: paymentForm.description || undefined,
+      await addPayment.mutateAsync({
+        studentId: id,
+        payload: {
+          amountNumber: Number(paymentForm.amountNumber),
+          paymentType: paymentForm.paymentType,
+          status: paymentForm.status,
+          description: paymentForm.description || undefined,
+        },
       });
       setIsPaymentModalOpen(false);
       setPaymentForm({ amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
-      refresh();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -123,9 +121,8 @@ export const StudentDetailPage = () => {
   const handleEnroll = async () => {
     if (!id || !enrollGroupId) return;
     try {
-      await teacherService.enrollStudent(enrollGroupId, id);
+      await enrollStudent.mutateAsync({ groupId: enrollGroupId, userId: id });
       setEnrollGroupId("");
-      refresh();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -137,8 +134,7 @@ export const StudentDetailPage = () => {
     const confirmed = await confirm(t("common.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await teacherService.unenrollStudent(groupId, id);
-      refresh();
+      await unenrollStudent.mutateAsync({ groupId, userId: id });
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -149,7 +145,7 @@ export const StudentDetailPage = () => {
     if (error) {
       return (
         <div className="card p-8 text-center">
-          <p className="text-red-500">{error}</p>
+          <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
         </div>
       );
     }

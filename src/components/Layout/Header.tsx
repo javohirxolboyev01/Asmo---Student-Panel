@@ -5,14 +5,15 @@ import { Bell } from "lucide-react";
 import Logo from "@/images/logo.png";
 import { Link } from "react-router-dom";
 import { cn, getAvatarUrl } from "@/lib/utils";
-import { useNotificationStore } from "@/stores/notificationStore";
+import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 
 interface HeaderProps {
   user: User | null;
 }
 
 export const Header = ({ user }: HeaderProps) => {
-  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const { data: notifications } = useNotificationsQuery();
+  const unreadCount = notifications?.filter((n) => !n.isRead).length ?? 0;
   const [justBumped, setJustBumped] = useState(false);
   const previousCount = useRef(unreadCount);
 

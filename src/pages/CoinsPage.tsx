@@ -1,8 +1,7 @@
 // src/pages/CoinsPage.tsx
-import { useEffect, useState } from "react";
-import { coinService } from "@/services/coinService";
-import { teacherService } from "@/services/teacherService";
-import { studentService } from "@/services/studentService";
+import { useState } from "react";
+import { useCoinsQuery, useTeacherCoinTransactionsQuery, useAwardCoinsMutation } from "@/hooks/queries/useCoins";
+import { useStudentsQuery } from "@/hooks/queries/useStudents";
 import { Coins, TrendingUp, TrendingDown } from "lucide-react";
 
 import { formatDate } from "@/utilist/formatData";
@@ -11,47 +10,31 @@ import { Skeleton, SkeletonHeader, SkeletonStatGrid, SkeletonList } from "@/comp
 import { Button, Input, Select } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore } from "@/stores/authStore";
-import { StudentSummary, TeacherCoinTransaction } from "@/types/teacher";
+import { getErrorMessage } from "@/lib/toast";
 
 const TeacherCoinsView = () => {
   const { t } = useTranslation();
-  const [transactions, setTransactions] = useState<TeacherCoinTransaction[]>([]);
-  const [students, setStudents] = useState<StudentSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: transactions = [], isLoading: transactionsLoading } = useTeacherCoinTransactionsQuery();
+  const { data: students = [], isLoading: studentsLoading } = useStudentsQuery();
+  const awardCoins = useAwardCoinsMutation();
   const [form, setForm] = useState({ studentId: "", amount: "", reason: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-
-  const load = async () => {
-    setIsLoading(true);
-    try {
-      const [tx, st] = await Promise.all([teacherService.getTeacherCoins(), studentService.getStudents()]);
-      setTransactions(tx);
-      setStudents(st);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
 
   const handleGive = async () => {
     if (!form.studentId || !form.amount || !form.reason) return;
     setIsSubmitting(true);
     setMessage(null);
     try {
-      await teacherService.awardCoins(form.studentId, { amount: Number(form.amount), reason: form.reason });
+      await awardCoins.mutateAsync({ studentId: form.studentId, amount: Number(form.amount), reason: form.reason });
       setMessage(t("coins.givenSuccess"));
       setForm({ studentId: "", amount: "", reason: "" });
-      load();
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
+  if (transactionsLoading || studentsLoading) {
     return (
       <div className="space-y-4 md:space-y-6">
         <SkeletonHeader />
@@ -138,32 +121,9 @@ interface CoinRecord {
   createdAt: string;
 }
 
-interface CoinData {
-  balance: number;
-  transactions: CoinRecord[];
-}
-
 const StudentCoinsView = () => {
   const { t } = useTranslation();
-  const [data, setData] = useState<CoinData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const result = await coinService.getCoins();
-        setData(result);
-      } catch (err) {
-        setError(t("common.loadError"));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  const { data, isLoading, error, refetch } = useCoinsQuery();
 
   if (isLoading) {
     return (
@@ -182,8 +142,8 @@ const StudentCoinsView = () => {
   if (error || !data) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("common.notFound")}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
+        <p className="text-red-500">{error ? getErrorMessage(error, t("common.notFound")) : t("common.notFound")}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

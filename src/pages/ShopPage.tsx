@@ -1,5 +1,5 @@
 // src/pages/ShopPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -16,10 +16,16 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn, isImageUrl } from "@/lib/utils";
-import { useWishlistStore } from "@/stores/wishlistStore";
+import { useWishlistCart } from "@/hooks/queries/useWishlist";
+import {
+  useProductsQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} from "@/hooks/queries/useProducts";
+import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useAuthStore } from "@/stores/authStore";
-import { productService, Product } from "@/services/productService";
-import { coinService } from "@/services/coinService";
+import { Product } from "@/services/productService";
 import { SkeletonProductGrid } from "@/components/common/Skeleton";
 import { Modal } from "@/components/common/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -46,20 +52,19 @@ export const ShopPage = () => {
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Hammasi");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [coinBalance, setCoinBalance] = useState(0);
+  const { data: products = [], isLoading } = useProductsQuery();
+  const { data: coinData } = useCoinsQuery(!isTeacher);
+  const coinBalance = isTeacher ? 0 : coinData?.balance ?? 0;
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { confirm, confirmModal } = useConfirm();
   // const [showFilters, setShowFilters] = useState(false);
-  const addToWishlist = useWishlistStore((state) => state.addToWishlist);
-  const getTotalItems = useWishlistStore((state) => state.getTotalItems);
-  const getItemQuantity = useWishlistStore((state) => state.getItemQuantity);
-  const decrementQuantity = useWishlistStore((state) => state.decrementQuantity);
-  const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
+  const createProduct = useCreateProductMutation();
+  const updateProduct = useUpdateProductMutation();
+  const deleteProduct = useDeleteProductMutation();
+  const { addToWishlist, getTotalItems, getItemQuantity, decrementQuantity } = useWishlistCart(!isTeacher);
 
   const categories = useMemo(
     () => ["Hammasi", ...Array.from(new Set(products.map((p) => p.category))).sort()],
@@ -77,23 +82,6 @@ export const ShopPage = () => {
     course: t("shop.categoryCourses"),
     discount: t("shop.categoryDiscounts"),
   };
-
-  const loadProducts = async () => {
-    setIsLoading(true);
-    try {
-      const result = await productService.getProducts();
-      setProducts(result);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadProducts();
-    if (isTeacher) return;
-    fetchWishlist();
-    coinService.getCoins().then((result) => setCoinBalance(result.balance));
-  }, [fetchWishlist, isTeacher]);
 
   const openCreateProduct = () => {
     setEditingProduct(null);
@@ -133,12 +121,11 @@ export const ShopPage = () => {
         isLimited: productForm.isLimited,
       };
       if (editingProduct) {
-        await productService.updateProduct(editingProduct.id, payload);
+        await updateProduct.mutateAsync({ id: editingProduct.id, payload });
       } else {
-        await productService.createProduct(payload);
+        await createProduct.mutateAsync(payload);
       }
       setIsProductModalOpen(false);
-      loadProducts();
       toast.success(editingProduct ? t("common.updateSuccess") : t("common.createSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -151,8 +138,7 @@ export const ShopPage = () => {
     const confirmed = await confirm(t("shop.deleteConfirm"));
     if (!confirmed) return;
     try {
-      await productService.deleteProduct(id);
-      loadProducts();
+      await deleteProduct.mutateAsync(id);
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));

@@ -1,35 +1,17 @@
 // src/pages/GradingPage.tsx
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardCheck, ChevronRight } from "lucide-react";
-import { teacherService } from "@/services/teacherService";
-import { SubmissionWithContext } from "@/types/teacher";
+import { usePendingSubmissionsQuery } from "@/hooks/queries/useSubmissions";
 import { SkeletonHeader, SkeletonTable } from "@/components/common/Skeleton";
 import { Button } from "@/components/ui";
 import { getAvatarUrl } from "@/lib/utils";
+import { getErrorMessage } from "@/lib/toast";
 import { formatDateTime } from "@/utilist/formatData";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export const GradingPage = () => {
   const { t } = useTranslation();
-  const [submissions, setSubmissions] = useState<SubmissionWithContext[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = () => {
-    setIsLoading(true);
-    setError(null);
-    teacherService
-      .getPendingSubmissions()
-      .then(setSubmissions)
-      .catch(() => setError(t("common.error")))
-      .finally(() => setIsLoading(false));
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: submissions = [], isLoading, error, refetch } = usePendingSubmissionsQuery();
 
   if (isLoading) {
     return (
@@ -43,8 +25,8 @@ export const GradingPage = () => {
   if (error) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={load} className="mt-4">
+        <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

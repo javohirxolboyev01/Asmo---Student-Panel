@@ -1,9 +1,9 @@
 // src/pages/AttendancePage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { attendanceService } from "@/services/attendanceService";
-import { studentService } from "@/services/studentService";
-import { useGroupStore } from "@/stores/groupStore";
+import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
+import { useStudentsQuery } from "@/hooks/queries/useStudents";
+import { useGroupsQuery } from "@/hooks/queries/useGroups";
 import { useAuthStore } from "@/stores/authStore";
 import {
   Calendar,
@@ -24,6 +24,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getErrorMessage } from "@/lib/toast";
 
 type ViewMode = "weekly" | "monthly";
 
@@ -36,52 +37,30 @@ interface AttendanceRecord {
   markedAt: string;
 }
 
-interface AttendanceData {
-  stats: {
-    total: number;
-    present: number;
-    percentage: number;
-  };
-  records: AttendanceRecord[];
-}
 
 const TeacherAttendanceOverview = () => {
   const { t } = useTranslation();
-  const groups = useGroupStore((state) => state.groups);
-  const groupsLoading = useGroupStore((state) => state.isLoading);
-  const fetchGroups = useGroupStore((state) => state.fetchGroups);
-  const [stats, setStats] = useState<Record<string, { percentage: number; studentCount: number }>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: groups = [], isLoading: groupsLoading } = useGroupsQuery();
+  const { data: students = [], isLoading: studentsLoading } = useStudentsQuery();
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const stats = useMemo(() => {
+    const byGroup: Record<string, number[]> = {};
+    students.forEach((student) => {
+      student.groups.forEach((g) => {
+        (byGroup[g.id] ??= []).push(student.attendancePercentage);
+      });
+    });
+    const entries = Object.entries(byGroup).map(([groupId, percentages]) => [
+      groupId,
+      {
+        percentage: Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length),
+        studentCount: percentages.length,
+      },
+    ] as const);
+    return Object.fromEntries(entries) as Record<string, { percentage: number; studentCount: number }>;
+  }, [students]);
 
-  useEffect(() => {
-    if (groupsLoading) return;
-    setIsLoading(true);
-    studentService
-      .getStudents()
-      .then((students) => {
-        const byGroup: Record<string, number[]> = {};
-        students.forEach((student) => {
-          student.groups.forEach((g) => {
-            (byGroup[g.id] ??= []).push(student.attendancePercentage);
-          });
-        });
-        const entries = Object.entries(byGroup).map(([groupId, percentages]) => [
-          groupId,
-          {
-            percentage: Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length),
-            studentCount: percentages.length,
-          },
-        ] as const);
-        setStats(Object.fromEntries(entries));
-      })
-      .finally(() => setIsLoading(false));
-  }, [groupsLoading]);
-
-  if (isLoading || groupsLoading) {
+  if (studentsLoading || groupsLoading) {
     return (
       <div className="space-y-4 md:space-y-6">
         <SkeletonHeader />
@@ -155,31 +134,13 @@ const TeacherAttendanceOverview = () => {
 const StudentAttendanceView = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [data, setData] = useState<AttendanceData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useAttendanceQuery();
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
   const [noLessonDay, setNoLessonDay] = useState<number | null>(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const result = await attendanceService.getAttendance();
-        setData(result);
-      } catch (err) {
-        setError(t("common.loadError"));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
 
   const recordsByDate = useMemo(() => {
     const map = new Map<string, AttendanceRecord>();
@@ -211,8 +172,8 @@ const StudentAttendanceView = () => {
   if (error || !data) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("common.notFound")}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">
+        <p className="text-red-500">{error ? getErrorMessage(error, t("common.notFound")) : t("common.notFound")}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

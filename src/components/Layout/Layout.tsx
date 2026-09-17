@@ -3,27 +3,17 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { Outlet } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { useNotificationStore } from "@/stores/notificationStore";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
-
-const NOTIFICATION_POLL_INTERVAL_MS = 30_000;
 
 export const Layout = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const user = useAuthStore((state) => state.user);
-  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   useTrackNavigationHistory();
-
-  useEffect(() => {
-    if (!user) return;
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, NOTIFICATION_POLL_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [user, fetchNotifications]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -49,7 +39,9 @@ export const Layout = () => {
         >
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 md:py-6">
             <ErrorBoundary>
-              <Outlet />
+              <Suspense fallback={<LoadingSpinner size="sm" />}>
+                <Outlet />
+              </Suspense>
             </ErrorBoundary>
           </div>
         </main>

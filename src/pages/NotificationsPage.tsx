@@ -1,7 +1,10 @@
 // src/pages/NotificationsPage.tsx
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useNotificationStore } from "@/stores/notificationStore";
+import {
+  useNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+} from "@/hooks/queries/useNotifications";
 import { Notification } from "@/types/notification";
 import { Bell, Check, Clock } from "lucide-react";
 import { getRelativeTime } from "@/utilist/formatData";
@@ -20,24 +23,18 @@ const getSubmissionId = (n: Notification): string | undefined => {
 export const NotificationsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const notifications = useNotificationStore((state) => state.notifications);
-  const isLoading = useNotificationStore((state) => state.isLoading);
-  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
-  const markAsRead = useNotificationStore((state) => state.markAsRead);
-  const markAllAsRead = useNotificationStore((state) => state.markAllAsRead);
+  const { data: notifications = [], isLoading } = useNotificationsQuery();
+  const markAsRead = useMarkNotificationAsReadMutation();
+  const markAllAsRead = useMarkAllNotificationsAsReadMutation();
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleOpen = (notification: Notification) => {
-    markAsRead(notification.id);
+    markAsRead.mutate(notification.id);
     if (notification.type === "submission") {
       const submissionId = getSubmissionId(notification);
       navigate(submissionId ? `/submissions/${submissionId}` : "/grading");
     }
   };
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
 
   if (isLoading && notifications.length === 0) {
     return (
@@ -80,7 +77,7 @@ export const NotificationsPage = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={markAllAsRead}
+            onClick={() => markAllAsRead.mutate()}
             leftIcon={<Check className="w-4 h-4" />}
           >
             {t("notifications.markAllRead")}

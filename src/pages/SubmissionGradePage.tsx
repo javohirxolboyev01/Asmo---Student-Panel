@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Calendar, CheckCircle2, FileText, Paperclip, User } from "lucide-react";
-import { teacherService } from "@/services/teacherService";
-import { SubmissionWithContext } from "@/types/teacher";
+import { useSubmissionDetailQuery, useGradeSubmissionMutation } from "@/hooks/queries/useSubmissions";
 import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button, Input } from "@/components/ui";
@@ -16,40 +15,25 @@ export const SubmissionGradePage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [submission, setSubmission] = useState<SubmissionWithContext | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: submission, isLoading, error } = useSubmissionDetailQuery(id);
+  const gradeSubmission = useGradeSubmissionMutation();
   const [score, setScore] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const load = () => {
-    if (!id) return;
-    setIsLoading(true);
-    setError(null);
-    teacherService
-      .getSubmission(id)
-      .then((data) => {
-        setSubmission(data);
-        setScore(data.score !== null ? String(data.score) : "");
-        setFeedback(data.feedback ?? "");
-      })
-      .catch(() => setError(t("grading.loadError")))
-      .finally(() => setIsLoading(false));
-  };
-
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+    if (!submission) return;
+    setScore(submission.score !== null ? String(submission.score) : "");
+    setFeedback(submission.feedback ?? "");
+  }, [submission]);
 
   const handleGrade = async () => {
     if (!id || score === "") return;
     setIsSubmitting(true);
     try {
-      await teacherService.gradeSubmission(id, {
-        score: Number(score),
-        feedback: feedback || undefined,
+      await gradeSubmission.mutateAsync({
+        id,
+        payload: { score: Number(score), feedback: feedback || undefined },
       });
       toast.success(t("common.updateSuccess"));
       navigate(-1);
@@ -72,7 +56,7 @@ export const SubmissionGradePage = () => {
   if (error || !submission) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("grading.notFound")}</p>
+        <p className="text-red-500">{error ? getErrorMessage(error, t("grading.notFound")) : t("grading.notFound")}</p>
         <Button onClick={() => navigate("/grading")} className="mt-4">
           {t("grading.backToGrading")}
         </Button>

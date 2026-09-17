@@ -1,6 +1,12 @@
 // src/pages/GroupsPage.tsx
-import { useEffect, useState } from "react";
-import { useGroupStore } from "@/stores/groupStore";
+import { useState } from "react";
+import { useGroupsQuery, useCreateGroupMutation } from "@/hooks/queries/useGroups";
+import {
+  useDirectionsQuery,
+  useCreateDirectionMutation,
+  useDeleteDirectionMutation,
+} from "@/hooks/queries/useDirections";
+import { useTeachersQuery } from "@/hooks/queries/useTeachers";
 import { Link } from "react-router-dom";
 import { Search, Users, ChevronRight, User, Plus, Palette, Trash2 } from "lucide-react";
 import { SkeletonHeader, SkeletonCardGrid, Skeleton } from "@/components/common/Skeleton";
@@ -9,8 +15,6 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAuthStore } from "@/stores/authStore";
 import { Modal } from "@/components/common/Modal";
 import { Button, IconButton, Input, Select } from "@/components/ui";
-import { teacherService } from "@/services/teacherService";
-import { Direction, TeacherProfile } from "@/types/teacher";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -18,15 +22,15 @@ export const GroupsPage = () => {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const groups = useGroupStore((state) => state.groups);
-  const isLoading = useGroupStore((state) => state.isLoading);
-  const error = useGroupStore((state) => state.error);
-  const fetchGroups = useGroupStore((state) => state.fetchGroups);
+  const { data: groups = [], isLoading, error, refetch } = useGroupsQuery();
+  const { data: directions = [] } = useDirectionsQuery(isTeacher);
+  const { data: teachers = [] } = useTeachersQuery(isTeacher);
+  const createGroup = useCreateGroupMutation();
+  const createDirection = useCreateDirectionMutation();
+  const deleteDirection = useDeleteDirectionMutation();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"active">("active");
 
-  const [directions, setDirections] = useState<Direction[]>([]);
-  const [teachers, setTeachers] = useState<TeacherProfile[]>([]);
   const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isDirectionsModalOpen, setIsDirectionsModalOpen] = useState(false);
   const [groupForm, setGroupForm] = useState({
@@ -43,16 +47,6 @@ export const GroupsPage = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const { confirm, confirmModal } = useConfirm();
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
-
-  useEffect(() => {
-    if (!isTeacher) return;
-    teacherService.getDirections().then(setDirections);
-    teacherService.getTeachers().then(setTeachers);
-  }, [isTeacher]);
-
   const handleCreateGroup = async () => {
     setFormError(null);
     if (!groupForm.name || !groupForm.courseName || !groupForm.directionId || !groupForm.teacherId) {
@@ -61,7 +55,7 @@ export const GroupsPage = () => {
     }
     setIsSubmitting(true);
     try {
-      await teacherService.createGroup({
+      await createGroup.mutateAsync({
         name: groupForm.name,
         courseName: groupForm.courseName,
         directionId: groupForm.directionId,
@@ -72,7 +66,6 @@ export const GroupsPage = () => {
       });
       setIsGroupModalOpen(false);
       setGroupForm({ name: "", courseName: "", directionId: "", teacherId: "", maxStudents: "20", scheduleDays: "", scheduleTime: "" });
-      fetchGroups();
       toast.success(t("common.createSuccess"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
@@ -86,8 +79,7 @@ export const GroupsPage = () => {
   const handleAddDirection = async () => {
     if (!newDirectionName.trim()) return;
     try {
-      const direction = await teacherService.createDirection({ name: newDirectionName.trim() });
-      setDirections((prev) => [...prev, direction]);
+      await createDirection.mutateAsync({ name: newDirectionName.trim() });
       setNewDirectionName("");
       toast.success(t("common.createSuccess"));
     } catch (err) {
@@ -99,8 +91,7 @@ export const GroupsPage = () => {
     const confirmed = await confirm(t("groups.deleteDirectionConfirm"));
     if (!confirmed) return;
     try {
-      await teacherService.deleteDirection(id);
-      setDirections((prev) => prev.filter((d) => d.id !== id));
+      await deleteDirection.mutateAsync(id);
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -145,8 +136,8 @@ export const GroupsPage = () => {
   if (error) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={fetchGroups} className="mt-4">
+        <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

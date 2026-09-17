@@ -1,12 +1,15 @@
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useDashboardStore } from "@/stores/dashboardStore";
-import { useTeacherDashboardStore } from "@/stores/teacherDashboardStore";
+import {
+  useDashboardQuery,
+  useTeacherDashboardQuery,
+  useLeaderboardQuery,
+} from "@/hooks/queries/useDashboard";
+import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
 import { StreakCard } from "@/components/Dashboard/StreakCard";
-import { attendanceService } from "@/services/attendanceService";
 import { Coins as CoinsIcon, Calendar, Trophy, BookOpen, Users, ClipboardCheck } from "lucide-react";
 import {
   SkeletonHeader,
@@ -18,6 +21,7 @@ import { CoinLeaderboard } from "@/components/Dashboard/CoinLeaderboard";
 import { CourseLevelCard } from "@/components/Dashboard/CourseLevelCard";
 import { Button } from "@/components/ui";
 import { UpcomingLessons } from "@/components/Dashboard/UpcomingLessons";
+import { getErrorMessage } from "@/lib/toast";
 import type { LeaderboardFilter } from "@/components/Dashboard/CoinLeaderboard";
 import type { DashboardGroup } from "@/types/notification";
 
@@ -70,27 +74,23 @@ const getGroupName = (group: DashboardGroup): string =>
   group.groupName ?? group.name ?? "Guruh";
 
 const StudentDashboard = () => {
-  const data = useDashboardStore((state) => state.data);
-  const isLoading = useDashboardStore((state) => state.isLoading);
-  const error = useDashboardStore((state) => state.error);
-  const fetchDashboard = useDashboardStore((state) => state.fetchDashboard);
-  const leaderboard = useDashboardStore((state) => state.leaderboard);
-  const setLeaderboardFilter = useDashboardStore((state) => state.setLeaderboardFilter);
+  const { data, isLoading, error, refetch } = useDashboardQuery();
+  const [leaderboardFilter, setLeaderboardFilterState] = useState<LeaderboardFilter>("week");
+  const { data: leaderboardData, isLoading: isLeaderboardLoading } = useLeaderboardQuery(leaderboardFilter);
+  const { data: attendanceData } = useAttendanceQuery();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const { t } = useTranslation();
-  const [attendance, setAttendance] = useState({ present: 0, total: 0 });
-
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
-
-  useEffect(() => {
-    attendanceService
-      .getAttendance()
-      .then((result) => setAttendance({ present: result.stats.present, total: result.stats.total }))
-      .catch(() => {});
-  }, []);
+  const attendance = {
+    present: attendanceData?.stats.present ?? 0,
+    total: attendanceData?.stats.total ?? 0,
+  };
+  const leaderboard = {
+    students: leaderboardData?.students ?? [],
+    currentUserRank: leaderboardData?.currentUserRank,
+    filter: leaderboardFilter,
+    isLeaderboardLoading,
+  };
 
   // ── Loading ──
   if (isLoading) {
@@ -109,8 +109,8 @@ const StudentDashboard = () => {
   if (error || !data) {
     return (
       <div className={cn('card', 'p-8', 'text-center')}>
-        <p className="text-red-500">{error || t("common.error")}</p>
-        <Button onClick={fetchDashboard} className="mt-4">
+        <p className="text-red-500">{error ? getErrorMessage(error, t("common.error")) : t("common.error")}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>
@@ -149,7 +149,7 @@ const StudentDashboard = () => {
     : "SZ";
 
   const handleLeaderboardFilter = (filter: LeaderboardFilter) => {
-    setLeaderboardFilter(filter);
+    setLeaderboardFilterState(filter);
   };
 
   const upcomingLessons = (data.upcomingLessons ?? []).map((lesson) => ({
@@ -269,15 +269,8 @@ const StudentDashboard = () => {
 const TeacherDashboard = () => {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
-  const data = useTeacherDashboardStore((state) => state.data);
-  const isLoading = useTeacherDashboardStore((state) => state.isLoading);
-  const error = useTeacherDashboardStore((state) => state.error);
-  const fetchDashboard = useTeacherDashboardStore((state) => state.fetchDashboard);
+  const { data, isLoading, error, refetch } = useTeacherDashboardQuery();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
 
   if (isLoading) {
     return (
@@ -292,8 +285,8 @@ const TeacherDashboard = () => {
   if (error || !data) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error || t("common.error")}</p>
-        <Button onClick={fetchDashboard} className="mt-4">
+        <p className="text-red-500">{error ? getErrorMessage(error, t("common.error")) : t("common.error")}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>

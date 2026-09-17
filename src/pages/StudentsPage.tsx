@@ -2,9 +2,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, Users, ChevronRight, Coins, Plus, Trash2 } from "lucide-react";
-import { useStudentsStore } from "@/stores/studentsStore";
-import { useGroupStore } from "@/stores/groupStore";
-import { studentService } from "@/services/studentService";
+import {
+  useStudentsQuery,
+  useCreateStudentMutation,
+  useDeleteStudentMutation,
+} from "@/hooks/queries/useStudents";
+import { useGroupsQuery } from "@/hooks/queries/useGroups";
 import { SkeletonHeader, SkeletonCardGrid, Skeleton } from "@/components/common/Skeleton";
 import { Modal } from "@/components/common/Modal";
 import { Button, IconButton, Input, Select } from "@/components/ui";
@@ -15,41 +18,35 @@ import { useConfirm } from "@/hooks/useConfirm";
 
 export const StudentsPage = () => {
   const { t } = useTranslation();
-  const students = useStudentsStore((state) => state.students);
-  const isLoading = useStudentsStore((state) => state.isLoading);
-  const error = useStudentsStore((state) => state.error);
-  const fetchStudents = useStudentsStore((state) => state.fetchStudents);
-  const deleteStudent = useStudentsStore((state) => state.deleteStudent);
-  const { confirm, confirmModal } = useConfirm();
-  const groups = useGroupStore((state) => state.groups);
-  const fetchGroups = useGroupStore((state) => state.fetchGroups);
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("");
+  const [debouncedFilters, setDebouncedFilters] = useState<{ search?: string; groupId?: string }>({});
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedFilters({ search: searchQuery || undefined, groupId: groupFilter || undefined });
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [searchQuery, groupFilter]);
+
+  const { data: students = [], isLoading, error, refetch } = useStudentsQuery(debouncedFilters);
+  const { data: groups = [] } = useGroupsQuery();
+  const createStudent = useCreateStudentMutation();
+  const deleteStudent = useDeleteStudentMutation();
+  const { confirm, confirmModal } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", firstName: "", lastName: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      fetchStudents({ search: searchQuery || undefined, groupId: groupFilter || undefined });
-    }, 250);
-    return () => clearTimeout(timeout);
-  }, [searchQuery, groupFilter, fetchStudents]);
 
   const handleCreate = async () => {
     setFormError(null);
     if (!form.email || !form.password || !form.firstName || !form.lastName) return;
     setIsSubmitting(true);
     try {
-      await studentService.createStudent(form);
+      await createStudent.mutateAsync(form);
       setIsModalOpen(false);
       setForm({ email: "", password: "", firstName: "", lastName: "", phone: "" });
-      fetchStudents({ search: searchQuery || undefined, groupId: groupFilter || undefined });
       toast.success(t("common.createSuccess"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
@@ -69,7 +66,7 @@ export const StudentsPage = () => {
     });
     if (!confirmed) return;
     try {
-      await deleteStudent(id);
+      await deleteStudent.mutateAsync(id);
       toast.success(t("common.deleteSuccess"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
@@ -89,8 +86,8 @@ export const StudentsPage = () => {
   if (error) {
     return (
       <div className="card p-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={() => fetchStudents()} className="mt-4">
+        <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
+        <Button onClick={() => refetch()} className="mt-4">
           {t("common.retry")}
         </Button>
       </div>
