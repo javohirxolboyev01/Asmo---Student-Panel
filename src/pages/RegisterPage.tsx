@@ -42,6 +42,12 @@ export const RegisterPage = () => {
 
   const isTeacherRole = role === "teacher";
 
+  // Faqat raqam, bo'shliq, tire va boshidagi "+" belgisiga ruxsat beriladi —
+  // harf yoki boshqa belgilar kiritilmaydi.
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value.replace(/[^\d+\s-]/g, ""));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -180,13 +186,14 @@ export const RegisterPage = () => {
 
               <Input
                 type="tel"
+                inputMode="tel"
                 label={
                   <>
                     {t("auth.phone")} <span className="text-gray-400 font-normal">({t("common.optional")})</span>
                   </>
                 }
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
                 leftIcon={<Phone className="w-4 h-4" />}
                 uiSize="lg"
                 className={AUTH_INPUT_CLASS}
