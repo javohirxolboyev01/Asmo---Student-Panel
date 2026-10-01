@@ -20,7 +20,9 @@ export const ProtectedRoute = () => {
     initAuth();
   }, [checkAuth]);
 
-  if (isLoading || isChecking) {
+  // Only block on the very first check; a user restored from the cached
+  // profile sees the app immediately while checkAuth re-validates it.
+  if (!isAuthenticated && (isLoading || isChecking)) {
     return <AppShellSkeleton />;
   }
 

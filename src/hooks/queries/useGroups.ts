@@ -1,11 +1,13 @@
 // src/hooks/queries/useGroups.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { groupService } from "@/services/groupService";
 import { teacherService } from "@/services/teacherService";
 import { queryKeys } from "@/lib/queryClient";
 
-export const useGroupsQuery = () =>
-  useQuery({ queryKey: queryKeys.groups, queryFn: groupService.getGroups });
+export const groupsQueryOptions = () =>
+  queryOptions({ queryKey: queryKeys.groups, queryFn: groupService.getGroups });
+
+export const useGroupsQuery = () => useQuery(groupsQueryOptions());
 
 export const useGroupDetailQuery = (id: string | undefined) =>
   useQuery({

@@ -1,35 +1,62 @@
 // src/student/StudentRoutes.tsx
-import { lazy } from "react";
+import { useEffect } from "react";
+import { lazyPage, preloadWhenIdle, runWhenIdle } from "@/lib/lazyPage";
+import { queryClient } from "@/lib/queryClient";
+import { groupsQueryOptions } from "@/hooks/queries/useGroups";
+import { attendanceQueryOptions } from "@/hooks/queries/useAttendance";
+import { coinsQueryOptions } from "@/hooks/queries/useCoins";
+import { paymentsQueryOptions } from "@/hooks/queries/usePayments";
+import { productsQueryOptions } from "@/hooks/queries/useProducts";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "@/components/Layout/Layout";
-import { sharedPanelRoutes } from "@/pages/sharedRoutes";
+import { sharedPages, sharedPanelRoutes } from "@/pages/sharedRoutes";
 import { studentNavigation } from "./navigation";
 
-// Each page is its own chunk, so a student never downloads teacher code.
-const DashboardPage = lazy(() => import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
-const GroupsPage = lazy(() => import("./pages/GroupsPage").then((m) => ({ default: m.GroupsPage })));
-const GroupDetailPage = lazy(() => import("./pages/GroupDetailPage").then((m) => ({ default: m.GroupDetailPage })));
-const LessonDetailPage = lazy(() => import("./pages/LessonDetailPage").then((m) => ({ default: m.LessonDetailPage })));
-const AttendancePage = lazy(() => import("./pages/AttendancePage").then((m) => ({ default: m.AttendancePage })));
-const CoinsPage = lazy(() => import("./pages/CoinsPage").then((m) => ({ default: m.CoinsPage })));
-const ShopPage = lazy(() => import("./pages/ShopPage").then((m) => ({ default: m.ShopPage })));
-const PaymentsPage = lazy(() => import("./pages/PaymentsPage").then((m) => ({ default: m.PaymentsPage })));
-const WishlistPage = lazy(() => import("./pages/WishlistPage").then((m) => ({ default: m.WishlistPage })));
+// Each page is its own chunk, so a student never downloads teacher code;
+// once the panel is up, the rest are fetched in the background (preloadWhenIdle).
+const pages = {
+  DashboardPage: lazyPage(() => import("./pages/DashboardPage"), "DashboardPage"),
+  GroupsPage: lazyPage(() => import("./pages/GroupsPage"), "GroupsPage"),
+  GroupDetailPage: lazyPage(() => import("./pages/GroupDetailPage"), "GroupDetailPage"),
+  LessonDetailPage: lazyPage(() => import("./pages/LessonDetailPage"), "LessonDetailPage"),
+  AttendancePage: lazyPage(() => import("./pages/AttendancePage"), "AttendancePage"),
+  CoinsPage: lazyPage(() => import("./pages/CoinsPage"), "CoinsPage"),
+  ShopPage: lazyPage(() => import("./pages/ShopPage"), "ShopPage"),
+  PaymentsPage: lazyPage(() => import("./pages/PaymentsPage"), "PaymentsPage"),
+  WishlistPage: lazyPage(() => import("./pages/WishlistPage"), "WishlistPage"),
+};
 
-export const StudentRoutes = () => (
-  <Routes>
-    <Route element={<Layout navigation={studentNavigation} />}>
-      <Route index element={<DashboardPage />} />
-      <Route path="groups" element={<GroupsPage />} />
-      <Route path="groups/:id" element={<GroupDetailPage />} />
-      <Route path="lessons/:id" element={<LessonDetailPage />} />
-      <Route path="attendance" element={<AttendancePage />} />
-      <Route path="coins" element={<CoinsPage />} />
-      <Route path="shop" element={<ShopPage />} />
-      <Route path="payments" element={<PaymentsPage />} />
-      <Route path="wishlist" element={<WishlistPage />} />
-      {sharedPanelRoutes}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Route>
-  </Routes>
-);
+// Warms the cache behind the bottom-nav tabs so their first visit shows data
+// instead of a skeleton; fresh entries are skipped (prefetchQuery honours staleTime).
+const prefetchTabData = () => {
+  void queryClient.prefetchQuery(groupsQueryOptions());
+  void queryClient.prefetchQuery(attendanceQueryOptions());
+  void queryClient.prefetchQuery(coinsQueryOptions());
+  void queryClient.prefetchQuery(paymentsQueryOptions());
+  void queryClient.prefetchQuery(productsQueryOptions());
+};
+
+export const StudentRoutes = () => {
+  useEffect(() => {
+    preloadWhenIdle([...Object.values(pages), ...Object.values(sharedPages)]);
+    runWhenIdle(prefetchTabData);
+  }, []);
+
+  return (
+    <Routes>
+      <Route element={<Layout navigation={studentNavigation} />}>
+        <Route index element={<pages.DashboardPage />} />
+        <Route path="groups" element={<pages.GroupsPage />} />
+        <Route path="groups/:id" element={<pages.GroupDetailPage />} />
+        <Route path="lessons/:id" element={<pages.LessonDetailPage />} />
+        <Route path="attendance" element={<pages.AttendancePage />} />
+        <Route path="coins" element={<pages.CoinsPage />} />
+        <Route path="shop" element={<pages.ShopPage />} />
+        <Route path="payments" element={<pages.PaymentsPage />} />
+        <Route path="wishlist" element={<pages.WishlistPage />} />
+        {sharedPanelRoutes}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
+  );
+};

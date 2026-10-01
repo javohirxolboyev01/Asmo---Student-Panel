@@ -1,10 +1,12 @@
 // src/hooks/queries/usePayments.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { paymentService } from "@/services/paymentService";
 import { queryKeys } from "@/lib/queryClient";
 
-export const usePaymentsQuery = () =>
-  useQuery({ queryKey: queryKeys.payments, queryFn: paymentService.getPayments });
+export const paymentsQueryOptions = () =>
+  queryOptions({ queryKey: queryKeys.payments, queryFn: paymentService.getPayments });
+
+export const usePaymentsQuery = () => useQuery(paymentsQueryOptions());
 
 export const useAddPaymentMutation = () => {
   const queryClient = useQueryClient();

@@ -1,13 +1,15 @@
 // src/hooks/queries/useSubmissions.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { teacherService } from "@/services/teacherService";
 import { queryKeys } from "@/lib/queryClient";
 
-export const usePendingSubmissionsQuery = () =>
-  useQuery({
+export const pendingSubmissionsQueryOptions = () =>
+  queryOptions({
     queryKey: queryKeys.pendingSubmissions,
     queryFn: teacherService.getPendingSubmissions,
   });
+
+export const usePendingSubmissionsQuery = () => useQuery(pendingSubmissionsQueryOptions());
 
 export const useSubmissionDetailQuery = (id: string | undefined) =>
   useQuery({

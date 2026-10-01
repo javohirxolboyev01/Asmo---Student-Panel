@@ -6,12 +6,17 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,
-      gcTime: 5 * 60_000,
+      // Long enough for the localStorage-persisted cache (lib/sessionCache) to
+      // survive; stale entries still refetch in the background on use.
+      gcTime: 24 * 60 * 60_000,
       refetchOnWindowFocus: false,
+      // One quick retry: two retries with backoff kept skeletons up for seconds
+      // whenever a request failed.
       retry: (failureCount, error) =>
         error instanceof ApiError && [401, 403, 404].includes(error.status)
           ? false
-          : failureCount < 2,
+          : failureCount < 1,
+      retryDelay: 800,
     },
     mutations: {
       retry: 0,

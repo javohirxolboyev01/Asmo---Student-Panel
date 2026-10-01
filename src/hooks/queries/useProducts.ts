@@ -1,13 +1,16 @@
 // src/hooks/queries/useProducts.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { productService } from "@/services/productService";
 import { queryKeys } from "@/lib/queryClient";
 
-export const useProductsQuery = (params?: { category?: string; search?: string }) =>
-  useQuery({
+export const productsQueryOptions = (params?: { category?: string; search?: string }) =>
+  queryOptions({
     queryKey: queryKeys.products(params),
     queryFn: () => productService.getProducts(params),
   });
+
+export const useProductsQuery = (params?: { category?: string; search?: string }) =>
+  useQuery(productsQueryOptions(params));
 
 export const useCreateProductMutation = () => {
   const queryClient = useQueryClient();

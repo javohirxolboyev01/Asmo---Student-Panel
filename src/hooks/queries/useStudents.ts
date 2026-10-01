@@ -1,17 +1,18 @@
 // src/hooks/queries/useStudents.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { studentService } from "@/services/studentService";
 import { queryKeys } from "@/lib/queryClient";
+
+export const studentsQueryOptions = (params?: { search?: string; groupId?: string }) =>
+  queryOptions({
+    queryKey: queryKeys.students(params),
+    queryFn: () => studentService.getStudents(params),
+  });
 
 export const useStudentsQuery = (
   params?: { search?: string; groupId?: string },
   enabled = true,
-) =>
-  useQuery({
-    queryKey: queryKeys.students(params),
-    queryFn: () => studentService.getStudents(params),
-    enabled,
-  });
+) => useQuery({ ...studentsQueryOptions(params), enabled });
 
 export const useStudentDetailQuery = (id: string | undefined) =>
   useQuery({

@@ -1,24 +1,27 @@
 // src/hooks/queries/useCoins.ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { coinService } from "@/services/coinService";
 import { teacherService } from "@/services/teacherService";
 import { queryKeys } from "@/lib/queryClient";
 
-export const useCoinsQuery = (enabled = true) =>
-  useQuery({
+export const coinsQueryOptions = () =>
+  queryOptions({
     queryKey: queryKeys.coins,
     queryFn: coinService.getCoins,
     staleTime: 15_000,
     refetchOnWindowFocus: true,
-    enabled,
+  });
+
+export const useCoinsQuery = (enabled = true) => useQuery({ ...coinsQueryOptions(), enabled });
+
+export const teacherCoinTransactionsQueryOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.teacherCoinTransactions,
+    queryFn: teacherService.getTeacherCoins,
   });
 
 export const useTeacherCoinTransactionsQuery = (enabled = true) =>
-  useQuery({
-    queryKey: queryKeys.teacherCoinTransactions,
-    queryFn: teacherService.getTeacherCoins,
-    enabled,
-  });
+  useQuery({ ...teacherCoinTransactionsQueryOptions(), enabled });
 
 export const useAwardCoinsMutation = () => {
   const queryClient = useQueryClient();

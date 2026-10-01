@@ -1,19 +1,21 @@
 // src/pages/sharedRoutes.tsx
-import { lazy } from "react";
 import { Route } from "react-router-dom";
+import { lazyPage } from "@/lib/lazyPage";
 
 // Pages that look the same in both panels.
-const NotificationsPage = lazy(() => import("./NotificationsPage").then((m) => ({ default: m.NotificationsPage })));
-const ProfilePage = lazy(() => import("./ProfilePage").then((m) => ({ default: m.ProfilePage })));
-const EditProfilePage = lazy(() => import("./EditProfilePage").then((m) => ({ default: m.EditProfilePage })));
-const SettingsPage = lazy(() => import("./SettingsPage").then((m) => ({ default: m.SettingsPage })));
+export const sharedPages = {
+  NotificationsPage: lazyPage(() => import("./NotificationsPage"), "NotificationsPage"),
+  ProfilePage: lazyPage(() => import("./ProfilePage"), "ProfilePage"),
+  EditProfilePage: lazyPage(() => import("./EditProfilePage"), "EditProfilePage"),
+  SettingsPage: lazyPage(() => import("./SettingsPage"), "SettingsPage"),
+};
 
 // Spliced into both StudentRoutes and TeacherRoutes (<Routes> flattens fragments).
 export const sharedPanelRoutes = (
   <>
-    <Route path="notifications" element={<NotificationsPage />} />
-    <Route path="profile" element={<ProfilePage />} />
-    <Route path="profile/edit" element={<EditProfilePage />} />
-    <Route path="settings" element={<SettingsPage />} />
+    <Route path="notifications" element={<sharedPages.NotificationsPage />} />
+    <Route path="profile" element={<sharedPages.ProfilePage />} />
+    <Route path="profile/edit" element={<sharedPages.EditProfilePage />} />
+    <Route path="settings" element={<sharedPages.SettingsPage />} />
   </>
 );
