@@ -1,42 +1,14 @@
 // src/components/Layout/Sidebar.tsx
 import { NavLink } from "react-router-dom";
-import {
-  LayoutDashboard,
-  BookOpen,
-  Calendar,
-  Coins,
-  Bell,
-  User,
-  GraduationCap,
-  Users,
-  ShoppingBag,
-  CreditCard,
-  ClipboardCheck,
-} from "lucide-react";
-import { SIDEBAR_ITEMS, TEACHER_SIDEBAR_ITEMS } from "@/constans/route";
+import { GraduationCap } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { getAvatarUrl } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { PanelNavigation } from "./navigation";
 
-const iconMap = {
-  LayoutDashboard,
-  BookOpen,
-  Calendar,
-  Coins,
-  Bell,
-  User,
-  Users,
-  GraduationCap,
-  ShoppingBag,
-  CreditCard,
-  ClipboardCheck,
-};
-
-export const Sidebar = () => {
+export const Sidebar = ({ navigation }: { navigation: PanelNavigation }) => {
   const user = useAuthStore((state) => state.user);
   const { t } = useTranslation();
-  const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const items = isTeacher ? TEACHER_SIDEBAR_ITEMS : SIDEBAR_ITEMS;
 
   return (
     <aside
@@ -59,7 +31,7 @@ export const Sidebar = () => {
               <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-400">{isTeacher ? t("nav.teacher") : t("nav.student")}</p>
+              <p className="text-xs text-gray-400">{t(navigation.roleLabelKey)}</p>
             </div>
           </div>
         </div>
@@ -67,8 +39,8 @@ export const Sidebar = () => {
 
         {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        {items.map((item) => {
-          const Icon = iconMap[item.icon as keyof typeof iconMap];
+        {navigation.sidebar.map((item) => {
+          const Icon = item.icon;
           return (
             <NavLink
               key={item.path}

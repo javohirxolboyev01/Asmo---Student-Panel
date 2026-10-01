@@ -26,19 +26,3 @@ export const ProtectedRoute = () => {
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
-
-interface RoleRouteProps {
-  roles: string[];
-}
-
-// Gates a nested subtree by role using the session ProtectedRoute already
-// established — no checkAuth call of its own, so it can't race/loop with it.
-export const RoleRoute = ({ roles }: RoleRouteProps) => {
-  const user = useAuthStore((state) => state.user);
-
-  if (!user || !roles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <Outlet />;
-};

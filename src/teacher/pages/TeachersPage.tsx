@@ -1,4 +1,4 @@
-// src/pages/TeachersPage.tsx
+// src/teacher/pages/TeachersPage.tsx
 import { useState } from "react";
 import { Plus, Pencil, Trash2, GraduationCap, Mail } from "lucide-react";
 import {

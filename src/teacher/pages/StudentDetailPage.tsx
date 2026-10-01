@@ -1,4 +1,4 @@
-// src/pages/StudentDetailPage.tsx
+// src/teacher/pages/StudentDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Phone, Mail, Plus, X, CreditCard, Pencil } from "lucide-react";

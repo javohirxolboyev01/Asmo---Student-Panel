@@ -1,48 +1,17 @@
 // src/components/Layout/BottomNav.tsx
-import {
-  LayoutDashboard,
-  BookOpen,
-  Calendar,
-  Coins,
-  CreditCard,
-  ShoppingBag,
-  Users,
-  ClipboardCheck,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useAuthStore } from "@/stores/authStore";
+import type { NavItem } from "./navigation";
 
-const studentNavItems = [
-  { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
-  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
-  { path: "/attendance", icon: Calendar, labelKey: "nav.attendance" },
-  { path: "/shop", icon: ShoppingBag, labelKey: "nav.shop" },
-  { path: "/coins", icon: Coins, labelKey: "nav.coins" },
-  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
-];
-
-const teacherNavItems = [
-  { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
-  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
-  { path: "/grading", icon: ClipboardCheck, labelKey: "nav.grading" },
-  { path: "/students", icon: Users, labelKey: "nav.students" },
-  { path: "/coins", icon: Coins, labelKey: "nav.coins" },
-  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
-];
-
-export const BottomNav = () => {
+export const BottomNav = ({ items }: { items: NavItem[] }) => {
   const { t } = useTranslation();
-  const user = useAuthStore((state) => state.user);
-  const isTeacher = user?.role === "teacher" || user?.role === "admin";
-  const navItems = isTeacher ? teacherNavItems : studentNavItems;
 
   return (
     <>
       <nav className="tb-nav" aria-label="Asosiy navigatsiya">
         <div className="tb-inner">
-          {navItems.map(({ path, icon: Icon, labelKey }) => (
+          {items.map(({ path, icon: Icon, labelKey }) => (
             <NavLink
               key={path}
               to={path}

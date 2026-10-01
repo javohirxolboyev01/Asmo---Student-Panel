@@ -8,8 +8,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
+import type { PanelNavigation } from "./navigation";
 
-export const Layout = () => {
+// App shell shared by both panels; each panel passes its own menu.
+export const Layout = ({ navigation }: { navigation: PanelNavigation }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const user = useAuthStore((state) => state.user);
 
@@ -28,7 +30,7 @@ export const Layout = () => {
       {/* Desktop: sidebar + content yan-yonma */}
       <div className="flex pt-16">
         {/* Sidebar — faqat desktop'da ko'rinadi */}
-        <Sidebar />
+        <Sidebar navigation={navigation} />
 
         {/* Main content */}
         <main
@@ -48,7 +50,7 @@ export const Layout = () => {
       </div>
 
       {/* BottomNav faqat mobilда */}
-      {isMobile && <BottomNav />}
+      {isMobile && <BottomNav items={navigation.bottom} />}
     </div>
   );
 };

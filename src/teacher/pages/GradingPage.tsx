@@ -1,4 +1,4 @@
-// src/pages/GradingPage.tsx
+// src/teacher/pages/GradingPage.tsx
 import { Link } from "react-router-dom";
 import { ClipboardCheck, ChevronRight } from "lucide-react";
 import { usePendingSubmissionsQuery } from "@/hooks/queries/useSubmissions";

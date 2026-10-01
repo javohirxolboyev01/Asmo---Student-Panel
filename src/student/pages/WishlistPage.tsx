@@ -1,4 +1,4 @@
-// src/pages/WishlistPage.tsx
+// src/student/pages/WishlistPage.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {

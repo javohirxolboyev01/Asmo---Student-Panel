@@ -1,4 +1,4 @@
-// src/pages/SubmissionGradePage.tsx
+// src/teacher/pages/SubmissionGradePage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Calendar, CheckCircle2, FileText, Paperclip, User } from "lucide-react";
