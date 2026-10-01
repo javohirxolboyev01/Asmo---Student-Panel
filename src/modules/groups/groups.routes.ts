@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower, publicUser, userSummary } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { uid, groupScope, teacherId } from "../../utils/teacherScope.js";
+import { uid, groupScope, teacherId, currentUser } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -14,13 +14,13 @@ groupsRouter.get(
   "/groups",
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
+    const current = currentUser(req);
     const groups = await prisma.group.findMany({
       where:
         current.role === "STUDENT"
           ? { Enrollment: { some: { studentId: current.id } } }
           : await groupScope(req),
-      include: { Direction: true, Teacher: true, Enrollment: true },
+      include: { Direction: true, Teacher: true, _count: { select: { Enrollment: true } } },
     });
     res.json({
       groups: groups.map((group) => ({
@@ -28,7 +28,7 @@ groupsRouter.get(
         name: group.name,
         direction: { id: group.Direction.id, name: group.Direction.name, color: group.Direction.color },
         teacher: { id: group.Teacher.id, fullName: group.Teacher.fullName, avatar: group.Teacher.avatar },
-        studentCount: group.Enrollment.length,
+        studentCount: group._count.Enrollment,
         status: lower(group.status),
       })),
     });
@@ -96,7 +96,7 @@ groupsRouter.get(
   requireAuth,
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
+    const current = currentUser(req);
     const group = await prisma.group.findFirst({
       where: {
         id: req.params.id,

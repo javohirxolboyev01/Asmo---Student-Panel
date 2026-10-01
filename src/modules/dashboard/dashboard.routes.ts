@@ -11,31 +11,52 @@ dashboardRouter.get(
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
     const userId = uid(req);
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
-    if (current.role === "STUDENT") {
-      const upcoming = await prisma.lesson.findMany({
-        where: {
-          Group: { Enrollment: { some: { studentId: userId } } },
-          lessonDate: { gte: new Date() },
-          status: "PLANNED",
-        },
-        orderBy: { lessonDate: "asc" },
-        take: 5,
-        include: { Group: true },
-      });
-      const enrollments = await prisma.enrollment.findMany({
-        where: { studentId: userId },
-        include: { Group: { include: { Direction: true, Teacher: true, Lesson: true } } },
-      });
-      const coins = await prisma.coinTransaction.findMany({
-        where: { studentId: userId },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      });
+    if (req.user.role === "STUDENT") {
+      // Independent reads, so fetch them in parallel rather than one by one.
+      const [current, upcoming, enrollments, coins, unreadNotifications] = await Promise.all([
+        prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+        prisma.lesson.findMany({
+          where: {
+            Group: { Enrollment: { some: { studentId: userId } } },
+            lessonDate: { gte: new Date() },
+            status: "PLANNED",
+          },
+          orderBy: { lessonDate: "asc" },
+          take: 5,
+          include: { Group: { select: { name: true } } },
+        }),
+        prisma.enrollment.findMany({ where: { studentId: userId }, include: { Group: true } }),
+        prisma.coinTransaction.findMany({
+          where: { studentId: userId },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        }),
+        prisma.notification.count({ where: { userId, isRead: false } }),
+      ]);
+      // Load each group's direction, teacher and lessons side by side instead of
+      // through a nested include, which Prisma resolves one level at a time.
+      const groupRows = enrollments.map((enrollment) => enrollment.Group);
+      const [directions, teachers, groupLessons] = await Promise.all([
+        prisma.direction.findMany({ where: { id: { in: groupRows.map((g) => g.directionId) } } }),
+        prisma.teacher.findMany({ where: { id: { in: groupRows.map((g) => g.teacherId) } } }),
+        prisma.lesson.findMany({
+          where: { groupId: { in: groupRows.map((g) => g.id) } },
+          // Only what the progress numbers below need.
+          select: { groupId: true, status: true, lessonDate: true },
+        }),
+      ]);
+      const directionById = new Map(directions.map((d) => [d.id, d]));
+      const teacherById = new Map(teachers.map((x) => [x.id, x]));
+      const groupsWithRelations = groupRows.map((group) => ({
+        ...group,
+        Direction: directionById.get(group.directionId)!,
+        Teacher: teacherById.get(group.teacherId)!,
+        Lesson: groupLessons.filter((lesson) => lesson.groupId === group.id),
+      }));
       return res.json({
         user: userSummary(current),
-        groups: enrollments.map(({ Group: group }) => {
+        groups: groupsWithRelations.map((group) => {
           const completed = group.Lesson.filter((lesson) => lesson.status === "COMPLETED").length;
           return {
             id: group.id,
@@ -55,7 +76,7 @@ dashboardRouter.get(
         }),
         coinBalance: current.coinBalance,
         recentTransactions: coins,
-        unreadNotifications: await prisma.notification.count({ where: { userId, isRead: false } }),
+        unreadNotifications,
         upcomingLessons: upcoming.map((lesson) => ({
           id: lesson.id,
           topic: lesson.topic,
@@ -68,32 +89,40 @@ dashboardRouter.get(
 
     // TEACHER acts as a full admin here — there's no separate admin-only
     // data set, so both roles see every group/lesson/submission.
-    const owned = await prisma.group.findMany({ select: { id: true } });
+    const [current, owned, pendingGradingCount, upcoming] = await Promise.all([
+      prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+      prisma.group.findMany({ select: { id: true } }),
+      prisma.submission.count({ where: { status: "SUBMITTED" } }),
+      prisma.lesson.findMany({
+        where: { lessonDate: { gte: new Date() }, status: "PLANNED" },
+        orderBy: { lessonDate: "asc" },
+        take: 5,
+        include: { Group: { select: { name: true } } },
+      }),
+    ]);
+    const ownedIds = owned.map((x) => x.id);
+    const [studentsCount, todayLessonsCount] = await Promise.all([
+      prisma.enrollment.count({ where: { groupId: { in: ownedIds } } }),
+      prisma.lesson.count({
+        where: {
+          groupId: { in: ownedIds },
+          lessonDate: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setHours(24, 0, 0, 0)),
+          },
+        },
+      }),
+    ]);
 
     res.json({
       user: userSummary(current),
       stats: {
         groupsCount: owned.length,
-        studentsCount: await prisma.enrollment.count({ where: { groupId: { in: owned.map((x) => x.id) } } }),
-        todayLessonsCount: await prisma.lesson.count({
-          where: {
-            groupId: { in: owned.map((x) => x.id) },
-            lessonDate: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-              lt: new Date(new Date().setHours(24, 0, 0, 0)),
-            },
-          },
-        }),
-        pendingGradingCount: await prisma.submission.count({ where: { status: "SUBMITTED" } }),
+        studentsCount,
+        todayLessonsCount,
+        pendingGradingCount,
       },
-      upcomingLessons: (
-        await prisma.lesson.findMany({
-          where: { lessonDate: { gte: new Date() }, status: "PLANNED" },
-          orderBy: { lessonDate: "asc" },
-          take: 5,
-          include: { Group: true },
-        })
-      ).map((lesson) => ({
+      upcomingLessons: upcoming.map((lesson) => ({
         id: lesson.id,
         topic: lesson.topic,
         lessonDate: lesson.lessonDate,

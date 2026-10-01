@@ -7,6 +7,10 @@ import { prisma } from "../lib/prisma.js";
 
 export const uid = (req: any) => req.user.id;
 
+// The authenticated user's id + role straight from the verified JWT, for
+// routes that only need to branch on role — saves a DB round-trip per request.
+export const currentUser = (req: any) => ({ id: req.user.id as string, role: req.user.role as string });
+
 export const teacherId = async (req: any) => {
   if (req._teacherId) return req._teacherId as string;
   const teacher = await prisma.teacher.findUnique({ where: { userId: uid(req) } });

@@ -25,6 +25,9 @@ submissionsRouter.get(
         Homework: { Lesson: { Group: await groupScope(req) } },
         ...(req.query.status ? { status: String(req.query.status).toUpperCase() } : {}),
       },
+      // The list never shows attachments (up to ~2MB each as data URLs), so
+      // leave them out here; the detail route below still returns them.
+      omit: { attachmentUrl: true },
       include: submissionInclude,
       orderBy: { submittedAt: "desc" },
     });

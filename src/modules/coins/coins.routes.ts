@@ -9,12 +9,14 @@ coinsRouter.get(
   "/coins",
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
-    if (current.role === "STUDENT") {
-      const transactions = await prisma.coinTransaction.findMany({
-        where: { studentId: current.id },
-        orderBy: { createdAt: "desc" },
-      });
+    if (req.user.role === "STUDENT") {
+      const [current, transactions] = await Promise.all([
+        prisma.user.findUniqueOrThrow({ where: { id: uid(req) }, select: { coinBalance: true } }),
+        prisma.coinTransaction.findMany({
+          where: { studentId: uid(req) },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
       return res.json({
         balance: current.coinBalance,
         transactions: transactions.map(({ id, amount, reason, createdAt }) => ({ id, amount, reason, createdAt })),
@@ -42,16 +44,14 @@ coinsRouter.get(
   "/leaderboard",
   requireAuth,
   asyncRoute(async (_req: any, res: any) => {
-    const users = await prisma.user.findMany({
-      where: { role: "STUDENT", status: "ACTIVE" },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        avatar: true,
-        CoinTransaction: { select: { amount: true } },
-      },
-    });
+    const [users, sums] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: "STUDENT", status: "ACTIVE" },
+        select: { id: true, firstName: true, lastName: true, avatar: true },
+      }),
+      prisma.coinTransaction.groupBy({ by: ["studentId"], _sum: { amount: true } }),
+    ]);
+    const balances = new Map(sums.map((row) => [row.studentId, row._sum.amount ?? 0]));
     res.json(
       users
         .map((u) => ({
@@ -59,7 +59,7 @@ coinsRouter.get(
           firstName: u.firstName,
           lastName: u.lastName,
           avatar: u.avatar,
-          balance: u.CoinTransaction.reduce((s, x) => s + x.amount, 0),
+          balance: balances.get(u.id) ?? 0,
         }))
         .sort((a, b) => b.balance - a.balance),
     );

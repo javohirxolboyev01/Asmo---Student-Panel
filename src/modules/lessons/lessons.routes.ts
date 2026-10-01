@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, currentUser } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -15,7 +15,7 @@ lessonsRouter.get(
   requireAuth,
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
+    const current = currentUser(req);
     const isStaff = current.role !== "STUDENT";
     const lesson = await prisma.lesson.findFirst({
       where: {
@@ -30,7 +30,13 @@ lessonsRouter.get(
           },
         },
         Homework: {
-          include: { Submission: isStaff ? true : { where: { studentId: current.id } } },
+          include: {
+            // The staff roster only shows status/score per student, so skip the
+            // heavy content/attachment columns there.
+            Submission: isStaff
+              ? { omit: { content: true, attachmentUrl: true } }
+              : { where: { studentId: current.id } },
+          },
         },
         AttendanceRecord: true,
       },

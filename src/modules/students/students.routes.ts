@@ -31,16 +31,30 @@ studentsRouter.get(
           : {}),
         ...(req.query.groupId ? { Enrollment: { some: { groupId: String(req.query.groupId) } } } : {}),
       },
-      include: { Enrollment: { include: { Group: true } }, AttendanceRecord: true },
+      include: { Enrollment: { include: { Group: { select: { id: true, name: true } } } } },
     });
+    // Count attendance per student/status in the DB instead of loading every record.
+    const counts = await prisma.attendanceRecord.groupBy({
+      by: ["studentId", "status"],
+      where: { studentId: { in: rows.map((u) => u.id) } },
+      _count: { _all: true },
+    });
+    const attendance = new Map<string, { total: number; present: number }>();
+    for (const row of counts) {
+      const entry = attendance.get(row.studentId) ?? { total: 0, present: 0 };
+      entry.total += row._count._all;
+      if (row.status === "PRESENT") entry.present += row._count._all;
+      attendance.set(row.studentId, entry);
+    }
     res.json({
-      students: rows.map((u) => ({
-        ...userSummary(u),
-        groups: u.Enrollment.map((e) => ({ id: e.Group.id, name: e.Group.name })),
-        attendancePercentage: u.AttendanceRecord.length
-          ? Math.round((u.AttendanceRecord.filter((a) => a.status === "PRESENT").length / u.AttendanceRecord.length) * 100)
-          : 0,
-      })),
+      students: rows.map((u) => {
+        const stats = attendance.get(u.id);
+        return {
+          ...userSummary(u),
+          groups: u.Enrollment.map((e) => ({ id: e.Group.id, name: e.Group.name })),
+          attendancePercentage: stats?.total ? Math.round((stats.present / stats.total) * 100) : 0,
+        };
+      }),
     });
   }),
 );

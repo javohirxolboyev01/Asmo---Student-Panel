@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { paymentSummary } from "../../utils/serializers.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, currentUser } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -25,10 +25,11 @@ paymentsRouter.get(
   "/payments",
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
-    const current = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
+    const current = currentUser(req);
     const payments = await prisma.payment.findMany({
       where: current.role === "STUDENT" ? { studentId: current.id } : {},
-      include: { User: true },
+      // Only staff rows show the student's name.
+      include: current.role === "STUDENT" ? undefined : { User: { select: { id: true, firstName: true, lastName: true } } },
       orderBy: { createdAt: "desc" },
     });
     res.json({ payments: payments.map((payment) => paymentSummary(payment, current.role !== "STUDENT")) });
