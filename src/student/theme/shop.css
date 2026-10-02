@@ -236,9 +236,16 @@
 @media (max-width: 460px) {
   .sp-shop-cart {
     min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
   }
+  .sp-shop-cart > * {
+    width: 100%;
+    min-width: 0;
+  }
   .sp-row.sp-shop-item {
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     gap: 8px;
     padding: 10px;
@@ -248,8 +255,9 @@
     height: 44px;
   }
   .sp-shop-ctl {
+    min-width: 0;
     gap: 6px;
-    padding-left: 52px;
+    padding-left: 0;
   }
   .sp-shop-sum {
     font-size: 15px;
@@ -260,8 +268,11 @@
   }
   .sp-shop-summary .sp-hr,
   .sp-shop-lines .sp-hr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 8px;
   }
+  .sp-shop-summary .sp-hr > span:nth-child(2),
   .sp-shop-lines .sp-hr > span:nth-child(2) {
     overflow-wrap: anywhere;
   }
@@ -270,6 +281,10 @@
   }
   .sp-shop-total {
     gap: 6px;
+  }
+  .sp-shop-total > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .sp-shop-total b {
     font-size: 24px;
