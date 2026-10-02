@@ -169,7 +169,11 @@ studentsRouter.post(
     const student = await prisma.user.findFirst({ where: { id: req.params.id, role: "STUDENT" } });
     if (!student) return res.status(404).json({ error: "Student not found" });
     const result = await prisma.$transaction(async (tx) => {
-      const balance = Math.max(0, student.coinBalance + req.body.amount);
+      // Relative update in SQL (see teacherCoins.routes.ts): never writes a stale balance.
+      const [row] = await tx.$queryRaw<{ coinBalance: number }[]>`
+        UPDATE "User" SET "coinBalance" = GREATEST(0, "coinBalance" + ${req.body.amount})
+        WHERE id = ${student.id} RETURNING "coinBalance"`;
+      const balance = row!.coinBalance;
       await tx.coinTransaction.create({
         data: {
           id: newId(),
@@ -179,7 +183,6 @@ studentsRouter.post(
           sourceType: req.body.amount > 0 ? "BONUS" : "PENALTY",
         },
       });
-      await tx.user.update({ where: { id: student.id }, data: { coinBalance: balance } });
       await tx.notification.create({
         data: { id: newId(), userId: student.id, type: "SYSTEM", title: "Coin balance updated", message: req.body.reason },
       });

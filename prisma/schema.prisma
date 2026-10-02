@@ -8,14 +8,14 @@ datasource db {
 }
 
 model AttendanceRecord {
-  id        String  @id
+  id        String   @id
   lessonId  String
   studentId String
   status    String
   note      String?
   markedAt  DateTime @default(now())
-  User      User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  Lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([lessonId, studentId])
   @@index([studentId])
@@ -31,6 +31,8 @@ model CoinTransaction {
   User       User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt])
+  // Leaderboard week/month filter scans by date across all students.
+  @@index([createdAt])
 }
 
 model Direction {
@@ -54,21 +56,23 @@ model Enrollment {
 }
 
 model Group {
-  id          String       @id
-  name        String
-  courseName  String @default("")
-  directionId String
-  teacherId   String
-  status      String       @default("ACTIVE")
-  maxStudents Int          @default(20)
-  scheduleDays String      @default("")
-  scheduleTime String      @default("")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
-  Enrollment  Enrollment[]
-  Teacher     Teacher      @relation(fields: [teacherId], references: [id])
-  Direction   Direction    @relation(fields: [directionId], references: [id])
-  Lesson      Lesson[]
+  id           String       @id
+  name         String
+  courseName   String       @default("")
+  directionId  String
+  teacherId    String
+  status       String       @default("ACTIVE")
+  maxStudents  Int          @default(20)
+  scheduleDays String       @default("")
+  scheduleTime String       @default("")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
+  Enrollment   Enrollment[]
+  Teacher      Teacher      @relation(fields: [teacherId], references: [id])
+  Direction    Direction    @relation(fields: [directionId], references: [id])
+  Lesson       Lesson[]
+  Mission      Mission[]
+  Quiz         Quiz[]
 
   @@index([teacherId])
   @@index([directionId])
@@ -117,43 +121,43 @@ model Notification {
 }
 
 model Payment {
-  id          String    @id
-  studentId   String
-  amount      Int
-  orderNumber Int       @default(1)
-  amountNumber Int      @default(0)
-  status      String    @default("PENDING")
-  paymentType String
-  description String?
-  teacherName String    @default("")
+  id            String    @id
+  studentId     String
+  amount        Int
+  orderNumber   Int       @default(1)
+  amountNumber  Int       @default(0)
+  status        String    @default("PENDING")
+  paymentType   String
+  description   String?
+  teacherName   String    @default("")
   receiptNumber String?
-  paidAt      DateTime?
-  dueDate     DateTime
-  createdAt   DateTime  @default(now())
-  User        User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  paidAt        DateTime?
+  dueDate       DateTime
+  createdAt     DateTime  @default(now())
+  User          User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt])
 }
 
 model Product {
-  id           String         @id
-  name         String
-  description  String?
-  price        Int
+  id            String         @id
+  name          String
+  description   String?
+  price         Int
   originalPrice Int?
-  category     String
-  image        String @default("")
-  rating       Float  @default(0)
-  reviews      Int    @default(0)
-  imageUrl     String?
-  isPopular    Boolean        @default(false)
-  isNew        Boolean        @default(false)
-  isLimited    Boolean        @default(false)
-  isActive     Boolean        @default(true)
-  stock        Int?
-  createdAt    DateTime       @default(now())
-  Purchase     Purchase[]
-  WishlistItem WishlistItem[]
+  category      String
+  image         String         @default("")
+  rating        Float          @default(0)
+  reviews       Int            @default(0)
+  imageUrl      String?
+  isPopular     Boolean        @default(false)
+  isNew         Boolean        @default(false)
+  isLimited     Boolean        @default(false)
+  isActive      Boolean        @default(true)
+  stock         Int?
+  createdAt     DateTime       @default(now())
+  Purchase      Purchase[]
+  WishlistItem  WishlistItem[]
 }
 
 model Purchase {
@@ -181,21 +185,24 @@ model RefreshToken {
 }
 
 model Submission {
-  id          String    @id
-  homeworkId  String
-  studentId   String
-  content     String
+  id            String    @id
+  homeworkId    String
+  studentId     String
+  content       String
   attachmentUrl String?
-  status      String    @default("SUBMITTED")
-  score       Int?
-  feedback    String?
-  submittedAt DateTime  @default(now())
-  gradedAt    DateTime?
-  User        User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  Homework    Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  status        String    @default("SUBMITTED")
+  score         Int?
+  feedback      String?
+  submittedAt   DateTime  @default(now())
+  gradedAt      DateTime?
+  User          User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Homework      Homework  @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
 
   @@unique([homeworkId, studentId])
   @@index([status])
+  // Daily missions: "submitted today" / "graded today" per student.
+  @@index([studentId, submittedAt])
+  @@index([studentId, gradedAt])
 }
 
 model Teacher {
@@ -207,27 +214,31 @@ model Teacher {
 }
 
 model User {
-  id               String             @id
-  email            String             @unique
-  passwordHash     String
-  firstName        String
-  lastName         String
-  phone            String?
-  avatar           String?
-  role             String             @default("STUDENT")
-  status           String             @default("ACTIVE")
-  coinBalance      Int                @default(0)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  AttendanceRecord AttendanceRecord[]
-  CoinTransaction  CoinTransaction[]
-  Enrollment       Enrollment[]
-  Notification     Notification[]
-  Payment          Payment[]
-  Purchase         Purchase[]
-  RefreshToken     RefreshToken[]
-  Submission       Submission[]
-  WishlistItem     WishlistItem[]
+  id                String              @id
+  email             String              @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  phone             String?
+  avatar            String?
+  role              String              @default("STUDENT")
+  status            String              @default("ACTIVE")
+  coinBalance       Int                 @default(0)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  AttendanceRecord  AttendanceRecord[]
+  CoinTransaction   CoinTransaction[]
+  Enrollment        Enrollment[]
+  Notification      Notification[]
+  Payment           Payment[]
+  Purchase          Purchase[]
+  RefreshToken      RefreshToken[]
+  Submission        Submission[]
+  WishlistItem      WishlistItem[]
+  MissionCompletion MissionCompletion[]
+  DailyChest        DailyChest[]
+  AvatarPurchase    AvatarPurchase[]
+  QuizAttempt       QuizAttempt[]
 }
 
 model WishlistItem {
@@ -239,4 +250,123 @@ model WishlistItem {
   User      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, productId])
+}
+
+// Daily missions are created by staff and verified by the server — a student
+// can only claim one whose condition (see `type`) is met today (Asia/Tashkent).
+model Mission {
+  id                String              @id
+  title             String
+  description       String?
+  emoji             String              @default("⭐")
+  // SUBMIT_HOMEWORK | ATTEND_LESSON | GOOD_GRADE | PASS_QUIZ
+  type              String
+  // GOOD_GRADE / PASS_QUIZ: minimum score percentage (0-100); unused by other types
+  target            Int?
+  // PASS_QUIZ only: the test the student has to pass
+  quizId            String?
+  coinReward        Int
+  // null = every student; otherwise only students enrolled in this group
+  groupId           String?
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @default(now()) @updatedAt
+  Group             Group?              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // SetNull: deleting a test keeps the mission's claim history (coins, streak days);
+  // a PASS_QUIZ mission without a test is simply hidden from students.
+  Quiz              Quiz?               @relation(fields: [quizId], references: [id], onDelete: SetNull)
+  MissionCompletion MissionCompletion[]
+
+  @@index([isActive])
+}
+
+model MissionCompletion {
+  id        String   @id
+  missionId String
+  studentId String
+  // Asia/Tashkent calendar day, "YYYY-MM-DD"
+  day       String
+  coins     Int
+  createdAt DateTime @default(now())
+  Mission   Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, studentId, day])
+  @@index([studentId, day])
+}
+
+model DailyChest {
+  id        String   @id
+  studentId String
+  // Asia/Tashkent calendar day, "YYYY-MM-DD"
+  day       String
+  reward    Int
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, day])
+}
+
+// Paid character-editor items (hair, outfit, hat…) a student bought with coins.
+// Prices live in src/modules/avatar/avatar.catalog.ts, never in the client.
+model AvatarPurchase {
+  id        String   @id
+  studentId String
+  itemKey   String
+  price     Int
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, itemKey])
+}
+
+// Teacher-made multiple-choice test. Correct answers never leave the server.
+model Quiz {
+  id           String         @id
+  title        String
+  description  String?
+  // null = every student; otherwise only students enrolled in this group
+  groupId      String?
+  // null = no time limit
+  timeLimitMin Int?
+  isActive     Boolean        @default(true)
+  createdById  String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  Group        Group?         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  QuizQuestion QuizQuestion[]
+  QuizAttempt  QuizAttempt[]
+  Mission      Mission[]
+
+  @@index([isActive])
+}
+
+model QuizQuestion {
+  id           String   @id
+  quizId       String
+  order        Int
+  text         String
+  options      String[]
+  correctIndex Int
+  Quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, order])
+}
+
+// One attempt per student per test; score is set when it's finished.
+model QuizAttempt {
+  id         String    @id
+  quizId     String
+  studentId  String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  score      Int?
+  total      Int
+  // { [questionId]: chosen original option index }
+  answers    Json?
+  Quiz       Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  User       User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, studentId])
+  @@index([studentId, finishedAt])
 }

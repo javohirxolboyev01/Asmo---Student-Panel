@@ -20,6 +20,9 @@ import { directionsRouter } from "./modules/directions/directions.routes.js";
 import { teachersRouter } from "./modules/teachers/teachers.routes.js";
 import { studentsRouter } from "./modules/students/students.routes.js";
 import { adminRouter } from "./modules/admin/admin.routes.js";
+import { missionsRouter } from "./modules/missions/missions.routes.js";
+import { avatarRouter } from "./modules/avatar/avatar.routes.js";
+import { quizzesRouter } from "./modules/quizzes/quizzes.routes.js";
 import {
   teacherAttendanceRouter,
   teacherCoinsRouter,
@@ -53,6 +56,9 @@ router.use(directionsRouter);
 router.use(teachersRouter);
 router.use(studentsRouter);
 router.use(adminRouter);
+router.use(missionsRouter);
+router.use(avatarRouter);
+router.use(quizzesRouter);
 
 // Teacher panel: every route here is scoped to the authenticated teacher's own groups.
 router.use(teacherDashboardRouter);

@@ -12,7 +12,20 @@ export const homeworkRouter = Router();
 homeworkRouter.post(
   "/homework/:id/submit",
   requireAuth,
-  validate(idSchema.extend({ body: z.object({ content: z.string().min(1).max(10000) }) })),
+  validate(
+    idSchema.extend({
+      body: z.object({
+        content: z.string().min(1).max(10000),
+        // Optional file: an http(s) link or a data: URL (client caps files at 2MB ≈ 2.8MB base64,
+        // within express.json's 3mb limit). Omitted = keep the previously attached file.
+        attachmentUrl: z
+          .string()
+          .max(2_900_000)
+          .refine((v) => /^(https?:\/\/|data:[\w.+-]+\/[\w.+-]+;base64,)/.test(v), "Invalid attachment")
+          .optional(),
+      }),
+    }),
+  ),
   asyncRoute(async (req: any, res: any) => {
     const homework = await prisma.homework.findFirst({
       where: { id: req.params.id, Lesson: { Group: { Enrollment: { some: { studentId: uid(req) } } } } },
@@ -23,8 +36,23 @@ homeworkRouter.post(
     const student = await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } });
     const item = await prisma.submission.upsert({
       where: { homeworkId_studentId: { homeworkId: homework.id, studentId: uid(req) } },
-      update: { content: req.body.content, submittedAt: new Date(), status: "SUBMITTED", score: null, feedback: null, gradedAt: null },
-      create: { id: newId(), homeworkId: homework.id, studentId: uid(req), content: req.body.content },
+      update: {
+        content: req.body.content,
+        ...(req.body.attachmentUrl ? { attachmentUrl: req.body.attachmentUrl } : {}),
+        // submittedAt stays the first submission: the SUBMIT_HOMEWORK mission
+        // counts it, so re-sending one homework every day can't farm coins.
+        status: "SUBMITTED",
+        score: null,
+        feedback: null,
+        gradedAt: null,
+      },
+      create: {
+        id: newId(),
+        homeworkId: homework.id,
+        studentId: uid(req),
+        content: req.body.content,
+        attachmentUrl: req.body.attachmentUrl ?? null,
+      },
     });
     const teacherUserId = homework.Lesson.Group.Teacher.userId;
     if (teacherUserId) {

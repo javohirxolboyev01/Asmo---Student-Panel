@@ -43,13 +43,20 @@ coinsRouter.get(
 coinsRouter.get(
   "/leaderboard",
   requireAuth,
-  asyncRoute(async (_req: any, res: any) => {
+  asyncRoute(async (req: any, res: any) => {
+    // week/month = coins earned (net) in the last 7/30 days; anything else = all time.
+    const days = req.query.filter === "week" ? 7 : req.query.filter === "month" ? 30 : null;
+    const since = days ? new Date(Date.now() - days * 24 * 60 * 60 * 1000) : null;
     const [users, sums] = await Promise.all([
       prisma.user.findMany({
         where: { role: "STUDENT", status: "ACTIVE" },
         select: { id: true, firstName: true, lastName: true, avatar: true },
       }),
-      prisma.coinTransaction.groupBy({ by: ["studentId"], _sum: { amount: true } }),
+      prisma.coinTransaction.groupBy({
+        by: ["studentId"],
+        where: since ? { createdAt: { gte: since } } : undefined,
+        _sum: { amount: true },
+      }),
     ]);
     const balances = new Map(sums.map((row) => [row.studentId, row._sum.amount ?? 0]));
     res.json(
