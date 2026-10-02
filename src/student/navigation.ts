@@ -1,34 +1,28 @@
 // src/student/navigation.ts
+// Student panel menu ("Kosmik maktab" theme). The same list drives the
+// floating bottom bar on mobile and the left rail on desktop; profile and
+// notifications are reached from the HUD (avatar / bell) instead.
 import {
-  LayoutDashboard,
-  BookOpen,
-  Calendar,
-  Coins,
-  Bell,
-  User,
-  ShoppingBag,
+  CalendarDays,
   CreditCard,
+  Gem,
+  House,
+  ShoppingCart,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
-import type { PanelNavigation } from "@/components/Layout/navigation";
 
-export const studentNavigation: PanelNavigation = {
-  roleLabelKey: "nav.student",
-  sidebar: [
-    { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/" },
-    { icon: BookOpen, labelKey: "nav.groups", path: "/groups" },
-    { icon: Calendar, labelKey: "nav.attendance", path: "/attendance" },
-    { icon: ShoppingBag, labelKey: "nav.shop", path: "/shop" },
-    { icon: Coins, labelKey: "nav.coins", path: "/coins" },
-    { icon: CreditCard, labelKey: "nav.payments", path: "/payments" },
-    { icon: Bell, labelKey: "nav.notifications", path: "/notifications" },
-    { icon: User, labelKey: "nav.profile", path: "/profile" },
-  ],
-  bottom: [
-    { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
-    { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
-    { path: "/attendance", icon: Calendar, labelKey: "nav.attendance" },
-    { path: "/shop", icon: ShoppingBag, labelKey: "nav.shop" },
-    { path: "/coins", icon: Coins, labelKey: "nav.coins" },
-    { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
-  ],
-};
+export interface StudentNavItem {
+  path: string;
+  icon: LucideIcon;
+  labelKey: string;
+}
+
+export const studentNavigation: StudentNavItem[] = [
+  { path: "/", icon: House, labelKey: "nav.dashboardShort" },
+  { path: "/groups", icon: Users, labelKey: "nav.groupsShort" },
+  { path: "/attendance", icon: CalendarDays, labelKey: "nav.attendance" },
+  { path: "/shop", icon: ShoppingCart, labelKey: "nav.shop" },
+  { path: "/coins", icon: Gem, labelKey: "nav.coins" },
+  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
+];

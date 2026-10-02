@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 import { Suspense, useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
 import type { PanelNavigation } from "./navigation";
 
@@ -41,7 +41,15 @@ export const Layout = ({ navigation }: { navigation: PanelNavigation }) => {
         >
           <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 md:py-6">
             <ErrorBoundary>
-              <Suspense fallback={<LoadingSpinner size="sm" />}>
+              {/* Page-shaped placeholder while a page's chunk loads (pages show the same skeleton next). */}
+              <Suspense
+                fallback={
+                  <div className="space-y-4 md:space-y-6">
+                    <SkeletonHeader />
+                    <SkeletonCardGrid count={4} />
+                  </div>
+                }
+              >
                 <Outlet />
               </Suspense>
             </ErrorBoundary>
@@ -50,7 +58,7 @@ export const Layout = ({ navigation }: { navigation: PanelNavigation }) => {
       </div>
 
       {/* BottomNav faqat mobilда */}
-      {isMobile && <BottomNav items={navigation.bottom} />}
+      {isMobile && <BottomNav items={navigation.bottom} more={navigation.more} />}
     </div>
   );
 };

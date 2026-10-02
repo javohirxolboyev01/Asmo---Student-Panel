@@ -1,0 +1,236 @@
+/* src/student/theme/groups.css
+ * Groups → group detail → lesson detail. Only theme vars, so light/dark
+ * follow the `.sp` / `.dark .sp` tokens automatically.
+ */
+
+.sp-groups-chev {
+  color: var(--sp-mute);
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.sp-gc:hover,
+.sp-groups-lesson:hover {
+  border-color: var(--sp-lime-ink);
+}
+.sp-gc .sp-t > b {
+  overflow-wrap: anywhere;
+}
+
+/* Group detail info chips */
+.sp-groups-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sp-groups-info span {
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  border-radius: 99px;
+  padding: 6px 12px;
+  font-size: 13px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Lesson rows */
+.sp-groups-lessons {
+  display: grid;
+  gap: 0 12px;
+}
+.sp-groups-lesson .sp-ic {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 17px;
+}
+.sp-groups-lesson.sp-hw .sp-ic {
+  background: rgba(255, 201, 64, 0.22);
+  border-color: transparent;
+}
+.sp-groups-lesson.sp-late .sp-ic {
+  background: rgba(255, 95, 168, 0.18);
+  border-color: transparent;
+}
+.sp-groups-lesson .sp-badge {
+  margin-left: 0;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.sp-groups-late {
+  color: var(--sp-pink-ink);
+}
+
+/* Lesson detail: homework card */
+.sp-groups-hw {
+  display: grid;
+  gap: 14px;
+  margin-top: 10px;
+}
+.sp-groups-hw h3,
+.sp-groups-block h3 {
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 18px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.sp-groups-text {
+  color: var(--sp-mute);
+  font-size: 15px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-top: 6px;
+}
+.sp-groups-score {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+  gap: 4px;
+  min-height: 130px;
+  border-radius: 22px;
+  padding: 16px;
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  color: var(--sp-mute);
+  font-size: 14px;
+}
+.sp-groups-score b {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 52px;
+  line-height: 1;
+  color: var(--sp-mute);
+}
+.sp-groups-score b small {
+  font-size: 22px;
+  color: var(--sp-mute);
+}
+.sp-groups-score.sp-graded {
+  background: linear-gradient(135deg, rgba(255, 201, 64, 0.28), rgba(255, 95, 168, 0.22));
+}
+.sp-groups-score.sp-graded b {
+  color: var(--sp-sun-ink);
+}
+.sp-groups-score .sp-groups-big-ic {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.sp-groups-alert {
+  margin-top: 14px;
+  border-radius: 18px;
+  padding: 12px 14px;
+  text-align: center;
+  font-size: 15px;
+  background: rgba(255, 201, 64, 0.22);
+  color: var(--sp-sun-ink);
+}
+.sp-groups-alert.sp-pink {
+  background: rgba(255, 95, 168, 0.18);
+  color: var(--sp-pink-ink);
+}
+.sp-groups-alert.sp-mute {
+  background: var(--sp-card);
+  color: var(--sp-mute);
+  border: 1px solid var(--sp-line);
+}
+
+.sp-groups-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--sp-line);
+}
+.sp-groups-answer {
+  margin-top: 8px;
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  border-radius: 18px;
+  padding: 12px 14px;
+  font-size: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sp-groups-meta {
+  display: block;
+  margin-top: 6px;
+  color: var(--sp-mute);
+  font-size: 13px;
+}
+.sp-groups-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  margin-top: 10px;
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  border-radius: 99px;
+  padding: 6px 8px 6px 14px;
+  font-size: 14px;
+  color: var(--sp-ink);
+  text-decoration: none;
+}
+a.sp-groups-file {
+  color: var(--sp-cyan-ink);
+  padding-right: 14px;
+}
+.sp-groups-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.sp-groups-file button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 95, 168, 0.18);
+  color: var(--sp-pink-ink);
+  font: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sp-groups-preview {
+  display: block;
+  margin-top: 10px;
+  max-width: 100%;
+  max-height: 260px;
+  border-radius: 18px;
+  border: 1px solid var(--sp-line);
+}
+.sp-groups-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.sp-groups-actions .sp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sp-groups-count {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--sp-mute);
+  margin-top: 4px;
+}
+
+@media (min-width: 640px) {
+  .sp-groups-hw {
+    grid-template-columns: minmax(0, 1.4fr) minmax(200px, 1fr);
+    align-items: start;
+  }
+}
+@media (min-width: 900px) {
+  .sp-groups-lessons {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.sp-groups-hw .sp-badge {
+  margin-left: 0;
+}

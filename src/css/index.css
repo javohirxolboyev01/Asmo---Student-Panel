@@ -326,13 +326,13 @@
     border-radius: 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #6b7280;
+    color: #ffffff;
     transition: all 0.15s ease;
   }
 
   .sidebar-link:hover {
-    background: #f8f9fa;
-    color: theme("colors.gray.800");
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
   }
 
   .sidebar-link.active {

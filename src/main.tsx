@@ -18,12 +18,22 @@ const cachedUser = tokenStorage.getAccessToken() ? readCachedUser() : null;
 if (!cachedUser) clearSessionCache();
 const sessionReady = cachedUser ? startSessionCache(cachedUser) : Promise.resolve();
 
+// Opt-in (dev only): its floating button sits on top of the student panel's
+// bottom nav / chest button. Enable with localStorage.setItem("rq-devtools", "1").
+const showQueryDevtools = (() => {
+  try {
+    return import.meta.env.DEV && localStorage.getItem("rq-devtools") === "1";
+  } catch {
+    return false;
+  }
+})();
+
 sessionReady.finally(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
         <App />
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        {showQueryDevtools && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </React.StrictMode>,
   );

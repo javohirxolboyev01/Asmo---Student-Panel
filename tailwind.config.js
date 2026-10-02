@@ -33,6 +33,7 @@ export default {
         success: "#10B981",
         warning: "#F59E0B",
         danger: "#EF4444",
+        sidebar: "#35496D",
         background: {
           DEFAULT: "#F5F7FA",
           dark: "#0B0D12",

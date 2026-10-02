@@ -9,6 +9,8 @@ interface CourseLevelCardProps {
   week: number;
   percentage: number;
   colorClass: string;
+  /** Progress fill color, chosen to contrast with the level color. Defaults to white. */
+  barClass?: string;
 }
 
 export const CourseLevelCard = ({
@@ -18,9 +20,11 @@ export const CourseLevelCard = ({
   week,
   percentage,
   colorClass,
+  barClass = "bg-white",
   // darkMode,
 }: CourseLevelCardProps) => {
   const { t } = useTranslation();
+  const clampedPercentage = Math.min(100, Math.max(0, percentage));
   return (
     // Deliberately not using the shared `.card` class: its `.dark .card`
     // rule has higher specificity than a single `bg-*` utility and would
@@ -31,17 +35,33 @@ export const CourseLevelCard = ({
     // the dashboard's near-black background.
     <div className={cn("overflow-hidden rounded-2xl", colorClass)}>
       <div className="p-5 md:p-6">
-        {/* Level and Next Level */}
-        <div className="flex items-center gap-2 text-lg md:text-xl font-semibold text-white">
+        {/* Level → Next Level, on one line */}
+        <div className="flex items-center gap-2 flex-wrap text-lg md:text-xl font-semibold text-white">
           <span>{level}</span>
+          {nextLevel && (
+            <>
+              <span className="text-white/70">→</span>
+              <span>{nextLevel}</span>
+            </>
+          )}
         </div>
-        {nextLevel && (
-          <p className="text-sm text-white/70 mt-0.5">
-            <span>→</span> <span className="text-white font-semibold">{nextLevel}</span>
-          </p>
-        )}
+
+        {/* Progress Bar */}
+        <div
+          className="mt-3 w-full h-2 rounded-full bg-white/20 overflow-hidden"
+          role="progressbar"
+          aria-valuenow={clampedPercentage}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
+          <div
+            className={cn("h-full rounded-full transition-all duration-500", barClass)}
+            style={{ width: `${clampedPercentage}%` }}
+          />
+        </div>
+
         {/* Unit, Week, Percentage */}
-        <div className="flex items-center gap-3 mt-2 flex-nowrap overflow-x-auto">
+        <div className="flex items-center gap-3 mt-3 flex-nowrap overflow-x-auto">
           <div className="px-2 py-1 rounded-xl bg-white/20 whitespace-nowrap">
             <span className="text-sm font-medium text-white">{unit}</span>
           </div>
@@ -56,16 +76,6 @@ export const CourseLevelCard = ({
             </span>
           </div>
         </div>
-
-        {/* Progress Bar */}
-        {/* <div className="mt-3">
-          <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary-500 rounded-full transition-all duration-500"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </div> */}
       </div>
     </div>
   );

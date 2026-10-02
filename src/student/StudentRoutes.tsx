@@ -8,9 +8,7 @@ import { coinsQueryOptions } from "@/hooks/queries/useCoins";
 import { paymentsQueryOptions } from "@/hooks/queries/usePayments";
 import { productsQueryOptions } from "@/hooks/queries/useProducts";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "@/components/Layout/Layout";
-import { sharedPages, sharedPanelRoutes } from "@/pages/sharedRoutes";
-import { studentNavigation } from "./navigation";
+import { StudentLayout } from "./layout/StudentLayout";
 
 // Each page is its own chunk, so a student never downloads teacher code;
 // once the panel is up, the rest are fetched in the background (preloadWhenIdle).
@@ -24,6 +22,12 @@ const pages = {
   ShopPage: lazyPage(() => import("./pages/ShopPage"), "ShopPage"),
   PaymentsPage: lazyPage(() => import("./pages/PaymentsPage"), "PaymentsPage"),
   WishlistPage: lazyPage(() => import("./pages/WishlistPage"), "WishlistPage"),
+  QuizPage: lazyPage(() => import("./pages/QuizPage"), "QuizPage"),
+  // Student-themed versions of the pages the teacher panel takes from src/pages.
+  NotificationsPage: lazyPage(() => import("./pages/NotificationsPage"), "NotificationsPage"),
+  ProfilePage: lazyPage(() => import("./pages/ProfilePage"), "ProfilePage"),
+  EditProfilePage: lazyPage(() => import("./pages/EditProfilePage"), "EditProfilePage"),
+  SettingsPage: lazyPage(() => import("./pages/SettingsPage"), "SettingsPage"),
 };
 
 // Warms the cache behind the bottom-nav tabs so their first visit shows data
@@ -38,13 +42,13 @@ const prefetchTabData = () => {
 
 export const StudentRoutes = () => {
   useEffect(() => {
-    preloadWhenIdle([...Object.values(pages), ...Object.values(sharedPages)]);
+    preloadWhenIdle(Object.values(pages));
     runWhenIdle(prefetchTabData);
   }, []);
 
   return (
     <Routes>
-      <Route element={<Layout navigation={studentNavigation} />}>
+      <Route element={<StudentLayout />}>
         <Route index element={<pages.DashboardPage />} />
         <Route path="groups" element={<pages.GroupsPage />} />
         <Route path="groups/:id" element={<pages.GroupDetailPage />} />
@@ -54,7 +58,11 @@ export const StudentRoutes = () => {
         <Route path="shop" element={<pages.ShopPage />} />
         <Route path="payments" element={<pages.PaymentsPage />} />
         <Route path="wishlist" element={<pages.WishlistPage />} />
-        {sharedPanelRoutes}
+        <Route path="quiz/:id" element={<pages.QuizPage />} />
+        <Route path="notifications" element={<pages.NotificationsPage />} />
+        <Route path="profile" element={<pages.ProfilePage />} />
+        <Route path="profile/edit" element={<pages.EditProfilePage />} />
+        <Route path="settings" element={<pages.SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

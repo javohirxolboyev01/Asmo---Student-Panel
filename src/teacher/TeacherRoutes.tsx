@@ -21,6 +21,10 @@ const pages = {
   LessonDetailPage: lazyPage(() => import("./pages/LessonDetailPage"), "LessonDetailPage"),
   AttendancePage: lazyPage(() => import("./pages/AttendancePage"), "AttendancePage"),
   CoinsPage: lazyPage(() => import("./pages/CoinsPage"), "CoinsPage"),
+  MissionsPage: lazyPage(() => import("./pages/MissionsPage"), "MissionsPage"),
+  TestsPage: lazyPage(() => import("./pages/TestsPage"), "TestsPage"),
+  TestEditorPage: lazyPage(() => import("./pages/TestEditorPage"), "TestEditorPage"),
+  TestResultsPage: lazyPage(() => import("./pages/TestResultsPage"), "TestResultsPage"),
   ShopPage: lazyPage(() => import("./pages/ShopPage"), "ShopPage"),
   PaymentsPage: lazyPage(() => import("./pages/PaymentsPage"), "PaymentsPage"),
   StudentsPage: lazyPage(() => import("./pages/StudentsPage"), "StudentsPage"),
@@ -55,6 +59,11 @@ export const TeacherRoutes = () => {
         <Route path="lessons/:id" element={<pages.LessonDetailPage />} />
         <Route path="attendance" element={<pages.AttendancePage />} />
         <Route path="coins" element={<pages.CoinsPage />} />
+        <Route path="missions" element={<pages.MissionsPage />} />
+        <Route path="tests" element={<pages.TestsPage />} />
+        <Route path="tests/new" element={<pages.TestEditorPage />} />
+        <Route path="tests/:id/edit" element={<pages.TestEditorPage />} />
+        <Route path="tests/:id/results" element={<pages.TestResultsPage />} />
         <Route path="shop" element={<pages.ShopPage />} />
         <Route path="payments" element={<pages.PaymentsPage />} />
         <Route path="students" element={<pages.StudentsPage />} />

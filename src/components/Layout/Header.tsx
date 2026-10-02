@@ -30,8 +30,22 @@ export const Header = ({ user }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800 z-40">
       <div className="flex items-center justify-between h-16 px-4 md:px-6 max-w-[1400px] mx-auto">
-        {/* Logo */}
-        <Link to="/" className="flex items-center">
+        {/* Mobile: account (avatar + name) on the left instead of the logo */}
+        {user && (
+          <Link to="/profile" className="flex md:hidden items-center gap-2 min-w-0">
+            <img
+              src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
+              alt={user.firstName}
+              className="w-9 h-9 rounded-full border-2 border-gray-200 dark:border-gray-700 flex-shrink-0"
+            />
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">
+              {user.firstName} {user.lastName}
+            </span>
+          </Link>
+        )}
+
+        {/* Logo — desktop only */}
+        <Link to="/" className="hidden md:flex items-center">
           <img
             src={Logo}
             alt="ASMO Learning Platform"
@@ -40,7 +54,7 @@ export const Header = ({ user }: HeaderProps) => {
         </Link>
 
         {/* Right Actions */}
-        <div className="flex items-center  gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 ml-auto">
           <Link
             to="/notifications"
             className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-200 transition-colors"
@@ -65,7 +79,7 @@ export const Header = ({ user }: HeaderProps) => {
           </Link>
 
           {user && (
-            <Link to="/profile" className="flex items-center gap-2">
+            <Link to="/profile" className="hidden md:flex items-center gap-2">
               <img
                 src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
                 alt={user.firstName}

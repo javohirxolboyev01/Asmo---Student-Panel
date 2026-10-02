@@ -33,6 +33,7 @@ interface AuthState {
   logout: () => void;
   checkAuth: () => Promise<void>;
   updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
+  saveCharacter: (config: unknown, svg: string) => Promise<void>;
   updateEmail: (email: string) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
@@ -118,6 +119,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  saveCharacter: async (config: unknown, svg: string) => {
+    const user = await authService.saveCharacter(config, svg);
+    writeCachedUser(user);
+    set({ user });
   },
 
   updateEmail: async (email: string) => {

@@ -1,5 +1,5 @@
 // src/hooks/queries/useDashboard.ts
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { dashboardService } from "@/services/dashboardService";
 import { teacherService } from "@/services/teacherService";
 import { queryKeys } from "@/lib/queryClient";
@@ -15,4 +15,6 @@ export const useLeaderboardQuery = (filter: LeaderboardFilter) =>
   useQuery({
     queryKey: queryKeys.leaderboard(filter),
     queryFn: () => dashboardService.getLeaderboard(filter),
+    // Switching week/month/all keeps the old list up until the new one arrives.
+    placeholderData: keepPreviousData,
   });

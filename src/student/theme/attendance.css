@@ -1,0 +1,62 @@
+/* src/student/theme/attendance.css
+ * Attendance-page extras on top of space.css (calendar cells are buttons). */
+.sp-attendance-cell {
+  display: block;
+  width: 100%;
+  border: 0;
+  font: inherit;
+  color: var(--sp-ink);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.sp-attendance-cell:hover {
+  transform: scale(1.04);
+}
+.sp-attendance-cell:active {
+  transform: scale(0.96);
+}
+.sp-attendance-cell:focus-visible {
+  outline: 2px solid var(--sp-cyan-ink);
+  outline-offset: 2px;
+}
+.sp-attendance-cell small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+/* Today that already has a mark keeps the status colour and gets a ring. */
+.sp-attendance-ring {
+  box-shadow: inset 0 0 0 2px var(--sp-sun-ink);
+}
+.sp-attendance-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sp-attendance-nav b {
+  min-width: 118px;
+  text-align: center;
+}
+.sp-attendance-today {
+  display: block;
+  margin: 8px auto 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sp-cyan-ink);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.sp-attendance-row {
+  color: inherit;
+  text-decoration: none;
+}
+a.sp-attendance-row:hover b,
+a.sp-attendance-row:hover > span:nth-child(2) {
+  text-decoration: underline;
+}
+.sp-attendance-cnav {
+  flex-wrap: wrap;
+}

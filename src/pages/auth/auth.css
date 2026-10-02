@@ -1,0 +1,481 @@
+/* src/pages/auth/auth.css
+ * Login / Register — "Kosmik maktab" auth screen, ported 1:1 from the
+ * "Asmo Learning — v3" mock. Scoped under `.au` so nothing leaks into the
+ * panels. Light tokens are the default; `.dark .au` switches to the original
+ * dark sky (the theme class comes from settingsStore on <html>).
+ */
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800&display=swap");
+
+/* ── Tokens ── */
+.au {
+  --au-bg1: #e6eeff;
+  --au-bg2: #f6eeff;
+  --au-line: rgba(40, 50, 120, 0.14);
+  --au-ink: #1d1b4f;
+  --au-mute: #6c6a9a;
+  --au-lime: #1aa062;
+  --au-pink: #e23d7f;
+  --au-cyan: #1a86d8;
+  --au-sun: #e58a00;
+  --au-card: #fff;
+  --au-s1: rgba(40, 50, 120, 0.05);
+  --au-s2: rgba(40, 50, 120, 0.08);
+  --au-glass: rgba(255, 255, 255, 0.8);
+  --au-err: #d12a6e;
+  color-scheme: light;
+}
+.dark .au {
+  --au-bg1: #140b3c;
+  --au-bg2: #2b1466;
+  --au-line: rgba(255, 255, 255, 0.16);
+  --au-ink: #f4eeff;
+  --au-mute: #b3a5e6;
+  --au-lime: #b6f23c;
+  --au-pink: #ff5fa8;
+  --au-cyan: #4fe3f5;
+  --au-sun: #ffc940;
+  --au-card: rgba(255, 255, 255, 0.1);
+  --au-s1: rgba(255, 255, 255, 0.06);
+  --au-s2: rgba(255, 255, 255, 0.1);
+  --au-glass: rgba(255, 255, 255, 0.09);
+  --au-err: #ff8ab8;
+  color-scheme: dark;
+}
+
+/* ── Screen ── */
+.au {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  background: linear-gradient(var(--au-bg1), var(--au-bg2));
+  color: var(--au-ink);
+  font-family: "Nunito", system-ui, sans-serif;
+  font-weight: 700;
+  /* top padding reserves room for the fixed language/theme controls */
+  padding: calc(56px + env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  -webkit-tap-highlight-color: transparent;
+}
+.au *,
+.au *::before,
+.au *::after {
+  box-sizing: border-box;
+}
+.au .ic {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.14em;
+  stroke-width: 2;
+  flex: none;
+  display: inline-block;
+}
+.au button:focus-visible,
+.au a:focus-visible {
+  outline: 3px solid var(--au-cyan);
+  outline-offset: 2px;
+}
+
+.au-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 90px 120px, #fff, transparent),
+    radial-gradient(2px 2px at 160px 60px, #cfe, transparent),
+    radial-gradient(1.5px 1.5px at 230px 170px, #fff, transparent),
+    radial-gradient(2px 2px at 300px 20px, #fde, transparent);
+  background-size: 340px 220px;
+  animation: au-tw 4s ease-in-out infinite alternate;
+  opacity: 0.7;
+  display: none;
+}
+.dark .au-stars {
+  display: block;
+}
+@keyframes au-tw {
+  to {
+    opacity: 0.3;
+  }
+}
+
+.au-dc {
+  position: fixed;
+  font-size: 56px;
+  line-height: 1;
+  pointer-events: none;
+  animation: au-bob 3s ease-in-out infinite;
+  opacity: 0.9;
+}
+.au-d1 {
+  left: 6%;
+  top: 5%;
+}
+.au-d2 {
+  right: 7%;
+  bottom: 6%;
+  animation-delay: 0.8s;
+}
+.au-d3 {
+  right: 10%;
+  top: 12%;
+  font-size: 34px;
+  animation-delay: 1.4s;
+}
+@keyframes au-bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Top-right controls: language select + theme toggle */
+.au-top {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.au-lang {
+  position: relative;
+}
+.au-lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 8px 0 9px;
+  border-radius: 99px;
+  border: 1px solid var(--au-line);
+  background: var(--au-card);
+  color: var(--au-ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+.au-lang-btn > .ic {
+  font-size: 13px;
+}
+.au-lang-chev {
+  color: var(--au-mute);
+  transition: transform 0.2s;
+}
+.au-lang-chev.on {
+  transform: rotate(180deg);
+}
+.au-lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  border-radius: 16px;
+  border: 1px solid var(--au-line);
+  background: var(--au-bg2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  animation: au-menu 0.15s ease-out;
+}
+.dark .au-lang-menu {
+  background: #2b1466;
+}
+.au-lang-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 9px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--au-ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.au-lang-menu button:hover {
+  background: var(--au-s2);
+}
+.au-lang-menu button.on {
+  color: var(--au-sun);
+}
+@keyframes au-menu {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Theme toggle */
+.au-tt {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--au-line);
+  background: var(--au-card);
+  color: var(--au-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0;
+}
+
+/* ── Card ── */
+.au-ab {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+}
+.au-ac {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: var(--au-glass);
+  border: 1px solid var(--au-line);
+  border-radius: 28px;
+  padding: 20px 18px;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.au-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.au-lg {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--au-sun), var(--au-pink));
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(255, 95, 168, 0.45);
+}
+.au-logo b {
+  display: block;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+}
+.au-logo em {
+  font-style: normal;
+  color: var(--au-sun);
+}
+.au-logo small {
+  letter-spacing: 0.14em;
+  color: var(--au-mute);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.au-sub {
+  text-align: center;
+  color: var(--au-mute);
+  margin: 8px 0 12px;
+  font-size: 14px;
+}
+
+/* Role switch */
+.au-roles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.au-roles button {
+  border: 2px solid var(--au-line);
+  background: var(--au-s1);
+  color: var(--au-mute);
+  font: inherit;
+  border-radius: 16px;
+  padding: 9px 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.au-roles button.on {
+  border-color: var(--au-sun);
+  background: rgba(255, 201, 64, 0.14);
+  color: var(--au-sun);
+}
+
+/* Fields */
+.au-fl {
+  display: block;
+  margin: 10px 0 0;
+  font-size: 13px;
+}
+.au-opt {
+  color: var(--au-mute);
+  font-size: 13px;
+}
+.au-fi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--au-s2);
+  border: 1px solid var(--au-line);
+  border-radius: 16px;
+  padding: 0 12px;
+  margin-top: 4px;
+  font-size: 14px;
+}
+.au-fi:focus-within {
+  border-color: var(--au-lime);
+  box-shadow: 0 0 0 3px rgba(182, 242, 60, 0.18);
+}
+.au-fi > i {
+  font-style: normal;
+  display: flex;
+}
+.au-fi input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  background: none;
+  border: 0;
+  color: var(--au-ink);
+  font: inherit;
+  padding: 10px 0;
+  outline: 0;
+}
+.au-fi input::placeholder {
+  color: var(--au-mute);
+}
+.au-fi input:disabled {
+  cursor: not-allowed;
+}
+.au-eye {
+  border: 0;
+  background: var(--au-s2);
+  color: var(--au-ink);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  flex: none;
+}
+.au-two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+.au-dim {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Info note (teacher role on register) */
+.au-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: var(--au-s1);
+  border: 1px solid var(--au-line);
+  color: var(--au-mute);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.au-note .ic {
+  color: var(--au-sun);
+  margin-top: 2px;
+}
+
+/* Button */
+.au-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 11px;
+  border: 0;
+  font: inherit;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  background: #b6f23c; /* same neon lime in both themes */
+  color: #06311f;
+  border-radius: 99px;
+  box-shadow: 0 4px 0 #7fa81c;
+  cursor: pointer;
+}
+.au-cta:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #7fa81c;
+}
+.au-cta:disabled {
+  opacity: 0.4;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.au-spin {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: au-spin 0.8s linear infinite;
+}
+@keyframes au-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.au-msg {
+  min-height: 18px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--au-err);
+  text-align: center;
+}
+.au-alt {
+  text-align: center;
+  color: var(--au-mute);
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.au-alt a {
+  color: var(--au-sun);
+  font-weight: 800;
+  text-decoration: none;
+}
+.au-copy {
+  text-align: center;
+  color: var(--au-mute);
+  font-size: 11px;
+  margin: 10px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .au-stars,
+  .au-dc {
+    animation: none;
+  }
+}

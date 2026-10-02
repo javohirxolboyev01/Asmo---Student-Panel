@@ -1,68 +1,101 @@
 // src/student/pages/LessonDetailPage.tsx
-
-import { cn } from "@/lib/utils";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { isOverdue } from "@/utilist/calculateDeadline";
+// Lesson info + homework: status/score, your answer, and the submit form.
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLessonDetailQuery, useSubmitHomeworkMutation } from "@/hooks/queries/useLessons";
-import { useParams } from "react-router-dom";
-import { formatDateTime } from "@/utilist//formatData";
-import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
-import { Upload, Check, Paperclip, X, FileText, CheckCircle2, AlertTriangle, Clock, Hourglass } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { toast, getErrorMessage } from "@/lib/toast";
-import { Button, IconButton, Textarea } from "@/components/ui";
-import { LessonHeaderCard } from "@/components/Lesson/LessonHeaderCard";
+import { getErrorMessage } from "@/lib/toast";
+import { queryKeys } from "@/lib/queryClient";
+import { getHoursUntilDeadline, isOverdue } from "@/utilist/calculateDeadline";
+import { formatDate, formatDateTime } from "@/utilist/formatData";
+import { EmptyState, ErrorState, Modal, PageHeader, Skel, Spinner } from "../components/ui";
+import "../theme/groups.css";
 
 const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+const MAX_CONTENT = 10000; // backend limit for submission text
+
+/** Attachment link: data: URLs can't be opened in a new tab, so download them. */
+const Attachment = ({ url, label }: { url: string; label: string }) => {
+  const isData = url.startsWith("data:");
+  const mime = isData ? url.slice(5, url.indexOf(";")) : "";
+  const ext = mime.split("/")[1]?.split("+")[0] || "bin";
+  const isImage = mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url);
+  return (
+    <div>
+      {isImage && <img src={url} alt={label} className="sp-groups-preview" loading="lazy" />}
+      <a
+        href={url}
+        className="sp-groups-file"
+        {...(isData ? { download: `attachment.${ext}` } : { target: "_blank", rel: "noopener noreferrer" })}
+      >
+        <span aria-hidden="true">📎</span>
+        <span>{label}</span>
+      </a>
+    </div>
+  );
+};
+
+const LessonSkeleton = () => (
+  <div aria-busy="true">
+    <Skel className="mt-4 h-9 w-32" />
+    <Skel className="mt-5 h-9 w-2/3" />
+    <Skel className="mt-2 h-4 w-1/2" />
+    <div className="sp-panel mt-4">
+      <Skel className="h-6 w-40" />
+      <div className="sp-groups-hw">
+        <div>
+          <Skel className="h-5 w-3/4" />
+          <Skel className="mt-2 h-16" />
+          <Skel className="mt-3 h-4 w-1/2" />
+        </div>
+        <Skel className="h-[130px]" />
+      </div>
+      <Skel className="mt-5 h-[110px]" />
+      <Skel className="mt-3 h-11 w-40" />
+    </div>
+  </div>
+);
 
 export const LessonDetailPage = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const { data, isLoading, error } = useLessonDetailQuery(id);
+  const queryClient = useQueryClient();
+  const { data, isLoading, error, refetch } = useLessonDetailQuery(id);
   const submitHomework = useSubmitHomeworkMutation(id ?? "");
-  const [submissionContent, setSubmissionContent] = useState("");
-  const [pendingAttachment, setPendingAttachment] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [content, setContent] = useState("");
+  const [attachment, setAttachment] = useState<{ name: string; dataUrl: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [sentOpen, setSentOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const prefilledFor = useRef<string | null>(null);
 
+  // Prefill the editor with the existing (ungraded) answer once per submission,
+  // so a background refetch never overwrites what the student is typing.
   useEffect(() => {
-    const loadedSubmission = data?.submission;
-    if (loadedSubmission && loadedSubmission.status !== "graded") {
-      setSubmissionContent(loadedSubmission.content ?? "");
+    const s = data?.submission;
+    if (s && s.status !== "graded" && prefilledFor.current !== s.id) {
+      prefilledFor.current = s.id;
+      setContent(s.content ?? "");
     }
   }, [data]);
 
-  const handleSubmit = async () => {
-    if (!data || !data.homework || !submissionContent.trim() || !id) return;
-
-    setIsSubmitting(true);
-    setSubmitMessage(null);
-
-    try {
-      await submitHomework.mutateAsync({
-        homeworkId: data.homework.id,
-        content: submissionContent,
-        attachmentUrl: pendingAttachment?.dataUrl,
-      });
-      setSubmitMessage({
-        type: "success",
-        text: t("lessonDetail.submitSuccess"),
-      });
-      toast.success(t("lessonDetail.submitSuccess"));
-      setPendingAttachment(null);
-    } catch (err) {
-      setSubmitMessage({
-        type: "error",
-        text: t("lessonDetail.submitError"),
-      });
-      toast.error(getErrorMessage(err, t("lessonDetail.submitError")));
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = () => {
+    if (!data?.homework || !content.trim() || !id || submitHomework.isPending) return;
+    setMessage(null);
+    submitHomework.mutate(
+      { homeworkId: data.homework.id, content, attachmentUrl: attachment?.dataUrl },
+      {
+        onSuccess: () => {
+          // Lets the "submit homework" mission become claimable right away.
+          void queryClient.invalidateQueries({ queryKey: queryKeys.missionsToday });
+          setAttachment(null);
+          setMessage({ type: "success", text: t("lessonDetail.submitSuccess") });
+          setSentOpen(true);
+        },
+        onError: (err) => setMessage({ type: "error", text: getErrorMessage(err, t("lessonDetail.submitError")) }),
+      },
+    );
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -70,245 +103,270 @@ export const LessonDetailPage = () => {
     e.target.value = "";
     if (!file) return;
     if (file.size > MAX_ATTACHMENT_BYTES) {
-      toast.error(t("lessonDetail.attachmentTooLarge"));
+      setMessage({ type: "error", text: t("lessonDetail.attachmentTooLarge") });
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
-      setPendingAttachment({ name: file.name, dataUrl: reader.result as string });
+      setMessage(null);
+      setAttachment({ name: file.name, dataUrl: reader.result as string });
     };
+    reader.onerror = () => setMessage({ type: "error", text: t("common.error") });
     reader.readAsDataURL(file);
   };
 
   if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <Skeleton className="w-32 h-4" />
-        <div className="card p-5 md:p-6 space-y-3">
-          <Skeleton className="w-24 h-5 rounded-full" />
-          <Skeleton className="w-2/3 h-7" />
-          <Skeleton className="w-1/3 h-4" />
-        </div>
-        <SkeletonCard lines={3} />
+      <div className="sp-page">
+        <LessonSkeleton />
       </div>
     );
   }
 
-  if (error || !data || !data.lesson) {
+  if (error || !data?.lesson) {
     return (
-      <div className="card p-8 text-center">
-        <p className="text-red-500">{error ? getErrorMessage(error, t("lessonDetail.notFound")) : t("lessonDetail.notFound")}</p>
+      <div className="sp-page">
+        <PageHeader back={{ to: "/groups", label: t("groups.title") }} title={t("lessonDetail.notFound")} />
+        {error ? (
+          <ErrorState message={getErrorMessage(error, t("lessonDetail.notFound"))} onRetry={() => refetch()} />
+        ) : (
+          <EmptyState
+            emoji="🔭"
+            title={t("lessonDetail.notFound")}
+            action={
+              <Link to="/groups" className="sp-cta inline-block no-underline">
+                {t("lessonDetail.backToGroups")}
+              </Link>
+            }
+          />
+        )}
       </div>
     );
   }
 
   const { lesson, homework, submission } = data;
+  const groupId = lesson.groupId;
+  const back = groupId
+    ? { to: `/groups/${groupId}`, label: lesson.groupName || t("lessonDetail.backToGroup") }
+    : { to: "/groups", label: t("groups.title") };
+  const graded = submission?.status === "graded";
   const overdue = homework ? isOverdue(homework.deadline) : false;
-  const canSubmit =
-    homework &&
-    homework.status === "active" &&
-    !overdue &&
-    (!submission || submission.status !== "graded");
+  const canSubmit = !!homework && homework.status === "active" && !overdue && !graded;
+  const pending = submitHomework.isPending;
+
+  const timeLeft = () => {
+    if (!homework) return "";
+    const h = getHoursUntilDeadline(homework.deadline);
+    if (h >= 48) return t("space.groups.leftDays", { n: Math.floor(h / 24) });
+    if (h >= 1) return t("space.groups.leftHours", { n: h });
+    return t("space.groups.leftLess");
+  };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <LessonHeaderCard
-        lesson={lesson}
-        aside={
-          submission && submission.status === "graded" && (
-            <div className="bg-[#E8F5E9] dark:bg-[#2E7D32]/15 px-4 py-2 rounded-2xl">
-              <span className="text-lg font-bold text-[#2E7D32]">
-                {submission.score}
-              </span>
-              <span className="text-sm text-[#2E7D32]/70">
-                /{homework?.maxScore}
-              </span>
+    <div className="sp-page">
+      <PageHeader
+        back={back}
+        title={lesson.topic}
+        subtitle={[
+          t("lessonDetail.lessonNumber", { order: lesson.lessonOrder }),
+          `📅 ${formatDate(lesson.lessonDate)}`,
+          lesson.teacherName && `👩‍🏫 ${lesson.teacherName}`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
+        right={
+          graded && homework ? (
+            <div className="sp-pill" aria-label={t("lessonDetail.graded")}>
+              ⭐ {submission?.score}/{homework.maxScore}
             </div>
-          )
+          ) : undefined
         }
       />
 
-      {homework && (
-        <div className="card">
-          <div className="p-5 md:p-6">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-warning" />
-              {t("lessonDetail.homeworkTitle")}
-            </h2>
+      {lesson.description && (
+        <div className="sp-panel mb-3.5">
+          <h2>📘 {t("space.groups.lessonAbout")}</h2>
+          <p className="sp-groups-text">{lesson.description}</p>
+        </div>
+      )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left - Homework Info */}
-              <div>
-                <h3 className="font-medium text-gray-800 dark:text-gray-100 mb-2">
-                  {homework.title}
-                </h3>
-                <p className="text-gray-500 text-sm whitespace-pre-wrap leading-relaxed">
-                  {homework.description}
-                </p>
-                <div className="mt-4 flex items-center gap-4 text-sm">
-                  <span className="text-gray-500">
-                    {t("lessonDetail.deadlineLabel", {
-                      date: formatDateTime(homework.deadline),
-                    })}
-                  </span>
-                  {submission && submission.status === "graded" && (
-                    <span className="text-[#2E7D32] font-medium flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      {t("lessonDetail.graded")}
-                    </span>
-                  )}
-                </div>
-              </div>
+      {!homework ? (
+        <EmptyState emoji="🌙" title={t("space.groups.noHomework")} text={t("space.groups.noHomeworkHint")} />
+      ) : (
+        <div className="sp-panel">
+          <h2>📝 {t("lessonDetail.homeworkTitle")}</h2>
 
-              {/* Right - Score */}
-              <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-white/5 rounded-2xl p-6 min-h-[120px]">
-                {submission && submission.status === "graded" ? (
-                  <div className="text-center">
-                    <span className="text-5xl font-bold text-warning">
-                      {submission.score}
-                    </span>
-                    <span className="text-gray-400 text-xl">
-                      {" "}
-                      / {homework.maxScore}
-                    </span>
-                    {submission.feedback && (
-                      <p className="text-sm text-gray-500 mt-2 max-w-xs">
-                        {submission.feedback}
-                      </p>
-                    )}
-                  </div>
-                ) : submission && submission.status === "submitted" ? (
-                  <div className="text-center">
-                    <Hourglass className="w-9 h-9 text-warning mx-auto mb-2" />
-                    <p className="text-gray-500">{t("lessonDetail.waiting")}</p>
-                    <p className="text-sm text-gray-400">{t("lessonDetail.checking")}</p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <span className="text-4xl text-gray-300">0</span>
-                    <span className="text-gray-300 text-xl">
-                      {" "}
-                      / {homework.maxScore}
-                    </span>
-                    <p className="text-sm text-gray-400 mt-2">
-                      {t("lessonDetail.notSubmittedYet")}
-                    </p>
-                  </div>
+          <div className="sp-groups-hw">
+            <div className="min-w-0">
+              <h3>{homework.title}</h3>
+              {homework.description && <p className="sp-groups-text">{homework.description}</p>}
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                <span className={overdue ? "sp-badge sp-pink" : "sp-badge sp-sun"}>
+                  ⏰ {t("lessonDetail.deadlineLabel", { date: formatDateTime(homework.deadline) })}
+                </span>
+                {graded && <span className="sp-badge">✓ {t("lessonDetail.graded")}</span>}
+                {submission?.status === "submitted" && (
+                  <span className="sp-badge sp-cyan">⏳ {t("lessonDetail.waiting")}</span>
                 )}
               </div>
             </div>
 
-            {/* Deadline Alert */}
-            {overdue && homework.status !== "closed" && (
-              <div className="mt-4 bg-red-500 text-white p-4 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                {t("lessonDetail.overdue")}
+            {graded ? (
+              <div className="sp-groups-score sp-graded">
+                <b>
+                  {submission?.score}
+                  <small> {t("space.groups.ofMax", { max: homework.maxScore })}</small>
+                </b>
+                <span>{t("lessonDetail.graded")}</span>
               </div>
-            )}
-
-            {!overdue && homework.status === "active" && !submission && (
-              <div className="mt-4 bg-[#FFF3E0] dark:bg-[#E65100]/15 text-[#E65100] p-4 rounded-2xl font-medium text-center flex items-center justify-center gap-2">
-                <Clock className="w-4 h-4" />
-                {t("lessonDetail.hoursLeft")}
+            ) : submission?.status === "submitted" ? (
+              <div className="sp-groups-score">
+                <span className="sp-groups-big-ic" aria-hidden="true">
+                  ⏳
+                </span>
+                <strong className="text-base" style={{ color: "var(--sp-ink)" }}>
+                  {t("lessonDetail.waiting")}
+                </strong>
+                <span>{t("lessonDetail.checking")}</span>
               </div>
-            )}
-
-            {/* Your answer (always visible once submitted, regardless of grading state) */}
-            {submission && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <h3 className="font-medium text-gray-800 dark:text-gray-100 mb-2">
-                  {t("lessonDetail.yourAnswerTitle")}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap bg-gray-50 dark:bg-white/5 rounded-2xl p-4">
-                  {submission.content}
-                </p>
-                {submission.attachmentUrl && (
-                  <a
-                    href={submission.attachmentUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-2 text-sm text-warning hover:underline"
-                  >
-                    {t("lessonDetail.attachmentLabel")}
-                  </a>
-                )}
-              </div>
-            )}
-
-            {/* Submission */}
-            {canSubmit && (
-              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                <h3 className="font-medium text-gray-800 dark:text-gray-100 mb-3">
-                  {submission ? t("lessonDetail.editTitle") : t("lessonDetail.submitTitle")}
-                </h3>
-                <Textarea
-                  value={submissionContent}
-                  onChange={(e) => setSubmissionContent(e.target.value)}
-                  placeholder={t("lessonDetail.submitPlaceholder")}
-                  className="min-h-[120px]"
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
-                {pendingAttachment && (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                    <Paperclip className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="truncate">{pendingAttachment.name}</span>
-                    <IconButton
-                      type="button"
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setPendingAttachment(null)}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </IconButton>
-                  </div>
-                )}
-                <div className="flex flex-wrap items-center gap-3 mt-3">
-                  <Button variant="outline" size="md" leftIcon={<Upload className="w-4 h-4" />} onClick={() => fileInputRef.current?.click()} type="button">
-                    {t("lessonDetail.uploadFile")}
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!submissionContent.trim()}
-                    isLoading={isSubmitting}
-                    leftIcon={<Check className="w-4 h-4" />}
-                  >
-                    {submission ? t("lessonDetail.resubmit") : t("lessonDetail.submit")}
-                  </Button>
-                </div>
-                {submitMessage && (
-                  <div
-                    className={cn(
-                      "mt-3 p-3 rounded-2xl text-sm",
-                      submitMessage.type === "success"
-                        ? "bg-[#E8F5E9] dark:bg-[#2E7D32]/15 text-[#2E7D32]"
-                        : "bg-[#FFEBEE] dark:bg-[#C62828]/15 text-[#C62828]",
-                    )}
-                  >
-                    {submitMessage.text}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {submission && submission.status === "graded" && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                <p className="text-sm text-[#2E7D32] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  {t("lessonDetail.gradedFooter", {
-                    score: submission.score,
-                    max: homework.maxScore,
-                  })}
-                </p>
+            ) : (
+              <div className="sp-groups-score">
+                <b>
+                  0<small> {t("space.groups.ofMax", { max: homework.maxScore })}</small>
+                </b>
+                <span>{t("lessonDetail.notSubmittedYet")}</span>
               </div>
             )}
           </div>
+
+          {graded && submission?.feedback && (
+            <div className="sp-groups-block">
+              <h3>💬 {t("space.groups.feedback")}</h3>
+              <p className="sp-groups-answer">{submission?.feedback}</p>
+            </div>
+          )}
+
+          {overdue && homework.status !== "closed" && (
+            <div className="sp-groups-alert sp-pink" role="status">
+              ⛔ {t("lessonDetail.overdue")}
+            </div>
+          )}
+          {homework.status === "closed" && !graded && (
+            <div className="sp-groups-alert sp-mute" role="status">
+              🔒 {t("space.groups.closed")}
+            </div>
+          )}
+          {!overdue && homework.status === "active" && !submission && (
+            <div className="sp-groups-alert" role="status">
+              ⏰ {timeLeft()}
+            </div>
+          )}
+
+          {submission && (
+            <div className="sp-groups-block">
+              <h3>{t("lessonDetail.yourAnswerTitle")}</h3>
+              <p className="sp-groups-answer">{submission.content}</p>
+              {submission.submittedAt && (
+                <small className="sp-groups-meta">
+                  {t("space.groups.submittedAt", { date: formatDateTime(submission.submittedAt) })}
+                </small>
+              )}
+              {submission.attachmentUrl && (
+                <Attachment url={submission.attachmentUrl} label={t("lessonDetail.attachmentLabel")} />
+              )}
+            </div>
+          )}
+
+          {canSubmit && (
+            <div className="sp-groups-block">
+              <h3>{submission ? t("lessonDetail.editTitle") : t("lessonDetail.submitTitle")}</h3>
+              <label className="sp-fl mt-2">
+                <span className="sr-only">{t("lessonDetail.submitTitle")}</span>
+                <textarea
+                  className="sp-in min-h-[140px]"
+                  value={content}
+                  maxLength={MAX_CONTENT}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={t("lessonDetail.submitPlaceholder")}
+                  disabled={pending}
+                />
+              </label>
+              {content.length > MAX_CONTENT * 0.8 && (
+                <small className="sp-groups-count">
+                  {content.length}/{MAX_CONTENT}
+                </small>
+              )}
+
+              <input ref={fileInputRef} type="file" onChange={handleFileSelect} className="hidden" />
+              {attachment && (
+                <div>
+                  <div className="sp-groups-file">
+                    <span aria-hidden="true">📎</span>
+                    <span>{attachment.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setAttachment(null)}
+                      aria-label={t("space.groups.removeFile")}
+                      disabled={pending}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {submission?.attachmentUrl && <small className="sp-groups-meta">{t("space.groups.replaceFile")}</small>}
+                </div>
+              )}
+
+              <div className="sp-groups-actions">
+                <button
+                  type="button"
+                  className="sp-cta sp-ghost"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={pending}
+                >
+                  📎 {t("lessonDetail.uploadFile")}
+                </button>
+                <button type="button" className="sp-cta" onClick={handleSubmit} disabled={!content.trim() || pending}>
+                  {pending ? <Spinner /> : "🚀"} {submission ? t("lessonDetail.resubmit") : t("lessonDetail.submit")}
+                </button>
+              </div>
+              {message && (
+                <p className={message.type === "error" ? "sp-msg sp-err" : "sp-msg"} role="status">
+                  {message.type === "success" ? "✓ " : ""}
+                  {message.text}
+                </p>
+              )}
+            </div>
+          )}
+
+          {!canSubmit && message?.type === "success" && (
+            <p className="sp-msg" role="status">
+              ✓ {message.text}
+            </p>
+          )}
+
+          {graded && (
+            <p className="sp-msg mt-4" role="status">
+              ✓ {t("lessonDetail.gradedFooter", { score: submission?.score, max: homework.maxScore })}
+            </p>
+          )}
         </div>
       )}
+
+      <Modal open={sentOpen} onClose={() => setSentOpen(false)} labelledBy="sp-hw-sent">
+        <div className="text-5xl" aria-hidden="true">
+          🚀
+        </div>
+        <h2 id="sp-hw-sent">{t("space.groups.sentTitle")}</h2>
+        <p>{t("space.groups.sentText")}</p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <button className="sp-cta sp-ghost" onClick={() => setSentOpen(false)}>
+            {t("space.awesome")}
+          </button>
+          <Link to="/" className="sp-cta inline-block no-underline" onClick={() => setSentOpen(false)}>
+            {t("space.groups.toMissions")}
+          </Link>
+        </div>
+      </Modal>
     </div>
   );
 };

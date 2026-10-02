@@ -1,0 +1,148 @@
+/* src/student/theme/payments.css
+ * Student payments page extras. Uses only `.sp` theme vars, so light and dark
+ * are handled by the tokens in space.css. */
+
+.sp-pay-row {
+  align-items: flex-start;
+}
+.sp-pay-row .sp-t small {
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sp-pay-row .sp-t .sp-pay-desc {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.sp-pay-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.sp-pay-end .sp-badge {
+  margin-left: 0;
+  white-space: nowrap;
+}
+.sp-pay-end small {
+  color: var(--sp-mute);
+  font-size: 12px;
+}
+
+.sp-pay-filters {
+  margin-bottom: 14px;
+  display: grid;
+  gap: 4px;
+}
+.sp-pay-flabel {
+  display: block;
+  color: var(--sp-mute);
+  font-size: 13px;
+  margin-top: 4px;
+}
+.sp-pay-filters .sp-chipbar {
+  margin: 8px 0 6px;
+  flex-wrap: wrap;
+}
+.sp-pay-filters .sp-chipbar button {
+  padding: 6px 13px;
+  font-size: 14px;
+}
+.sp-pay-filters .sp-chipbar button span {
+  color: var(--sp-mute);
+  margin-left: 4px;
+  font-size: 12px;
+}
+.sp-pay-filters .sp-chipbar button.on span {
+  color: inherit;
+  opacity: 0.75;
+}
+.sp-pay-factions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--sp-line);
+  padding-top: 10px;
+  margin-top: 4px;
+  color: var(--sp-mute);
+  font-size: 13px;
+}
+.sp-pay-factions .sp-mute-btn {
+  color: var(--sp-pink-ink);
+}
+
+.sp-pay-fdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--sp-lime-ink);
+  display: inline-block;
+}
+
+.sp-panel h2.sp-pay-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.sp-pay-head small {
+  color: var(--sp-mute);
+  font-size: 14px;
+}
+
+.sp-pay-more {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Details modal */
+.sp-pay-dl {
+  margin: 14px 0 0;
+  text-align: left;
+}
+.sp-pay-dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--sp-line);
+  font-size: 15px;
+}
+.sp-pay-dl > div:last-child {
+  border: 0;
+}
+.sp-pay-dl dt {
+  color: var(--sp-mute);
+  flex-shrink: 0;
+}
+.sp-pay-dl dd {
+  text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sp-pay-dl dd .sp-badge {
+  margin-left: 0;
+}
+.sp-pay-amount {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 32px;
+  line-height: 1.1;
+  text-align: center;
+  margin-top: 6px;
+}
+
+@media (min-width: 900px) {
+  .sp-pay-filters {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+  }
+  .sp-pay-factions {
+    grid-column: 1 / -1;
+  }
+}

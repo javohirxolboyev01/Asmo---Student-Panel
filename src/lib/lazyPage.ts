@@ -1,10 +1,39 @@
 // src/lib/lazyPage.ts
 import { ComponentType, lazy } from "react";
 
+const RELOAD_FLAG = "chunk-reload";
+
+/**
+ * After a deploy, an open tab still points at the old (now deleted) chunk
+ * files. Reload once to pick up the new build; the flag stops a reload loop
+ * when the network is really down (the error boundary shows "retry" then).
+ */
+const reloadOnStaleChunk = (error: unknown): never => {
+  const stale = error instanceof Error && /dynamically imported module|Importing a module script failed|Loading chunk/i.test(error.message);
+  let reloaded = false;
+  try {
+    reloaded = sessionStorage.getItem(RELOAD_FLAG) === "1";
+    if (stale && !reloaded) sessionStorage.setItem(RELOAD_FLAG, "1");
+  } catch {
+    reloaded = true; // no storage → never risk a loop
+  }
+  if (stale && !reloaded) window.location.reload();
+  throw error;
+};
+
 /** React.lazy for a named page export, plus `preload()` to fetch its chunk early. */
 export const lazyPage = <K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) =>
   Object.assign(
-    lazy(() => load().then((module) => ({ default: module[name] }))),
+    lazy(() =>
+      load().then((module) => {
+        try {
+          sessionStorage.removeItem(RELOAD_FLAG);
+        } catch {
+          // ignore
+        }
+        return { default: module[name] };
+      }, reloadOnStaleChunk),
+    ),
     { preload: load },
   );
 

@@ -28,6 +28,8 @@ interface RawAttendanceRecord {
   lessonTopic?: string;
   topic?: string;
   lesson?: { id?: string; topic?: string; lessonDate?: string; date?: string };
+  // GET /attendance includes the Prisma relation as-is (capitalised).
+  Lesson?: { id?: string; topic?: string; lessonDate?: string };
   lessonDate?: string;
   date?: string;
   status: string;
@@ -37,10 +39,16 @@ interface RawAttendanceRecord {
 
 export const normalizeAttendanceRecord = (raw: RawAttendanceRecord): AttendanceRecord => ({
   id: raw.id,
-  lessonId: raw.lessonId ?? raw.lesson?.id ?? "",
-  lessonTopic: raw.lessonTopic ?? raw.topic ?? raw.lesson?.topic ?? "Dars",
+  lessonId: raw.lessonId ?? raw.lesson?.id ?? raw.Lesson?.id ?? "",
+  lessonTopic: raw.lessonTopic ?? raw.topic ?? raw.lesson?.topic ?? raw.Lesson?.topic ?? "Dars",
   lessonDate:
-    raw.lessonDate ?? raw.date ?? raw.lesson?.lessonDate ?? raw.lesson?.date ?? raw.createdAt ?? "",
+    raw.lessonDate ??
+    raw.date ??
+    raw.lesson?.lessonDate ??
+    raw.lesson?.date ??
+    raw.Lesson?.lessonDate ??
+    raw.createdAt ??
+    "",
   status: (raw.status?.toLowerCase() as AttendanceRecord["status"]) ?? "absent",
   markedAt: raw.markedAt ?? raw.createdAt ?? "",
 });

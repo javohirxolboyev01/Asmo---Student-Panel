@@ -1,0 +1,172 @@
+/* src/student/theme/quiz.css
+ * Test page (intro → questions → result). Only theme vars, so light/dark
+ * follow the `.sp` / `.dark .sp` tokens automatically.
+ */
+
+.sp-quiz-intro,
+.sp-quiz-result {
+  text-align: center;
+  padding: 24px 18px;
+}
+.sp-quiz-big {
+  font-size: 56px;
+  line-height: 1.1;
+}
+.sp-quiz-desc {
+  margin-top: 8px;
+  color: var(--sp-mute);
+  white-space: pre-line;
+}
+.sp-quiz-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.sp-quiz-facts span {
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  border-radius: 99px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.sp-quiz-rule {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--sp-mute);
+}
+.sp-quiz-go {
+  min-width: 160px;
+  font-size: 16px;
+  padding: 10px 24px;
+}
+.sp-quiz-percent {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 48px;
+  line-height: 1.1;
+  color: var(--sp-lime-ink);
+}
+
+/* Progress + timer */
+.sp-quiz-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--sp-mute);
+}
+.sp-quiz-clock {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 16px;
+  color: var(--sp-ink);
+  font-variant-numeric: tabular-nums;
+}
+.sp-quiz-clock.sp-quiz-low {
+  color: var(--sp-pink-ink);
+}
+.sp-quiz-track {
+  margin: 8px 0 14px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--sp-track);
+  overflow: hidden;
+}
+.sp-quiz-track > div {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--sp-lime);
+  transition: width 0.3s ease;
+}
+
+/* Question */
+.sp-quiz-q h2 {
+  font-size: 19px;
+  line-height: 1.35;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.sp-quiz-opts {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.sp-quiz-opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--sp-card);
+  border: 2px solid var(--sp-line);
+  border-radius: 18px;
+  padding: 12px 14px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.sp-quiz-opt:hover {
+  border-color: var(--sp-lime-ink);
+}
+.sp-quiz-opt:active {
+  transform: scale(0.99);
+}
+.sp-quiz-opt.on {
+  border-color: var(--sp-lime-ink);
+  box-shadow: 0 0 0 3px rgba(182, 242, 60, 0.2);
+}
+.sp-quiz-letter {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-family: "Baloo 2", sans-serif;
+  border: 2px solid var(--sp-line);
+}
+.sp-quiz-opt.on .sp-quiz-letter {
+  background: var(--sp-lime);
+  border-color: var(--sp-lime);
+  color: var(--sp-on-lime);
+}
+
+/* Jump-to dots */
+.sp-quiz-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+.sp-quiz-dots button {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sp-mute);
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  cursor: pointer;
+}
+.sp-quiz-dots button.done {
+  color: var(--sp-ink);
+  border-color: var(--sp-lime-ink);
+}
+.sp-quiz-dots button.cur {
+  background: var(--sp-lime);
+  border-color: var(--sp-lime);
+  color: var(--sp-on-lime);
+}
+
+.sp-quiz-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sp-quiz-nav .sp-cta {
+  min-width: 120px;
+  padding: 9px 18px;
+}

@@ -1,11 +1,25 @@
 // src/components/Layout/BottomNav.tsx
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+import { LayoutGrid } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { NavItem } from "./navigation";
 
-export const BottomNav = ({ items }: { items: NavItem[] }) => {
+export const BottomNav = ({ items, more = [] }: { items: NavItem[]; more?: NavItem[] }) => {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const moreActive = more.some((item) => pathname === item.path || pathname.startsWith(`${item.path}/`));
+
+  // Close on navigation and on Escape.
+  useEffect(() => setSheetOpen(false), [pathname]);
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setSheetOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheetOpen]);
 
   return (
     <>
@@ -37,8 +51,46 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
               )}
             </NavLink>
           ))}
+          {more.length > 0 && (
+            <button
+              type="button"
+              className={cn("tb-item tb-more", (moreActive || sheetOpen) && "tb-item--on")}
+              aria-expanded={sheetOpen}
+              aria-haspopup="dialog"
+              onClick={() => setSheetOpen((open) => !open)}
+            >
+              <span className="tb-icon">
+                <LayoutGrid size={24} strokeWidth={moreActive || sheetOpen ? 2 : 1.6} aria-hidden="true" />
+              </span>
+              <span className="tb-label">{t("nav.more")}</span>
+            </button>
+          )}
         </div>
       </nav>
+
+      {sheetOpen && (
+        <div className="tb-sheet-backdrop" onClick={() => setSheetOpen(false)}>
+          <div
+            className="tb-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("nav.more")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {more.map(({ path, icon: Icon, labelKey }) => (
+              <NavLink
+                key={path}
+                to={path}
+                onClick={() => setSheetOpen(false)}
+                className={({ isActive }) => cn("tb-sheet-item", isActive && "tb-sheet-item--on")}
+              >
+                <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                <span>{t(labelKey)}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
+      )}
 
       <style>{`
         .dark .tb-nav {
@@ -63,12 +115,12 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
           z-index: 50;
 
           /* iOS frosted glass — native tab bar bilan 1:1 */
-          background: rgba(249, 249, 249, 0.94);
+          background: rgba(53, 73, 109, 0.96); /* #35496D */
           -webkit-backdrop-filter: blur(20px) saturate(180%);
           backdrop-filter: blur(20px) saturate(180%);
 
           /* iOS hairline separator */
-          border-top: 0.33px solid rgba(0, 0, 0, 0.22);
+          border-top: 0.33px solid rgba(255, 255, 255, 0.14);
 
           /* iPhone X+ home indicator uchun */
           padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -114,7 +166,7 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
           min-width: 16px;
           height: 16px;
           background: #FF3B30;
-          border: 1.5px solid rgba(249, 249, 249, 0.94);
+          border: 1.5px solid rgba(53, 73, 109, 0.96);
           border-radius: 8px;
           font-size: 10px;
           font-weight: 600;
@@ -133,7 +185,7 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #8E8E93;
+          color: #ffffff;
           line-height: 1;
           transition:
             color 0.18s ease,
@@ -149,7 +201,7 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
         .tb-label {
           font-size: 10px;
           font-weight: 400;
-          color: #8E8E93;
+          color: #ffffff;
           letter-spacing: -0.1px;
           line-height: 1;
           white-space: nowrap;
@@ -160,6 +212,62 @@ export const BottomNav = ({ items }: { items: NavItem[] }) => {
         .tb-item--on .tb-label {
           color: #F59E0B;
           font-weight: 500;
+        }
+
+        /* ── "More" sheet: slides up above the tab bar ── */
+        .tb-more {
+          border: 0;
+          background: transparent;
+          font: inherit;
+          cursor: pointer;
+        }
+        .tb-sheet-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 49;
+          background: rgba(0, 0, 0, 0.35);
+        }
+        .tb-sheet {
+          position: absolute;
+          left: 8px;
+          right: 8px;
+          bottom: calc(57px + env(safe-area-inset-bottom, 0px));
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          padding: 10px;
+          border-radius: 18px;
+          background: rgba(53, 73, 109, 0.98);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+          animation: tb-sheet-in 0.18s ease-out;
+        }
+        .dark .tb-sheet {
+          background: rgba(28, 31, 40, 0.98);
+        }
+        @keyframes tb-sheet-in {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+        }
+        .tb-sheet-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          padding: 12px 4px;
+          border-radius: 12px;
+          color: #ffffff;
+          font-size: 12px;
+          text-align: center;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .tb-sheet-item:active {
+          background: rgba(255, 255, 255, 0.08);
+        }
+        .tb-sheet-item--on {
+          color: #F59E0B;
         }
       `}</style>
     </>

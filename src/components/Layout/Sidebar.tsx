@@ -1,6 +1,5 @@
 // src/components/Layout/Sidebar.tsx
 import { NavLink } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { getAvatarUrl } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -14,13 +13,13 @@ export const Sidebar = ({ navigation }: { navigation: PanelNavigation }) => {
     <aside
       className="
         hidden md:flex fixed top-16 left-0 h-[calc(100vh-4rem)]
-        bg-white dark:bg-surface-dark border-r border-gray-100 dark:border-gray-800 z-40
+        bg-sidebar dark:bg-surface-dark border-r border-white/10 dark:border-gray-800 z-40
         w-[260px] flex-col
       "
     >
       {/* User info */}
       {user && (
-        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="px-4 py-4 border-b border-white/10 dark:border-gray-800">
           <div className="flex items-center gap-3">
             <img
               src={getAvatarUrl(user.avatar, `${user.firstName} ${user.lastName}`)}
@@ -28,10 +27,10 @@ export const Sidebar = ({ navigation }: { navigation: PanelNavigation }) => {
               className="w-10 h-10 rounded-full"
             />
             <div>
-              <p className="font-medium text-sm text-gray-800 dark:text-gray-100">
+              <p className="font-medium text-sm text-white dark:text-gray-100">
                 {user.firstName} {user.lastName}
               </p>
-              <p className="text-xs text-gray-400">{t(navigation.roleLabelKey)}</p>
+              <p className="text-xs text-white/60 dark:text-gray-400">{t(navigation.roleLabelKey)}</p>
             </div>
           </div>
         </div>
@@ -56,17 +55,6 @@ export const Sidebar = ({ navigation }: { navigation: PanelNavigation }) => {
           );
         })}
       </nav>
-
-      {/* Footer */}
-      <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex items-center gap-2 mb-1">
-          <GraduationCap className="w-4 h-4 text-warning" />
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-            Edu Center
-          </span>
-        </div>
-        <p className="text-xs text-gray-400">v1.0 · © 2024</p>
-      </div>
     </aside>
   );
 };

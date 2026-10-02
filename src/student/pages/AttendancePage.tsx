@@ -1,74 +1,77 @@
 // src/student/pages/AttendancePage.tsx
+// "Kosmik maktab" attendance: % pill, weekly/monthly calendar with real marks
+// from the attendance API, and the full records list.
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
-import { CalendarX, ChevronRight, ChevronLeft, Check, X, Hourglass, CircleDot } from "lucide-react";
-
-import { formatDate } from "@/utilist/formatData";
-import { cn } from "@/lib/utils";
-import { Skeleton, SkeletonHeader, SkeletonStatGrid, SkeletonTable } from "@/components/common/Skeleton";
-import { StatusBadge } from "@/components/common/StatusBadge";
-import { Modal } from "@/components/common/Modal";
-import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
+import { formatDate } from "@/utilist/formatData";
+import type { AttendanceRecord } from "@/types/attendance";
+import { EmptyState, ErrorState, Modal, PageHeader, Segmented, Skel } from "../components/ui";
+import "../theme/attendance.css";
 
 type ViewMode = "weekly" | "monthly";
 
-interface AttendanceRecord {
-  id: string;
-  lessonId: string;
-  lessonTopic: string;
-  lessonDate: string;
-  status: "present" | "absent";
-  markedAt: string;
-}
+const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+/** Monday of the week containing `d`. */
+const weekStart = (d: Date) => addDays(d, -((d.getDay() + 6) % 7));
+
+const AttendanceSkeleton = () => (
+  <div className="sp-page" aria-busy="true">
+    <Skel className="mt-5 h-9 w-2/3" />
+    <Skel className="mt-2 h-4 w-1/2" />
+    <Skel className="mt-4 h-12 rounded-full" />
+    <div className="sp-g3">
+      <Skel className="h-20" />
+      <Skel className="h-20" />
+      <Skel className="h-20" />
+    </div>
+    <Skel className="mt-3.5 h-80" />
+    <Skel className="mt-3.5 h-56" />
+  </div>
+);
 
 export const AttendancePage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading, error, refetch } = useAttendanceQuery();
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
-  const [currentMonth, setCurrentMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
-  const [noLessonDay, setNoLessonDay] = useState<number | null>(null);
+  const [focus, setFocus] = useState(() => startOfDay(new Date()));
+  const [dayModal, setDayModal] = useState<{ date: Date; records: AttendanceRecord[] } | null>(null);
 
+  // Several groups can have a lesson on the same day, so keep every record.
   const recordsByDate = useMemo(() => {
-    const map = new Map<string, AttendanceRecord>();
+    const map = new Map<string, AttendanceRecord[]>();
     (data?.records ?? []).forEach((r) => {
       const d = new Date(r.lessonDate);
-      map.set(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`, r);
+      if (Number.isNaN(d.getTime())) return;
+      const k = dayKey(d);
+      map.set(k, [...(map.get(k) ?? []), r]);
     });
     return map;
   }, [data]);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <Skeleton className="w-full h-11 rounded-2xl" />
-        <SkeletonStatGrid count={4} />
-        <div className="card p-5">
-          <Skeleton className="w-32 h-5 mb-4" />
-          <Skeleton className="w-full h-52" />
-        </div>
-        <div className="card p-5">
-          <Skeleton className="w-40 h-5 mb-4" />
-          <SkeletonTable rows={5} cols={3} />
-        </div>
-      </div>
-    );
-  }
+  const sortedRecords = useMemo(
+    () =>
+      [...(data?.records ?? [])].sort(
+        (a, b) => (new Date(b.lessonDate).getTime() || 0) - (new Date(a.lessonDate).getTime() || 0),
+      ),
+    [data],
+  );
 
-  if (error || !data) {
+  if (isLoading) return <AttendanceSkeleton />;
+
+  // Cached data wins over a failed background refetch (offline, flaky network).
+  if (!data) {
     return (
-      <div className="card p-8 text-center">
-        <p className="text-red-500">{error ? getErrorMessage(error, t("common.notFound")) : t("common.notFound")}</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          {t("common.retry")}
-        </Button>
+      <div className="sp-page">
+        <ErrorState
+          message={error ? getErrorMessage(error, t("common.notFound")) : t("common.notFound")}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -77,311 +80,257 @@ export const AttendancePage = () => {
   const totalLessons = data.stats.total;
   const present = records.filter((r) => r.status === "present").length;
   const absent = records.filter((r) => r.status === "absent").length;
-  const percentage =
-    data.stats.percentage || (totalLessons ? Math.round((present / totalLessons) * 100) : 0);
+  const percentage = data.stats.percentage || (totalLessons ? Math.round((present / totalLessons) * 100) : 0);
 
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const leadingBlanks = (new Date(year, month, 1).getDay() + 6) % 7; // Monday-first offset
-  const prevMonthDays = new Date(year, month, 0).getDate();
-  const totalCells = Math.ceil((leadingBlanks + daysInMonth) / 7) * 7;
-  const trailingBlanks = totalCells - leadingBlanks - daysInMonth;
-  const today = new Date();
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const monthNames = t("dashboardWidgets.months").split(",");
-  const monthLabel = `${monthNames[month]} ${year}`;
+  const today = startOfDay(new Date());
+  const year = focus.getFullYear();
+  const month = focus.getMonth();
+  const months = t("space.attendance.months").split(",");
+  const weekDays = t("attendance.weekDays").split(",");
 
-  const goToMonth = (offset: number) => setCurrentMonth(new Date(year, month + offset, 1));
+  // Cells to render: one week row (weekly) or full Mon-first month grid (monthly).
+  let cells: Date[];
+  let label: string;
+  if (viewMode === "weekly") {
+    const start = weekStart(focus);
+    cells = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+    const end = cells[6];
+    label =
+      start.getMonth() === end.getMonth()
+        ? `${start.getDate()}–${end.getDate()} ${months[end.getMonth()]}`
+        : `${start.getDate()} ${months[start.getMonth()].slice(0, 3)} – ${end.getDate()} ${months[end.getMonth()].slice(0, 3)}`;
+    label += ` ${end.getFullYear()}`;
+  } else {
+    const first = new Date(year, month, 1);
+    const start = weekStart(first);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const leading = (first.getDay() + 6) % 7;
+    const total = Math.ceil((leading + daysInMonth) / 7) * 7;
+    cells = Array.from({ length: total }, (_, i) => addDays(start, i));
+    label = `${months[month]} ${year}`;
+  }
+
+  const step = (dir: -1 | 1) =>
+    setFocus((f) =>
+      viewMode === "weekly" ? addDays(f, 7 * dir) : new Date(f.getFullYear(), f.getMonth() + dir, 1),
+    );
+  const showsToday = cells.some((c) => c.getTime() === today.getTime());
+
+  const openDay = (date: Date, dayRecords: AttendanceRecord[]) => {
+    if (dayRecords.length === 1 && dayRecords[0].lessonId) navigate(`/lessons/${dayRecords[0].lessonId}`);
+    else setDayModal({ date, records: dayRecords });
+  };
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
-            {t("attendance.title")}
-          </h1>
-          <p className="text-gray-500 text-sm md:text-base">
-            {t("attendance.subtitle")}
-          </p>
+    <div className="sp-page">
+      <PageHeader
+        title={t("attendance.title")}
+        subtitle={t("attendance.subtitle")}
+        right={<div className="sp-pill">{percentage}%</div>}
+      />
+
+      <Segmented<ViewMode>
+        value={viewMode}
+        onChange={(m) => {
+          setViewMode(m);
+          // Re-anchor on today when the visible range no longer contains it.
+          if (!showsToday) setFocus(today);
+        }}
+        options={[
+          { value: "weekly", label: t("attendance.weekly") },
+          { value: "monthly", label: t("attendance.monthly") },
+        ]}
+      />
+
+      <div className="sp-g3">
+        <div className="sp-s">
+          <b>{totalLessons}</b>
+          <small>{t("attendance.totalLessons")}</small>
         </div>
-        <div className="bg-white dark:bg-card-dark px-3 py-1.5 rounded-full shadow-sm">
-          <span className="text-sm font-semibold text-[#2E7D32]">
-            {percentage}%
+        <div className="sp-s">
+          <b style={{ color: "var(--sp-lime-ink)" }}>{present}</b>
+          <small>{t("attendance.present")}</small>
+        </div>
+        <div className="sp-s">
+          <b style={{ color: "var(--sp-pink-ink)" }}>{absent}</b>
+          <small>{t("attendance.absent")}</small>
+        </div>
+      </div>
+
+      <div className="sp-panel mt-3.5">
+        <div className="sp-cnav sp-attendance-cnav">
+          <h2>{t("attendance.calendar")}</h2>
+          <span className="sp-attendance-nav">
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label={t(viewMode === "weekly" ? "space.attendance.prevWeek" : "space.attendance.prevMonth")}
+            >
+              ‹
+            </button>
+            <b aria-live="polite">{label}</b>
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label={t(viewMode === "weekly" ? "space.attendance.nextWeek" : "space.attendance.nextMonth")}
+            >
+              ›
+            </button>
+          </span>
+        </div>
+
+        <div className="sp-cal sp-head" aria-hidden="true">
+          {weekDays.map((d, i) => (
+            <i key={i}>{d}</i>
+          ))}
+        </div>
+        <div className="sp-cal">
+          {cells.map((date) => {
+            const out = viewMode === "monthly" && date.getMonth() !== month;
+            if (out) {
+              return (
+                <div key={date.getTime()} className="sp-cell sp-out" aria-hidden="true">
+                  {date.getDate()}
+                  <small>&nbsp;</small>
+                </div>
+              );
+            }
+            const dayRecords = recordsByDate.get(dayKey(date)) ?? [];
+            const has = dayRecords.length > 0;
+            const isAbsent = dayRecords.some((r) => r.status === "absent");
+            const isToday = date.getTime() === today.getTime();
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            const isFuture = date.getTime() > today.getTime();
+
+            let cls = "sp-cell sp-attendance-cell";
+            let small: string = " ";
+            if (has) {
+              cls += isAbsent ? " sp-absent" : " sp-present";
+              if (isToday) cls += " sp-attendance-ring";
+              small = isAbsent ? t("attendance.legendAbsent") : `✓ ${t("attendance.legendPresent")}`;
+            } else if (isToday) {
+              cls += " sp-today";
+              small = t("space.attendance.todayCell");
+            } else if (isWeekend) {
+              cls += " sp-rest";
+              small = t("space.attendance.restCell");
+            } else if (isFuture) {
+              small = "⏳";
+            }
+
+            return (
+              <button
+                key={date.getTime()}
+                type="button"
+                className={cls}
+                title={dayRecords.map((r) => r.lessonTopic).join(", ") || undefined}
+                aria-label={`${formatDate(date)}${small.trim() ? ` · ${small}` : ""}`}
+                aria-current={isToday ? "date" : undefined}
+                onClick={() => openDay(date, dayRecords)}
+              >
+                {date.getDate()}
+                <small>{small}</small>
+              </button>
+            );
+          })}
+        </div>
+        {!showsToday && (
+          <button type="button" className="sp-attendance-today" onClick={() => setFocus(today)}>
+            {t("space.attendance.backToToday")}
+          </button>
+        )}
+
+        <div className="sp-leg">
+          <span>
+            <i style={{ background: "var(--sp-lime)" }} />
+            {t("attendance.legendPresent")}
+          </span>
+          <span>
+            <i style={{ background: "var(--sp-pink)" }} />
+            {t("attendance.legendAbsent")}
           </span>
         </div>
       </div>
 
-      {/* View Toggle */}
-      <div className="flex items-center gap-1 bg-white dark:bg-card-dark rounded-2xl p-1 border border-gray-100 dark:border-gray-800">
-        {(["weekly", "monthly"] as ViewMode[]).map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setViewMode(mode)}
-            className={cn(
-              "flex-1 px-3 py-2 text-xs rounded-lg font-medium transition-all sm:px-4 sm:py-2.5 sm:text-sm sm:rounded-xl",
-              viewMode === mode
-                ? "bg-warning text-white shadow-sm"
-                : "text-gray-500 hover:text-gray-800 dark:text-gray-100",
+      <div className="sp-panel mt-3.5">
+        <h2>{t("attendance.allRecords")}</h2>
+        {sortedRecords.length === 0 ? (
+          <EmptyState
+            panel={false}
+            emoji="🔭"
+            title={t("space.attendance.noRecords")}
+            text={t("space.attendance.noRecordsHint")}
+          />
+        ) : (
+          <div>
+            {sortedRecords.map((r) => {
+              const content = (
+                <>
+                  <span aria-hidden="true">{r.status === "present" ? "✅" : "🌑"}</span>
+                  <span>
+                    <span className="block truncate">{r.lessonTopic}</span>
+                    <small>{formatDate(r.lessonDate)}</small>
+                  </span>
+                  <span className={r.status === "present" ? "sp-badge" : "sp-badge sp-pink"}>
+                    {r.status === "present" ? t("attendance.legendPresent") : t("attendance.legendAbsent")}
+                  </span>
+                </>
+              );
+              return r.lessonId ? (
+                <Link key={r.id} to={`/lessons/${r.lessonId}`} className="sp-hr sp-attendance-row">
+                  {content}
+                </Link>
+              ) : (
+                <div key={r.id} className="sp-hr">
+                  {content}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <Modal open={dayModal !== null} onClose={() => setDayModal(null)} labelledBy="sp-attendance-day">
+        {dayModal && (
+          <>
+            <div className="text-5xl" aria-hidden="true">
+              {dayModal.records.length ? "📚" : "🪐"}
+            </div>
+            <h2 id="sp-attendance-day">
+              {dayModal.records.length ? t("space.attendance.dayLessons") : t("attendance.noLessonTitle")}
+            </h2>
+            <p>{formatDate(dayModal.date)}</p>
+            {dayModal.records.length === 0 ? (
+              <p>{t("attendance.noLessonThisDay")}</p>
+            ) : (
+              <div className="text-left mb-2">
+                {dayModal.records.map((r) => {
+                  const inner = (
+                    <>
+                      <span aria-hidden="true">{r.status === "present" ? "✅" : "🌑"}</span>
+                      <span className="truncate">{r.lessonTopic}</span>
+                      <span className={r.status === "present" ? "sp-badge" : "sp-badge sp-pink"}>
+                        {r.status === "present" ? t("attendance.legendPresent") : t("attendance.legendAbsent")}
+                      </span>
+                    </>
+                  );
+                  return r.lessonId ? (
+                    <Link key={r.id} to={`/lessons/${r.lessonId}`} className="sp-hr sp-attendance-row">
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div key={r.id} className="sp-hr">
+                      {inner}
+                    </div>
+                  );
+                })}
+              </div>
             )}
-          >
-            {mode === "weekly" ? t("attendance.weekly") : t("attendance.monthly")}
-          </button>
-        ))}
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            {totalLessons}
-          </p>
-          <p className="text-xs text-gray-500">{t("attendance.totalLessons")}</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-bold text-[#2E7D32]">{present}</p>
-          <p className="text-xs text-gray-500">{t("attendance.present")}</p>
-        </div>
-        <div className="card p-4 text-center">
-          <p className="text-2xl font-bold text-[#C62828]">{absent}</p>
-          <p className="text-xs text-gray-500">{t("attendance.absent")}</p>
-        </div>
-      </div>
-
-      {/* Calendar */}
-      <div className="card">
-        <div className="p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-              {t("attendance.calendar")}
-            </h3>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => goToMonth(-1)}
-                aria-label={t("common.back")}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-300 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-sm font-medium text-gray-800 dark:text-gray-100 capitalize min-w-[110px] text-center">
-                {monthLabel}
-              </span>
-              <button
-                type="button"
-                onClick={() => goToMonth(1)}
-                aria-label={t("common.retry")}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-300 transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-md">
-            {/* Day Headers */}
-            <div className="grid grid-cols-7 gap-1.5 text-center mb-2">
-              {t("attendance.weekDays").split(",").map((day, i) => (
-                <div key={i} className="text-xs sm:text-sm font-semibold text-gray-400 py-1">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1.5">
-              {Array.from({ length: leadingBlanks }, (_, i) => (
-                <div
-                  key={`prev-${i}`}
-                  className="aspect-square flex items-center justify-center text-xs text-gray-300 dark:text-gray-700"
-                >
-                  {prevMonthDays - leadingBlanks + 1 + i}
-                </div>
-              ))}
-
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-                const record = recordsByDate.get(`${year}-${month}-${day}`);
-                const status = record?.status;
-                const isToday =
-                  today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
-                const cellDate = new Date(year, month, day);
-                const isWeekend = cellDate.getDay() === 0 || cellDate.getDay() === 6;
-                const isFuture = cellDate.getTime() > todayMidnight.getTime();
-                const isPending = !record && !isToday && !isWeekend && isFuture;
-                const isDayOff = !record && !isToday && isWeekend;
-                // "BUGUN" takes over the whole cell only while today has no
-                // recorded status yet; once it does, the status wins and
-                // today is just hinted with a ring so badges don't stack.
-                const showTodayHero = isToday && !record;
-
-                const STATUS_STYLE: Record<
-                  string,
-                  { card: string; badge: string; icon: React.ReactNode; label: string; labelClass: string }
-                > = {
-                  present: {
-                    card: "bg-gray-50 dark:bg-white/5",
-                    badge: "bg-[#4CAF50]",
-                    icon: <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />,
-                    label: t("attendance.legendPresent"),
-                    labelClass: "text-[#2E7D32] dark:text-[#66BB6A]",
-                  },
-                  absent: {
-                    card: "bg-gray-50 dark:bg-white/5",
-                    badge: "bg-[#F44336]",
-                    icon: <X className="w-3.5 h-3.5 text-white" strokeWidth={3} />,
-                    label: t("attendance.legendAbsent"),
-                    labelClass: "text-[#C62828] dark:text-[#EF5350]",
-                  },
-                };
-
-                const style = status ? STATUS_STYLE[status] : undefined;
-
-                return (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => (record ? navigate(`/lessons/${record.lessonId}`) : setNoLessonDay(day))}
-                    title={record?.lessonTopic}
-                    className={cn(
-                      "aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 px-1 transition-all hover:scale-[1.03] active:scale-95",
-                      style?.card,
-                      showTodayHero && "bg-warning shadow-lg shadow-warning/40 ring-4 ring-warning/25",
-                      isToday && !!record && "ring-2 ring-warning ring-offset-1 dark:ring-offset-card-dark",
-                      isPending && "bg-gray-50 dark:bg-white/5",
-                      isDayOff && "bg-gray-100/60 dark:bg-white/[0.03]",
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "text-xs sm:text-sm font-semibold",
-                        showTodayHero ? "text-white" : "text-gray-500 dark:text-gray-400",
-                        isDayOff && "text-gray-400 dark:text-gray-600",
-                      )}
-                    >
-                      {day}
-                    </span>
-
-                    {style && (
-                      <span className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center", style.badge)}>
-                        {style.icon}
-                      </span>
-                    )}
-                    {showTodayHero && (
-                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/25 flex items-center justify-center">
-                        <CircleDot className="w-3.5 h-3.5 text-white" />
-                      </span>
-                    )}
-                    {isPending && <Hourglass className="w-4 h-4 text-gray-400 dark:text-gray-500" />}
-
-                    <span
-                      className={cn(
-                        "text-[9px] sm:text-[10px] font-semibold uppercase tracking-tight leading-none truncate max-w-full",
-                        style?.labelClass,
-                        showTodayHero && "text-white",
-                        isPending && "text-gray-400 dark:text-gray-500",
-                        isDayOff && "text-gray-400 dark:text-gray-600",
-                      )}
-                    >
-                      {style
-                        ? style.label
-                        : showTodayHero
-                          ? t("attendance.today")
-                          : isPending
-                            ? t("status.pending")
-                            : isDayOff
-                              ? t("attendance.dayOff")
-                              : ""}
-                    </span>
-                  </button>
-                );
-              })}
-
-              {Array.from({ length: trailingBlanks }, (_, i) => (
-                <div
-                  key={`next-${i}`}
-                  className="aspect-square flex items-center justify-center text-xs text-gray-300 dark:text-gray-700"
-                >
-                  {i + 1}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#4CAF50]" />
-              <span className="text-xs text-gray-500">{t("attendance.legendPresent")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#F44336]" />
-              <span className="text-xs text-gray-500">{t("attendance.legendAbsent")}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Records Table */}
-      <div className="card">
-        <div className="p-5">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">
-            {t("attendance.allRecords")}
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800">
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2 px-3">
-                    {t("attendance.date")}
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2 px-3">
-                    {t("attendance.topic")}
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2 px-3">
-                    {t("attendance.status")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((record: AttendanceRecord) => (
-                  <tr key={record.id} className="border-b border-gray-50 dark:border-gray-800">
-                    <td className="py-2.5 px-3 text-sm text-gray-500">
-                      {formatDate(record.lessonDate)}
-                    </td>
-                    <td className="py-2.5 px-3 text-sm text-gray-800 dark:text-gray-100">
-                      {record.lessonTopic}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <StatusBadge status={record.status} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <Modal
-        isOpen={noLessonDay !== null}
-        onClose={() => setNoLessonDay(null)}
-        title={t("attendance.noLessonTitle")}
-        maxWidth="max-w-sm"
-      >
-        <div className="text-center py-2">
-          <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-            <CalendarX className="w-6 h-6 text-gray-400" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-            {noLessonDay !== null && formatDate(new Date(year, month, noLessonDay))}
-          </p>
-          <p className="text-gray-800 dark:text-gray-100 font-medium mb-5">
-            {t("attendance.noLessonThisDay")}
-          </p>
-          <Button onClick={() => setNoLessonDay(null)} fullWidth>
-            {t("attendance.backToAttendance")}
-          </Button>
-        </div>
+            <button className="sp-cta" onClick={() => setDayModal(null)}>
+              {t("attendance.backToAttendance")}
+            </button>
+          </>
+        )}
       </Modal>
     </div>
   );

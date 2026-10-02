@@ -15,4 +15,6 @@ export interface PanelNavigation {
   sidebar: NavItem[];
   /** Mobile bottom tab bar links. */
   bottom: NavItem[];
+  /** Mobile "More" sheet: pages that don't fit in the tab bar (else unreachable on phones). */
+  more?: NavItem[];
 }

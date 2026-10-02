@@ -1,0 +1,228 @@
+/* src/student/theme/shop.css
+ * Shop + cart extras on top of space.css (.sp-prods/.sp-prod/.sp-qty …).
+ * Only theme vars are used, so light/dark follow the `.sp` tokens.
+ */
+
+/* Header actions (balance + cart pills) */
+.sp-shop-acts {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Product card extras */
+.sp-shop-badges {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  right: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sp-prod-img .sp-shop-badges .sp-badge {
+  position: static;
+  margin: 0;
+  font-size: 11px;
+  background-color: var(--sp-card-solid);
+}
+.sp-shop-off {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: var(--sp-card-solid);
+  color: var(--sp-pink-ink);
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-family: "Baloo 2", sans-serif;
+  font-size: 13px;
+}
+.sp-shop-out .sp-prod-img > img,
+.sp-shop-out .sp-prod-img > .sp-shop-emoji {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.sp-shop-desc {
+  color: var(--sp-mute);
+  font-size: 12px;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.sp-shop-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  color: var(--sp-mute);
+  font-size: 12px;
+}
+.sp-shop-act {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
+}
+.sp-prod .sp-shop-act .sp-cta {
+  margin-top: 0;
+  width: 100%;
+}
+.sp-shop-act .sp-qty {
+  width: 100%;
+  justify-content: space-between;
+}
+
+/* Floating "go to cart" button */
+.sp-cta.sp-shop-float {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  animation: sp-shop-in 0.4s ease-out;
+}
+@keyframes sp-shop-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+}
+@keyframes sp-shop-in-d {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* Cart */
+.sp-shop-cart {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+.sp-row.sp-shop-item {
+  flex-wrap: wrap;
+  cursor: default;
+}
+.sp-row.sp-shop-item .sp-t small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sp-row.sp-shop-item .sp-ic {
+  overflow: hidden;
+  width: 56px;
+  height: 56px;
+  font-size: 30px;
+}
+.sp-shop-item .sp-ic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.sp-shop-item .sp-price {
+  font-size: 15px;
+}
+.sp-shop-ctl {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-left: 68px;
+}
+.sp-shop-sum {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 17px;
+  color: var(--sp-sun-ink);
+  white-space: nowrap;
+}
+.sp-shop-sum small {
+  display: block;
+  font-family: "Nunito", sans-serif;
+  font-size: 11px;
+  color: var(--sp-mute);
+  text-align: right;
+}
+.sp-shop-rm {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--sp-line);
+  background: var(--sp-card);
+  color: var(--sp-pink-ink);
+  font: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.sp-shop-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+}
+.sp-shop-total b {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 30px;
+  color: var(--sp-sun-ink);
+}
+.sp-shop-summary .sp-cta {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.sp-shop-summary .sp-cta.sp-ghost {
+  margin-top: 10px;
+}
+.sp-shop-lines {
+  text-align: left;
+  margin: 0 0 14px;
+}
+
+@media (min-width: 640px) {
+  .sp-shop-ctl {
+    flex-basis: auto;
+    padding-left: 0;
+  }
+  .sp-shop-rm {
+    order: 1;
+  }
+}
+@media (min-width: 900px) {
+  .sp-cta.sp-shop-float {
+    left: auto;
+    right: 28px;
+    bottom: 28px;
+    transform: none;
+    animation-name: sp-shop-in-d;
+  }
+  .sp-shop-cart {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+  .sp-shop-summary {
+    position: sticky;
+    top: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-cta.sp-shop-float {
+    animation: none;
+  }
+}
+.sp-shop-rm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

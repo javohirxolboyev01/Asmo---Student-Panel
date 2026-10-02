@@ -1,5 +1,5 @@
 // src/services/authService.ts
-import { apiGet, apiPatch, apiPost, tokenStorage } from "./apiClient";
+import { apiGet, apiPatch, apiPost, apiPut, tokenStorage } from "./apiClient";
 import { AuthResponse, User } from "@/types/user";
 
 interface RegisterPayload {
@@ -49,6 +49,12 @@ export const authService = {
 
   updateProfile: async (payload: UpdateProfilePayload) => {
     const user = await apiPatch<User>("/profile", payload);
+    return normalizeUser(user);
+  },
+
+  /** Character editor save — the server checks every paid item is owned. */
+  saveCharacter: async (config: unknown, svg: string) => {
+    const user = await apiPut<User>("/avatar/character", { config, svg });
     return normalizeUser(user);
   },
 
