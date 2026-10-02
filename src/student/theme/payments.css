@@ -129,6 +129,12 @@
 .sp-pay-dl dd .sp-badge {
   margin-left: 0;
 }
+.sp-pay-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 8px;
+}
 .sp-pay-amount {
   font-family: "Baloo 2", sans-serif;
   font-size: 32px;

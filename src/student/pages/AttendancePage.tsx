@@ -8,14 +8,23 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { formatDate } from "@/utilist/formatData";
 import type { AttendanceRecord } from "@/types/attendance";
-import { EmptyState, ErrorState, Modal, PageHeader, Segmented, Skel } from "../components/ui";
+import {
+  EmptyState,
+  ErrorState,
+  Modal,
+  PageHeader,
+  Segmented,
+  Skel,
+} from "../components/ui";
 import "../theme/attendance.css";
 
 type ViewMode = "weekly" | "monthly";
 
 const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+const startOfDay = (d: Date) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d: Date, n: number) =>
+  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 /** Monday of the week containing `d`. */
 const weekStart = (d: Date) => addDays(d, -((d.getDay() + 6) % 7));
 
@@ -40,7 +49,10 @@ export const AttendancePage = () => {
   const { data, isLoading, error, refetch } = useAttendanceQuery();
   const [viewMode, setViewMode] = useState<ViewMode>("weekly");
   const [focus, setFocus] = useState(() => startOfDay(new Date()));
-  const [dayModal, setDayModal] = useState<{ date: Date; records: AttendanceRecord[] } | null>(null);
+  const [dayModal, setDayModal] = useState<{
+    date: Date;
+    records: AttendanceRecord[];
+  } | null>(null);
 
   // Several groups can have a lesson on the same day, so keep every record.
   const recordsByDate = useMemo(() => {
@@ -57,7 +69,9 @@ export const AttendancePage = () => {
   const sortedRecords = useMemo(
     () =>
       [...(data?.records ?? [])].sort(
-        (a, b) => (new Date(b.lessonDate).getTime() || 0) - (new Date(a.lessonDate).getTime() || 0),
+        (a, b) =>
+          (new Date(b.lessonDate).getTime() || 0) -
+          (new Date(a.lessonDate).getTime() || 0),
       ),
     [data],
   );
@@ -69,7 +83,11 @@ export const AttendancePage = () => {
     return (
       <div className="sp-page">
         <ErrorState
-          message={error ? getErrorMessage(error, t("common.notFound")) : t("common.notFound")}
+          message={
+            error
+              ? getErrorMessage(error, t("common.notFound"))
+              : t("common.notFound")
+          }
           onRetry={() => refetch()}
         />
       </div>
@@ -80,7 +98,9 @@ export const AttendancePage = () => {
   const totalLessons = data.stats.total;
   const present = records.filter((r) => r.status === "present").length;
   const absent = records.filter((r) => r.status === "absent").length;
-  const percentage = data.stats.percentage || (totalLessons ? Math.round((present / totalLessons) * 100) : 0);
+  const percentage =
+    data.stats.percentage ||
+    (totalLessons ? Math.round((present / totalLessons) * 100) : 0);
 
   const today = startOfDay(new Date());
   const year = focus.getFullYear();
@@ -112,12 +132,15 @@ export const AttendancePage = () => {
 
   const step = (dir: -1 | 1) =>
     setFocus((f) =>
-      viewMode === "weekly" ? addDays(f, 7 * dir) : new Date(f.getFullYear(), f.getMonth() + dir, 1),
+      viewMode === "weekly"
+        ? addDays(f, 7 * dir)
+        : new Date(f.getFullYear(), f.getMonth() + dir, 1),
     );
   const showsToday = cells.some((c) => c.getTime() === today.getTime());
 
   const openDay = (date: Date, dayRecords: AttendanceRecord[]) => {
-    if (dayRecords.length === 1 && dayRecords[0].lessonId) navigate(`/lessons/${dayRecords[0].lessonId}`);
+    if (dayRecords.length === 1 && dayRecords[0].lessonId)
+      navigate(`/lessons/${dayRecords[0].lessonId}`);
     else setDayModal({ date, records: dayRecords });
   };
 
@@ -129,18 +152,20 @@ export const AttendancePage = () => {
         right={<div className="sp-pill">{percentage}%</div>}
       />
 
-      <Segmented<ViewMode>
-        value={viewMode}
-        onChange={(m) => {
-          setViewMode(m);
-          // Re-anchor on today when the visible range no longer contains it.
-          if (!showsToday) setFocus(today);
-        }}
-        options={[
-          { value: "weekly", label: t("attendance.weekly") },
-          { value: "monthly", label: t("attendance.monthly") },
-        ]}
-      />
+      <div className="sp-attendance-view-toggle">
+        <Segmented<ViewMode>
+          value={viewMode}
+          onChange={(m) => {
+            setViewMode(m);
+            // Re-anchor on today when the visible range no longer contains it.
+            if (!showsToday) setFocus(today);
+          }}
+          options={[
+            { value: "weekly", label: t("attendance.weekly") },
+            { value: "monthly", label: t("attendance.monthly") },
+          ]}
+        />
+      </div>
 
       <div className="sp-g3">
         <div className="sp-s">
@@ -164,7 +189,11 @@ export const AttendancePage = () => {
             <button
               type="button"
               onClick={() => step(-1)}
-              aria-label={t(viewMode === "weekly" ? "space.attendance.prevWeek" : "space.attendance.prevMonth")}
+              aria-label={t(
+                viewMode === "weekly"
+                  ? "space.attendance.prevWeek"
+                  : "space.attendance.prevMonth",
+              )}
             >
               ‹
             </button>
@@ -172,7 +201,11 @@ export const AttendancePage = () => {
             <button
               type="button"
               onClick={() => step(1)}
-              aria-label={t(viewMode === "weekly" ? "space.attendance.nextWeek" : "space.attendance.nextMonth")}
+              aria-label={t(
+                viewMode === "weekly"
+                  ? "space.attendance.nextWeek"
+                  : "space.attendance.nextMonth",
+              )}
             >
               ›
             </button>
@@ -189,7 +222,11 @@ export const AttendancePage = () => {
             const out = viewMode === "monthly" && date.getMonth() !== month;
             if (out) {
               return (
-                <div key={date.getTime()} className="sp-cell sp-out" aria-hidden="true">
+                <div
+                  key={date.getTime()}
+                  className="sp-cell sp-out"
+                  aria-hidden="true"
+                >
                   {date.getDate()}
                   <small>&nbsp;</small>
                 </div>
@@ -207,7 +244,9 @@ export const AttendancePage = () => {
             if (has) {
               cls += isAbsent ? " sp-absent" : " sp-present";
               if (isToday) cls += " sp-attendance-ring";
-              small = isAbsent ? t("attendance.legendAbsent") : `✓ ${t("attendance.legendPresent")}`;
+              small = isAbsent
+                ? t("attendance.legendAbsent")
+                : `✓ ${t("attendance.legendPresent")}`;
             } else if (isToday) {
               cls += " sp-today";
               small = t("space.attendance.todayCell");
@@ -223,7 +262,9 @@ export const AttendancePage = () => {
                 key={date.getTime()}
                 type="button"
                 className={cls}
-                title={dayRecords.map((r) => r.lessonTopic).join(", ") || undefined}
+                title={
+                  dayRecords.map((r) => r.lessonTopic).join(", ") || undefined
+                }
                 aria-label={`${formatDate(date)}${small.trim() ? ` · ${small}` : ""}`}
                 aria-current={isToday ? "date" : undefined}
                 onClick={() => openDay(date, dayRecords)}
@@ -235,7 +276,11 @@ export const AttendancePage = () => {
           })}
         </div>
         {!showsToday && (
-          <button type="button" className="sp-attendance-today" onClick={() => setFocus(today)}>
+          <button
+            type="button"
+            className="sp-attendance-today"
+            onClick={() => setFocus(today)}
+          >
             {t("space.attendance.backToToday")}
           </button>
         )}
@@ -266,18 +311,30 @@ export const AttendancePage = () => {
             {sortedRecords.map((r) => {
               const content = (
                 <>
-                  <span aria-hidden="true">{r.status === "present" ? "✅" : "🌑"}</span>
+                  <span aria-hidden="true">
+                    {r.status === "present" ? "✅" : "🌑"}
+                  </span>
                   <span>
                     <span className="block truncate">{r.lessonTopic}</span>
                     <small>{formatDate(r.lessonDate)}</small>
                   </span>
-                  <span className={r.status === "present" ? "sp-badge" : "sp-badge sp-pink"}>
-                    {r.status === "present" ? t("attendance.legendPresent") : t("attendance.legendAbsent")}
+                  <span
+                    className={
+                      r.status === "present" ? "sp-badge" : "sp-badge sp-pink"
+                    }
+                  >
+                    {r.status === "present"
+                      ? t("attendance.legendPresent")
+                      : t("attendance.legendAbsent")}
                   </span>
                 </>
               );
               return r.lessonId ? (
-                <Link key={r.id} to={`/lessons/${r.lessonId}`} className="sp-hr sp-attendance-row">
+                <Link
+                  key={r.id}
+                  to={`/lessons/${r.lessonId}`}
+                  className="sp-hr sp-attendance-row"
+                >
                   {content}
                 </Link>
               ) : (
@@ -290,14 +347,20 @@ export const AttendancePage = () => {
         )}
       </div>
 
-      <Modal open={dayModal !== null} onClose={() => setDayModal(null)} labelledBy="sp-attendance-day">
+      <Modal
+        open={dayModal !== null}
+        onClose={() => setDayModal(null)}
+        labelledBy="sp-attendance-day"
+      >
         {dayModal && (
           <>
             <div className="text-5xl" aria-hidden="true">
               {dayModal.records.length ? "📚" : "🪐"}
             </div>
             <h2 id="sp-attendance-day">
-              {dayModal.records.length ? t("space.attendance.dayLessons") : t("attendance.noLessonTitle")}
+              {dayModal.records.length
+                ? t("space.attendance.dayLessons")
+                : t("attendance.noLessonTitle")}
             </h2>
             <p>{formatDate(dayModal.date)}</p>
             {dayModal.records.length === 0 ? (
@@ -307,15 +370,29 @@ export const AttendancePage = () => {
                 {dayModal.records.map((r) => {
                   const inner = (
                     <>
-                      <span aria-hidden="true">{r.status === "present" ? "✅" : "🌑"}</span>
+                      <span aria-hidden="true">
+                        {r.status === "present" ? "✅" : "🌑"}
+                      </span>
                       <span className="truncate">{r.lessonTopic}</span>
-                      <span className={r.status === "present" ? "sp-badge" : "sp-badge sp-pink"}>
-                        {r.status === "present" ? t("attendance.legendPresent") : t("attendance.legendAbsent")}
+                      <span
+                        className={
+                          r.status === "present"
+                            ? "sp-badge"
+                            : "sp-badge sp-pink"
+                        }
+                      >
+                        {r.status === "present"
+                          ? t("attendance.legendPresent")
+                          : t("attendance.legendAbsent")}
                       </span>
                     </>
                   );
                   return r.lessonId ? (
-                    <Link key={r.id} to={`/lessons/${r.lessonId}`} className="sp-hr sp-attendance-row">
+                    <Link
+                      key={r.id}
+                      to={`/lessons/${r.lessonId}`}
+                      className="sp-hr sp-attendance-row"
+                    >
                       {inner}
                     </Link>
                   ) : (

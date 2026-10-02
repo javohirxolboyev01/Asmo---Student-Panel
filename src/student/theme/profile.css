@@ -138,6 +138,8 @@
   display: grid;
   place-items: center;
   font-size: 15px;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(35, 25, 60, 0.18);
 }
 .sp-pf-who {
   min-width: 0;
@@ -150,7 +152,9 @@
 }
 .sp-pf-hero p {
   color: var(--sp-lime-ink);
-  font: 800 20px "Baloo 2", sans-serif;
+  font:
+    800 20px "Baloo 2",
+    sans-serif;
 }
 .sp-pf-row {
   display: flex;
@@ -193,7 +197,9 @@
 }
 .sp-pf-row strong {
   display: block;
-  font: 800 22px "Baloo 2", sans-serif;
+  font:
+    800 22px "Baloo 2",
+    sans-serif;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
@@ -223,6 +229,96 @@
   outline: 3px solid var(--sp-lime-ink);
   outline-offset: 2px;
 }
+@media (max-width: 460px) {
+  .sp-pf {
+    padding-top: 8px;
+  }
+  .sp-pf-card {
+    border-radius: 22px;
+    margin-bottom: 10px;
+  }
+  .sp-pf-hero {
+    gap: 12px;
+    padding: 14px 14px 16px;
+  }
+  .sp-pf-big,
+  .sp-pf-circ {
+    width: 78px;
+    height: 78px;
+  }
+  .sp-pf-circ {
+    border-width: 3px;
+    font-size: 36px;
+  }
+  .sp-pf-pen {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+    right: -2px;
+    bottom: -1px;
+    border-width: 2px;
+  }
+  .sp-pf-hero h1 {
+    font-size: 24px;
+  }
+  .sp-pf-hero p {
+    font-size: 18px;
+  }
+  .sp-pf-row {
+    gap: 12px;
+    padding: 10px 14px;
+  }
+  .sp-pf-ic {
+    width: 40px;
+    height: 40px;
+  }
+  .sp-pf-row small {
+    font-size: 13px;
+  }
+  .sp-pf-row strong {
+    font-size: 18px;
+  }
+  .sp-profile-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sp-profile-actions .sp-cta {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .sp-pf-hero {
+    padding: 12px 12px 14px;
+  }
+  .sp-pf-big,
+  .sp-pf-circ {
+    width: 68px;
+    height: 68px;
+  }
+  .sp-pf-circ {
+    font-size: 30px;
+  }
+  .sp-pf-pen {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    right: -2px;
+    bottom: -2px;
+  }
+  .sp-pf-hero h1 {
+    font-size: 21px;
+  }
+  .sp-pf-hero p {
+    font-size: 16px;
+  }
+  .sp-pf-row strong,
+  .sp-pf-link strong {
+    font-size: 16px;
+  }
+}
+
 @media (min-width: 640px) {
   .sp-pf {
     max-width: 560px;
@@ -280,7 +376,8 @@
   display: flex;
   flex-direction: column;
   background: var(--ce-sheet);
-  padding: calc(12px + env(safe-area-inset-top, 0px)) 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 14px
+    calc(14px + env(safe-area-inset-bottom, 0px));
   outline: 0;
   animation: sp-ce-up 0.3s cubic-bezier(0.2, 1.2, 0.4, 1);
 }
@@ -295,6 +392,134 @@
     border: 2px solid var(--ce-line);
     height: calc(100% - 28px);
     padding: 12px 14px 14px;
+  }
+}
+@media (max-width: 460px) {
+  .sp-ce-sheet {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+    height: calc(100vh - 12px);
+    max-height: calc(100vh - 12px);
+    border-radius: 22px;
+    border: 1px solid var(--ce-line);
+    padding: 10px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+  }
+  .sp-ce-eh {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .sp-ce-eh h2 {
+    font-size: 22px;
+  }
+  .sp-ce-chip {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 15px;
+  }
+  .sp-ce-stage {
+    height: 180px;
+    border-radius: 18px;
+  }
+  .sp-ce-bub {
+    left: 8px;
+    top: 8px;
+    max-width: 54%;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .sp-ce-dice {
+    right: 8px;
+    top: 8px;
+    width: 38px;
+    height: 38px;
+    font-size: 20px;
+  }
+  .sp-ce-gen {
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .sp-ce-gb {
+    height: 40px;
+    font-size: 15px;
+    box-shadow: 0 3px 0 var(--ce-btn-sh);
+  }
+  .sp-ce-tabwrap {
+    gap: 4px;
+  }
+  .sp-ce-arr {
+    width: 26px;
+    height: 40px;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+  .sp-ce-tab {
+    min-width: 58px;
+    padding: 7px 5px;
+    font-size: 10px;
+  }
+  .sp-ce-tabico {
+    font-size: 18px;
+    height: 22px;
+  }
+  .sp-ce-area {
+    min-height: 0;
+    padding-bottom: 4px;
+  }
+  .sp-ce-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .sp-ce-colors {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .sp-ce-sw {
+    width: 32px;
+    height: 32px;
+  }
+  .sp-ce-btns {
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .sp-ce-btn {
+    min-height: 46px;
+    font-size: 15px;
+    padding: 0 10px;
+  }
+  .sp-ce-mod {
+    width: calc(100% - 24px);
+    max-width: 320px;
+    padding: 18px 14px 14px;
+  }
+  .sp-ce-mprev {
+    width: 120px;
+    height: 120px;
+  }
+  .sp-ce-mprice {
+    font-size: 22px;
+    padding: 4px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .sp-ce-eh h2 {
+    font-size: 20px;
+  }
+  .sp-ce-stage {
+    height: 160px;
+  }
+  .sp-ce-bub {
+    max-width: 58%;
+    font-size: 11px;
+  }
+  .sp-ce-tab {
+    min-width: 52px;
+  }
+  .sp-ce-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sp-ce-btn {
+    font-size: 14px;
   }
 }
 .sp-ce-eh {
@@ -317,7 +542,9 @@
   border-radius: 99px;
   background: var(--ce-btn);
   border: 2px solid var(--ce-line);
-  font: 800 17px "Baloo 2", sans-serif;
+  font:
+    800 17px "Baloo 2",
+    sans-serif;
   white-space: nowrap;
 }
 .dark .sp-ce-chip {
@@ -332,22 +559,27 @@
   flex: none;
   display: flex;
   justify-content: center;
+  align-items: center;
   transition: background 0.3s;
 }
 .sp-ce-chw {
+  width: 100%;
   height: 100%;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .sp-ce-chw.jump {
   animation: sp-ce-jump 0.45s;
 }
 .sp-ce-ch {
   display: block;
+  width: 100%;
   height: 100%;
 }
 .sp-ce-ch svg {
+  width: 100%;
   height: 100%;
-  width: auto;
   display: block;
   animation: sp-ce-bob 3.2s ease-in-out infinite;
 }
@@ -386,7 +618,9 @@
   max-width: 46%;
   background: #fff;
   color: var(--ce-ink);
-  font: 800 14px "Baloo 2", sans-serif;
+  font:
+    800 14px "Baloo 2",
+    sans-serif;
   padding: 7px 12px;
   border-radius: 16px 16px 16px 4px;
   line-height: 1.2;
@@ -422,7 +656,9 @@
   border: 2px solid var(--ce-line);
   background: var(--ce-btn);
   color: var(--sp-ink);
-  font: 800 17px "Baloo 2", sans-serif;
+  font:
+    800 17px "Baloo 2",
+    sans-serif;
   cursor: pointer;
   box-shadow: 0 4px 0 var(--ce-btn-sh);
   transition: transform 0.08s;
@@ -465,7 +701,9 @@
   border: 2px solid var(--ce-line);
   background: var(--ce-btn);
   color: var(--sp-ink);
-  font: 800 22px "Baloo 2", sans-serif;
+  font:
+    800 22px "Baloo 2",
+    sans-serif;
   cursor: pointer;
   margin-bottom: 6px;
   line-height: 1;
@@ -490,7 +728,9 @@
   border: 2px solid var(--ce-line);
   background: var(--ce-tab);
   color: var(--sp-mute);
-  font: 800 12px "Nunito", sans-serif;
+  font:
+    800 12px "Nunito",
+    sans-serif;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -593,7 +833,9 @@
   color: #fff;
   border-radius: 99px;
   padding: 2px 8px;
-  font: 800 12px "Baloo 2", sans-serif;
+  font:
+    800 12px "Baloo 2",
+    sans-serif;
   white-space: nowrap;
 }
 .sp-ce-ck {
@@ -624,7 +866,9 @@
   min-height: 54px;
   padding: 0 12px;
   border-radius: 99px;
-  font: 800 18px "Baloo 2", sans-serif;
+  font:
+    800 18px "Baloo 2",
+    sans-serif;
   line-height: 1.1;
   cursor: pointer;
   border: 2px solid var(--ce-line);
@@ -698,7 +942,9 @@
   height: 100%;
 }
 .sp-ce-mod h3 {
-  font: 800 24px "Baloo 2", sans-serif;
+  font:
+    800 24px "Baloo 2",
+    sans-serif;
 }
 .sp-ce-mprice {
   display: inline-block;
@@ -706,7 +952,9 @@
   padding: 4px 18px;
   border-radius: 99px;
   background: #0c0829;
-  font: 800 26px "Baloo 2", sans-serif;
+  font:
+    800 26px "Baloo 2",
+    sans-serif;
   color: #ffd93d;
 }
 .sp-ce-mbal {
@@ -721,7 +969,9 @@
   transform: translate(-50%, -100px);
   background: var(--sp-lime);
   color: #1a1240;
-  font: 800 17px "Baloo 2", sans-serif;
+  font:
+    800 17px "Baloo 2",
+    sans-serif;
   padding: 10px 22px;
   border-radius: 99px;
   box-shadow: 0 4px 0 #7fb01c;

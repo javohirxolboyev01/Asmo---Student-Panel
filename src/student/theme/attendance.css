@@ -60,3 +60,11 @@ a.sp-attendance-row:hover > span:nth-child(2) {
 .sp-attendance-cnav {
   flex-wrap: wrap;
 }
+.sp-attendance-view-toggle .sp-seg {
+  width: fit-content;
+}
+.sp-attendance-view-toggle .sp-seg button {
+  flex: 0 0 auto;
+  padding: 7px 14px;
+  font-size: 13px;
+}

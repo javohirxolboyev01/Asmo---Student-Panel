@@ -11,16 +11,24 @@ export type RocketBoost = { kind: "turbo" | "launch"; id: number };
 
 const FLIGHT_MS = 1400;
 
-// Rocket rides an arc from the home planet (bottom-left) to the target planet
-// (top-right), in the 400×250 viewBox of the dotted trail.
+// Rocket rides the same curve as the dotted trail, from above the home badge
+// to the center of the target planet, in the trail's 400×250 viewBox.
 const rocketPosition = (fuel: number): CSSProperties => {
-  const t = fuel / 100;
-  const x = 60 + (300 - 60) * t;
-  const y = 175 - (175 - 85) * t - Math.sin(t * Math.PI) * 60;
+  const progress = fuel / 100;
+  const inverseProgress = 1 - progress;
+  const x =
+    inverseProgress ** 2 * 60 +
+    2 * inverseProgress * progress * 180 +
+    progress ** 2 * 320;
+  const y =
+    inverseProgress ** 2 * 118 +
+    2 * inverseProgress * progress * 40 +
+    progress ** 2 * 70;
   return { left: `${(x / 400) * 100}%`, top: `${(y / 250) * 100}%` };
 };
 
-const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = () =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
 
 /** Animates from the last shown value (0 on mount) to `target`, frame by frame, so the path follows the arc. */
@@ -50,7 +58,13 @@ const useFlight = (target: number) => {
   return shown;
 };
 
-export const Rocket = ({ fuel, boost }: { fuel: number; boost: RocketBoost | null }) => {
+export const Rocket = ({
+  fuel,
+  boost,
+}: {
+  fuel: number;
+  boost: RocketBoost | null;
+}) => {
   const shown = useFlight(fuel);
   const bodyRef = useRef<HTMLSpanElement>(null);
 
@@ -61,7 +75,11 @@ export const Rocket = ({ fuel, boost }: { fuel: number; boost: RocketBoost | nul
   return (
     <div className="sp-rocket" style={rocketPosition(shown)} aria-hidden="true">
       {/* key restarts the CSS animation on every boost */}
-      <span key={boost?.id ?? 0} ref={bodyRef} className={boost ? `sp-rocket-body sp-${boost.kind}` : "sp-rocket-body"}>
+      <span
+        key={boost?.id ?? 0}
+        ref={bodyRef}
+        className={boost ? `sp-rocket-body sp-${boost.kind}` : "sp-rocket-body"}
+      >
         <span className="sp-flame" />
         🚀
       </span>

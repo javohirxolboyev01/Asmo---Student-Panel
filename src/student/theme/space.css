@@ -190,7 +190,11 @@
   height: 250px;
   border-radius: 32px;
   background:
-    radial-gradient(circle at 80% 18%, rgba(255, 95, 168, 0.35), transparent 45%),
+    radial-gradient(
+      circle at 80% 18%,
+      rgba(255, 95, 168, 0.35),
+      transparent 45%
+    ),
     var(--sp-orbit);
   border: 1px solid var(--sp-line);
   overflow: hidden;
@@ -224,6 +228,7 @@
   font-size: 12px;
   text-align: right;
   color: var(--sp-mute);
+  z-index: 2;
 }
 .sp-pl b {
   display: block;
@@ -247,6 +252,7 @@
   color: #06311f;
   text-align: center;
   line-height: 1;
+  z-index: 2;
 }
 .sp-trail {
   position: absolute;
@@ -257,11 +263,9 @@
 .sp-rocket {
   position: absolute;
   font-size: 38px;
-  margin-left: -19px;
-  margin-top: -24px;
+  transform: translate(-50%, calc(-50% + 10px)) rotate(45deg);
   /* left/top are animated frame by frame (components/Rocket.tsx) so the
      flight follows the arc; a CSS transition would cut straight across. */
-  transform: rotate(45deg);
   filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.25));
   animation: sp-wobble 0.6s infinite alternate;
 }
@@ -283,7 +287,13 @@
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff6c2 0%, #ffc940 35%, #ff6a2a 65%, transparent 72%);
+  background: radial-gradient(
+    circle,
+    #fff6c2 0%,
+    #ffc940 35%,
+    #ff6a2a 65%,
+    transparent 72%
+  );
   opacity: 0;
   pointer-events: none;
 }
@@ -1076,7 +1086,11 @@
   text-align: center;
   border-radius: 30px;
   padding: 22px 16px;
-  background: linear-gradient(135deg, rgba(255, 201, 64, 0.3), rgba(255, 95, 168, 0.28));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 201, 64, 0.3),
+    rgba(255, 95, 168, 0.28)
+  );
   border: 1px solid var(--sp-line);
 }
 .sp-bal .sp-big {
@@ -1273,7 +1287,9 @@
   border-radius: 14px;
   background: none;
   color: var(--sp-ink);
-  font: 800 18px "Baloo 2", sans-serif;
+  font:
+    800 18px "Baloo 2",
+    sans-serif;
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.1s;
@@ -1593,6 +1609,31 @@ textarea.sp-in {
   max-width: 460px;
   text-align: left;
 }
+@media (max-width: 460px) {
+  .sp-mb {
+    border-radius: 22px;
+    padding: 18px 14px;
+    max-width: min(100%, 320px);
+  }
+  .sp-mb.sp-wide {
+    max-width: min(100%, 380px);
+  }
+  .sp-cap {
+    width: 76px;
+    padding: 10px 4px;
+    border-radius: 18px;
+    font-size: 15px;
+  }
+  .sp-cap span {
+    font-size: 38px;
+  }
+  .sp-box {
+    right: 10px;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+}
 .sp-mb h2 {
   font-size: 24px;
   margin-bottom: 4px;
@@ -1647,7 +1688,8 @@ textarea.sp-in {
 }
 @keyframes sp-fly {
   to {
-    transform: translate(var(--dx, 0), var(--dy, -120px)) scale(1.3) rotate(40deg);
+    transform: translate(var(--dx, 0), var(--dy, -120px)) scale(1.3)
+      rotate(40deg);
     opacity: 0;
   }
 }

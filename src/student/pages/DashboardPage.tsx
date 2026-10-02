@@ -7,12 +7,19 @@ import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useDashboardQuery, useLeaderboardQuery } from "@/hooks/queries/useDashboard";
+import {
+  useDashboardQuery,
+  useLeaderboardQuery,
+} from "@/hooks/queries/useDashboard";
 import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
 import { useMissionsTodayQuery } from "@/hooks/queries/useMissions";
 import { getErrorMessage } from "@/lib/toast";
 import type { LeaderboardFilter } from "@/components/Dashboard/CoinLeaderboard";
-import { getGroupCourseName, getLevelFromCourse, getNextLevel } from "../lib/level";
+import {
+  getGroupCourseName,
+  getLevelFromCourse,
+  getNextLevel,
+} from "../lib/level";
 import { SpaceAvatar } from "../components/SpaceAvatar";
 import { ErrorState } from "../components/ui";
 import { Missions, MissionsSkeleton } from "../components/Missions";
@@ -55,7 +62,8 @@ export const DashboardPage = () => {
   const user = useAuthStore((s) => s.user);
   const { data, isLoading, error, refetch } = useDashboardQuery();
   const [filter, setFilter] = useState<LeaderboardFilter>("week");
-  const { data: leaderboard, isLoading: crewLoading } = useLeaderboardQuery(filter);
+  const { data: leaderboard, isLoading: crewLoading } =
+    useLeaderboardQuery(filter);
   const { data: attendance } = useAttendanceQuery();
   const missions = useMissionsTodayQuery();
   const [boost, setBoost] = useState<RocketBoost | null>(null);
@@ -86,7 +94,10 @@ export const DashboardPage = () => {
     .filter((tx) => {
       if (tx.amount <= 0) return false;
       const date = new Date(tx.createdAt ?? tx.date ?? "");
-      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+      return (
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      );
     })
     .reduce((sum, tx) => sum + tx.amount, 0);
 
@@ -107,14 +118,26 @@ export const DashboardPage = () => {
           <SpaceAvatar avatar={s.avatar} name={s.name} />
         </span>
         <span className="sp-n">
-          <span>{isMe ? t("space.crewMe", { name: user?.firstName ?? s.name }) : s.name}</span>
+          <span>
+            {isMe
+              ? t("space.crewMe", { name: user?.firstName ?? s.name })
+              : s.name}
+          </span>
           <small>
             {isMe && rank > 1
               ? t("space.crewGap", { rank: rank - 1, gap: Math.max(1, gap) })
               : `💎 ${s.coins}`}
           </small>
         </span>
-        <span className="sp-k" style={RANK_BADGE[rank] ?? { background: "var(--sp-card)", color: "inherit" }}>
+        <span
+          className="sp-k"
+          style={
+            RANK_BADGE[rank] ?? {
+              background: "var(--sp-card)",
+              color: "inherit",
+            }
+          }
+        >
           {rank}
         </span>
       </div>
@@ -124,7 +147,10 @@ export const DashboardPage = () => {
   return (
     <div className="sp-layout">
       <div className="sp-col">
-        <h1 className="sp-title">{t("space.heroTitle", { name: user?.firstName ?? "" })}</h1>
+        <h1 className="sp-title">
+          {t("space.heroTitle", { name: "" }).replace("?", "")}
+          <span style={{ color: "#b6f23c" }}>{user?.firstName ?? ""}?</span>
+        </h1>
         <p className="sp-sub">
           {!group
             ? t("dashboard.noGroup")
@@ -142,9 +168,14 @@ export const DashboardPage = () => {
                 {t("space.targetPlanet")}
               </div>
               <div className="sp-home">{level}</div>
-              <svg className="sp-trail" viewBox="0 0 400 250" preserveAspectRatio="none" aria-hidden="true">
+              <svg
+                className="sp-trail"
+                viewBox="0 0 400 250"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
                 <path
-                  d="M60 175 Q160 60 300 85"
+                  d="M60 118 Q180 40 320 70"
                   fill="none"
                   stroke="var(--sp-trail)"
                   strokeWidth="3"
@@ -173,7 +204,12 @@ export const DashboardPage = () => {
             <div className="sp-chips">
               <span>📘 {unit}</span>
               <span>🗓 {t("dashboardWidgets.week", { week })}</span>
-              <span>✅ {t("dashboardWidgets.completed", { percentage: Math.round(fuel) })}</span>
+              <span>
+                ✅{" "}
+                {t("dashboardWidgets.completed", {
+                  percentage: Math.round(fuel),
+                })}
+              </span>
             </div>
           </>
         ) : (
@@ -219,7 +255,12 @@ export const DashboardPage = () => {
         ) : missions.data ? (
           <Missions
             data={missions.data}
-            onClaimed={(allDone) => setBoost((b) => ({ kind: allDone ? "launch" : "turbo", id: (b?.id ?? 0) + 1 }))}
+            onClaimed={(allDone) =>
+              setBoost((b) => ({
+                kind: allDone ? "launch" : "turbo",
+                id: (b?.id ?? 0) + 1,
+              }))
+            }
           />
         ) : (
           <ErrorState onRetry={() => missions.refetch()} />
@@ -243,7 +284,9 @@ export const DashboardPage = () => {
         </div>
         <div className="sp-crew">
           {crewLoading ? (
-            Array.from({ length: CREW_SIZE }, (_, i) => <div key={i} className="sp-skel mb-2.5 h-14" />)
+            Array.from({ length: CREW_SIZE }, (_, i) => (
+              <div key={i} className="sp-skel mb-2.5 h-14" />
+            ))
           ) : crew.length === 0 ? (
             <div className="sp-empty">{t("dashboardWidgets.noData")}</div>
           ) : (
@@ -255,7 +298,12 @@ export const DashboardPage = () => {
         </div>
       </div>
 
-      {missions.data && <DailyChest opened={missions.data.chest.opened} reward={missions.data.chest.reward} />}
+      {missions.data && (
+        <DailyChest
+          opened={missions.data.chest.opened}
+          reward={missions.data.chest.reward}
+        />
+      )}
     </div>
   );
 };

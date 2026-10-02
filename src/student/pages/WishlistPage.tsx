@@ -5,12 +5,24 @@ import "../theme/shop.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useWishlistCart, useWishlistQuery, useCheckoutMutation } from "@/hooks/queries/useWishlist";
+import {
+  useWishlistCart,
+  useWishlistQuery,
+  useCheckoutMutation,
+} from "@/hooks/queries/useWishlist";
 import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { queryKeys } from "@/lib/queryClient";
-import { EmptyState, ErrorState, Modal, PageHeader, Skel, Spinner, burst } from "../components/ui";
+import {
+  EmptyState,
+  ErrorState,
+  Modal,
+  PageHeader,
+  Skel,
+  Spinner,
+  burst,
+} from "../components/ui";
 import { ProductImage, productStock } from "../components/shop/ProductCatalog";
 
 const CartSkeleton = () => (
@@ -27,15 +39,24 @@ const CartSkeleton = () => (
 export const WishlistPage = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { items, isLoading, removeFromWishlist, updateQuantity, getTotalCoins, getTotalItems } =
-    useWishlistCart();
+  const {
+    items,
+    isLoading,
+    removeFromWishlist,
+    updateQuantity,
+    getTotalCoins,
+    getTotalItems,
+  } = useWishlistCart();
   const wishlist = useWishlistQuery();
   const coins = useCoinsQuery();
   const checkout = useCheckoutMutation();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ total: number; balance: number } | null>(null);
+  const [success, setSuccess] = useState<{
+    total: number;
+    balance: number;
+  } | null>(null);
   const successIcon = useRef<HTMLDivElement>(null);
 
   const totalCoins = getTotalCoins();
@@ -43,11 +64,15 @@ export const WishlistPage = () => {
   const balance = coins.data?.balance ?? 0;
   const balanceKnown = Boolean(coins.data);
   const shortBy = Math.max(0, totalCoins - balance);
-  const canCheckout = items.length > 0 && balanceKnown && shortBy === 0 && !checkout.isPending;
+  const canCheckout =
+    items.length > 0 && balanceKnown && shortBy === 0 && !checkout.isPending;
 
   useEffect(() => {
     if (!success) return;
-    const id = window.setTimeout(() => burst(successIcon.current, "💎", 8), 150);
+    const id = window.setTimeout(
+      () => burst(successIcon.current, "💎", 8),
+      150,
+    );
     return () => window.clearTimeout(id);
   }, [success]);
 
@@ -55,7 +80,9 @@ export const WishlistPage = () => {
     const message = getErrorMessage(error, t("wishlist.checkoutError"));
     if (/insufficient/i.test(message)) return t("space.shop.errInsufficient");
     if (/product not found/i.test(message)) {
-      return items.some((i) => i.quantity > 1) ? t("space.shop.errQty") : t("space.shop.errNotFound");
+      return items.some((i) => i.quantity > 1)
+        ? t("space.shop.errQty")
+        : t("space.shop.errNotFound");
     }
     return message;
   };
@@ -68,9 +95,16 @@ export const WishlistPage = () => {
       items.map((item) => ({ productId: item.id, quantity: item.quantity })),
       {
         onSuccess: (res) => {
-          const serverBalance = (res as { balance?: unknown } | undefined)?.balance;
+          const serverBalance = (res as { balance?: unknown } | undefined)
+            ?.balance;
           setConfirmOpen(false);
-          setSuccess({ total, balance: typeof serverBalance === "number" ? serverBalance : balance - total });
+          setSuccess({
+            total,
+            balance:
+              typeof serverBalance === "number"
+                ? serverBalance
+                : balance - total,
+          });
           // The HUD pill reads the dashboard's coinBalance.
           queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
         },
@@ -86,10 +120,14 @@ export const WishlistPage = () => {
   const header = (
     <PageHeader
       back={{ to: "/shop", label: t("shop.title") }}
-      title={`🛒 ${t("wishlist.title")}`}
+      title={t("wishlist.title")}
       subtitle={t("wishlist.itemsSelected", { count: totalItems })}
       right={
-        <Link to="/coins" className="sp-pill" aria-label={t("space.shop.balanceAria", { n: balance })}>
+        <Link
+          to="/coins"
+          className="sp-pill"
+          aria-label={t("space.shop.balanceAria", { n: balance })}
+        >
           💎 <span>{balanceKnown ? balance : "…"}</span>
         </Link>
       }
@@ -124,7 +162,9 @@ export const WishlistPage = () => {
       <div className="sp-shop-cart">
         <div>
           {items.map((item) => {
-            const stock = productStock(item as typeof item & { stock?: number | null });
+            const stock = productStock(
+              item as typeof item & { stock?: number | null },
+            );
             return (
               <div key={item.id} className="sp-row sp-shop-item">
                 <div className="sp-ic">
@@ -162,14 +202,18 @@ export const WishlistPage = () => {
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      disabled={checkout.isPending || (stock !== null && item.quantity >= stock)}
+                      disabled={
+                        checkout.isPending ||
+                        (stock !== null && item.quantity >= stock)
+                      }
                       aria-label={t("space.shop.inc")}
                     >
                       +
                     </button>
                   </div>
                   <div className="sp-shop-sum">
-                    <small>{t("wishlist.itemTotal")}</small>💎 {item.price * item.quantity}
+                    <small>{t("wishlist.itemTotal")}</small>💎{" "}
+                    {item.price * item.quantity}
                   </div>
                 </div>
               </div>
@@ -198,7 +242,12 @@ export const WishlistPage = () => {
             <div className="sp-hr">
               <span aria-hidden="true">🪙</span>
               <span>{t("space.shop.after")}</span>
-              <b style={{ color: shortBy > 0 ? "var(--sp-pink-ink)" : "var(--sp-lime-ink)" }}>
+              <b
+                style={{
+                  color:
+                    shortBy > 0 ? "var(--sp-pink-ink)" : "var(--sp-lime-ink)",
+                }}
+              >
                 {balance - totalCoins}
               </b>
             </div>
@@ -208,11 +257,17 @@ export const WishlistPage = () => {
             <b>💎 {totalCoins}</b>
           </div>
 
-          {!balanceKnown && coins.isLoading && <p className="sp-msg">{t("space.shop.balanceLoading")}</p>}
+          {!balanceKnown && coins.isLoading && (
+            <p className="sp-msg">{t("space.shop.balanceLoading")}</p>
+          )}
           {coins.error && !balanceKnown && (
             <p className="sp-msg sp-err">
               {getErrorMessage(coins.error, t("common.error"))}{" "}
-              <button type="button" className="sp-mute-btn underline" onClick={() => coins.refetch()}>
+              <button
+                type="button"
+                className="sp-mute-btn underline"
+                onClick={() => coins.refetch()}
+              >
                 {t("common.retry")}
               </button>
             </p>
@@ -231,7 +286,11 @@ export const WishlistPage = () => {
             </p>
           )}
 
-          <button className="sp-cta" disabled={!canCheckout} onClick={() => setConfirmOpen(true)}>
+          <button
+            className="sp-cta"
+            disabled={!canCheckout}
+            onClick={() => setConfirmOpen(true)}
+          >
             ✓ {t("shop.buy")}
           </button>
           <Link to="/shop" className="sp-cta sp-ghost">
@@ -256,13 +315,20 @@ export const WishlistPage = () => {
           🛍
         </div>
         <h2 id="sp-shop-confirm">{t("space.shop.confirmTitle")}</h2>
-        <p>{t("space.shop.confirmText", { count: totalItems, total: totalCoins })}</p>
+        <p>
+          {t("space.shop.confirmText", {
+            count: totalItems,
+            total: totalCoins,
+          })}
+        </p>
         <div className="sp-shop-lines">
           {items.map((item) => (
             <div key={item.id} className="sp-hr">
               <span aria-hidden="true">×{item.quantity}</span>
               <span>{item.name}</span>
-              <b style={{ color: "var(--sp-sun-ink)" }}>💎 {item.price * item.quantity}</b>
+              <b style={{ color: "var(--sp-sun-ink)" }}>
+                💎 {item.price * item.quantity}
+              </b>
             </div>
           ))}
           <div className="sp-hr">
@@ -277,16 +343,28 @@ export const WishlistPage = () => {
           </p>
         )}
         <div className="flex flex-wrap justify-center gap-2">
-          <button className="sp-cta sp-ghost" onClick={() => setConfirmOpen(false)} disabled={checkout.isPending}>
+          <button
+            className="sp-cta sp-ghost"
+            onClick={() => setConfirmOpen(false)}
+            disabled={checkout.isPending}
+          >
             {t("common.cancel")}
           </button>
-          <button className="sp-cta" onClick={handleCheckout} disabled={!canCheckout}>
+          <button
+            className="sp-cta"
+            onClick={handleCheckout}
+            disabled={!canCheckout}
+          >
             {checkout.isPending ? <Spinner /> : t("space.shop.confirm")}
           </button>
         </div>
       </Modal>
 
-      <Modal open={Boolean(success)} onClose={() => setSuccess(null)} labelledBy="sp-shop-success">
+      <Modal
+        open={Boolean(success)}
+        onClose={() => setSuccess(null)}
+        labelledBy="sp-shop-success"
+      >
         {success && (
           <>
             <div className="text-5xl" aria-hidden="true" ref={successIcon}>
@@ -294,7 +372,12 @@ export const WishlistPage = () => {
             </div>
             <h2 id="sp-shop-success">{t("space.shop.successTitle")}</h2>
             <p>{t("wishlist.checkoutSuccess")}</p>
-            <p>{t("space.shop.successText", { total: success.total, balance: success.balance })}</p>
+            <p>
+              {t("space.shop.successText", {
+                total: success.total,
+                balance: success.balance,
+              })}
+            </p>
             <div className="flex flex-wrap justify-center gap-2">
               <Link to="/coins" className="sp-cta sp-ghost no-underline">
                 {t("space.shop.toCoins")}

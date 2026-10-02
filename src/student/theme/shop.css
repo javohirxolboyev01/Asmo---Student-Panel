@@ -10,6 +10,22 @@
   flex-shrink: 0;
 }
 
+.sp-shop-categories {
+  gap: 6px;
+}
+.sp-shop-categories button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.sp-shop-products {
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+}
+.sp-shop-product-card .sp-prod-img {
+  aspect-ratio: 16 / 9;
+}
+
 /* Product card extras */
 .sp-shop-badges {
   position: absolute;

@@ -16,7 +16,13 @@ const ALL = "Hammasi";
 export const productStock = (p: { stock?: number | null }) =>
   typeof p.stock === "number" ? p.stock : null;
 
-export const ProductImage = ({ image, name }: { image: string; name: string }) =>
+export const ProductImage = ({
+  image,
+  name,
+}: {
+  image: string;
+  name: string;
+}) =>
   isImageUrl(image) ? (
     <img src={image} alt={name} loading="lazy" />
   ) : (
@@ -40,7 +46,7 @@ const ProductGridSkeleton = () => (
       <Skel className="h-9 w-20" />
       <Skel className="h-9 w-24" />
     </div>
-    <div className="sp-prods">
+    <div className="sp-prods sp-shop-products">
       {Array.from({ length: 6 }, (_, i) => (
         <Skel key={i} className="h-72" />
       ))}
@@ -48,7 +54,13 @@ const ProductGridSkeleton = () => (
   </div>
 );
 
-const ProductCard = ({ product, cart }: { product: Product; cart: CartControls }) => {
+const ProductCard = ({
+  product,
+  cart,
+}: {
+  product: Product;
+  cart: CartControls;
+}) => {
   const { t } = useTranslation();
   const qty = cart.quantity(product.id);
   const stock = productStock(product as Product & { stock?: number | null });
@@ -60,22 +72,44 @@ const ProductCard = ({ product, cart }: { product: Product; cart: CartControls }
       : 0;
 
   return (
-    <article className={soldOut ? "sp-prod sp-shop-out" : "sp-prod"}>
+    <article
+      className={
+        soldOut
+          ? "sp-prod sp-shop-out sp-shop-product-card"
+          : "sp-prod sp-shop-product-card"
+      }
+    >
       <div className="sp-prod-img">
         <ProductImage image={product.image} name={product.name} />
         <div className="sp-shop-badges">
-          {soldOut && <span className="sp-badge sp-mute">{t("space.shop.outOfStock")}</span>}
-          {product.isPopular && <span className="sp-badge sp-sun">⚡ {t("shop.popular")}</span>}
-          {product.isNew && <span className="sp-badge">✨ {t("shop.new")}</span>}
-          {product.isLimited && <span className="sp-badge sp-pink">🎁 {t("shop.limited")}</span>}
+          {soldOut && (
+            <span className="sp-badge sp-mute">
+              {t("space.shop.outOfStock")}
+            </span>
+          )}
+          {product.isPopular && (
+            <span className="sp-badge sp-sun">⚡ {t("shop.popular")}</span>
+          )}
+          {product.isNew && (
+            <span className="sp-badge">✨ {t("shop.new")}</span>
+          )}
+          {product.isLimited && (
+            <span className="sp-badge sp-pink">🎁 {t("shop.limited")}</span>
+          )}
         </div>
         {!soldOut && (
           <button
             type="button"
             className="sp-heart"
             aria-pressed={qty > 0}
-            aria-label={qty > 0 ? t("space.shop.removeFromCart") : t("space.shop.addToCart")}
-            onClick={() => (qty > 0 ? cart.remove(product.id) : cart.add(product))}
+            aria-label={
+              qty > 0
+                ? t("space.shop.removeFromCart")
+                : t("space.shop.addToCart")
+            }
+            onClick={() =>
+              qty > 0 ? cart.remove(product.id) : cart.add(product)
+            }
           >
             {qty > 0 ? "💖" : "🤍"}
           </button>
@@ -84,13 +118,18 @@ const ProductCard = ({ product, cart }: { product: Product; cart: CartControls }
       </div>
 
       <b>{product.name}</b>
-      {product.description && <p className="sp-shop-desc">{product.description}</p>}
+      {product.description && (
+        <p className="sp-shop-desc">{product.description}</p>
+      )}
 
       <div className="sp-shop-meta">
         <span>
-          ⭐ {product.rating ?? 0} ({t("shop.reviewsSuffix", { count: product.reviews ?? 0 })})
+          ⭐ {product.rating ?? 0} (
+          {t("shop.reviewsSuffix", { count: product.reviews ?? 0 })})
         </span>
-        {stock !== null && stock > 0 && <span>{t("space.shop.left", { n: stock })}</span>}
+        {stock !== null && stock > 0 && (
+          <span>{t("space.shop.left", { n: stock })}</span>
+        )}
       </div>
 
       <div className="sp-price">
@@ -105,7 +144,11 @@ const ProductCard = ({ product, cart }: { product: Product; cart: CartControls }
           </button>
         ) : qty > 0 ? (
           <div className="sp-qty" role="group" aria-label={product.name}>
-            <button type="button" onClick={() => cart.decrement(product.id)} aria-label={t("space.shop.dec")}>
+            <button
+              type="button"
+              onClick={() => cart.decrement(product.id)}
+              aria-label={t("space.shop.dec")}
+            >
               −
             </button>
             <span aria-live="polite">{qty}</span>
@@ -187,12 +230,26 @@ export const ProductCatalog = ({
       />
     );
   } else if (products.length === 0) {
-    body = <EmptyState emoji="🛸" title={t("shop.notFound")} text={t("shop.noProductsYet")} />;
+    body = (
+      <EmptyState
+        emoji="🛸"
+        title={t("shop.notFound")}
+        text={t("shop.noProductsYet")}
+      />
+    );
   } else {
     body = (
       <>
-        <SearchBox value={search} onChange={setSearch} placeholder={t("shop.searchPlaceholder")} />
-        <div className="sp-chipbar" role="toolbar" aria-label={t("shop.category")}>
+        <SearchBox
+          value={search}
+          onChange={setSearch}
+          placeholder={t("shop.searchPlaceholder")}
+        />
+        <div
+          className="sp-chipbar sp-shop-categories"
+          role="toolbar"
+          aria-label={t("shop.category")}
+        >
           {categories.map((c) => (
             <button
               key={c}
@@ -209,7 +266,11 @@ export const ProductCatalog = ({
           <EmptyState
             emoji="🔭"
             title={t("space.shop.noResults")}
-            text={query ? t("shop.noSearchResults", { query: search.trim() }) : t("space.shop.noResultsCategory")}
+            text={
+              query
+                ? t("shop.noSearchResults", { query: search.trim() })
+                : t("space.shop.noResultsCategory")
+            }
             action={
               <button className="sp-cta" onClick={clearFilters}>
                 {t("space.shop.clearFilters")}
@@ -217,7 +278,7 @@ export const ProductCatalog = ({
             }
           />
         ) : (
-          <div className="sp-prods" aria-busy={isFetching}>
+          <div className="sp-prods sp-shop-products" aria-busy={isFetching}>
             {filtered.map((p) => (
               <ProductCard key={p.id} product={p} cart={cart} />
             ))}
