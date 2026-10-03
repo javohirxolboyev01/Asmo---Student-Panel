@@ -149,7 +149,7 @@ export const DashboardPage = () => {
       <div className="sp-col">
         <h1 className="sp-title">
           {t("space.heroTitle", { name: "" }).replace("?", "")}
-          <span style={{ color: "#b6f23c" }}>{user?.firstName ?? ""}?</span>
+          <span className="sp-hero-name">{user?.firstName ?? ""}?</span>
         </h1>
         <p className="sp-sub">
           {!group

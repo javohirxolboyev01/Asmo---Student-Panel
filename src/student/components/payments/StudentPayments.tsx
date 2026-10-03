@@ -2,7 +2,7 @@
 // Student-only "Kosmik maktab" version of the shared PaymentsView: stats,
 // search, status/type filters, list with "show more", per-payment details.
 import { useMemo, useState } from "react";
-import { ReceiptText } from "lucide-react";
+import { CreditCard, ReceiptText } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePaymentsQuery } from "@/hooks/queries/usePayments";
 import type { RawPayment } from "@/services/paymentService";
@@ -316,13 +316,21 @@ export const StudentPayments = () => {
                   key={k}
                   type="button"
                   className={type === k ? "on" : undefined}
+                  data-payment-type={k}
                   aria-pressed={type === k}
                   onClick={() => {
                     setType(k);
                     setLimit(PAGE_SIZE);
                   }}
                 >
-                  {TYPES[k].emoji} {typeLabel(k)}
+                  {k === "uzum" ? (
+                    <span className="sp-pay-uzum-mark" aria-hidden="true">
+                      <CreditCard />
+                    </span>
+                  ) : (
+                    TYPES[k].emoji
+                  )}{" "}
+                  {typeLabel(k)}
                   <span>{countBy.byType[k] ?? 0}</span>
                 </button>
               ))}

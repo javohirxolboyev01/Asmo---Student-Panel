@@ -15,7 +15,11 @@ import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 import { useMissionsTodayQuery } from "@/hooks/queries/useMissions";
 import { SpaceAvatar } from "../components/SpaceAvatar";
 import { EmptyState, PageSkeleton, SpaceErrorBoundary } from "../components/ui";
-import { getGroupCourseName, getLevelFromCourse, getLevelNumber } from "../lib/level";
+import {
+  getGroupCourseName,
+  getLevelFromCourse,
+  getLevelNumber,
+} from "../lib/level";
 import { studentNavigation } from "../navigation";
 
 /** Re-triggers the "pop" animation whenever `value` grows. */
@@ -41,7 +45,9 @@ const Hud = () => {
   const popKey = usePopOnIncrease(coins);
   const group = data?.groups?.[0];
   const caption = group
-    ? t("space.hudLevel", { level: getLevelNumber(getLevelFromCourse(getGroupCourseName(group))) })
+    ? t("space.hudLevel", {
+        level: getLevelNumber(getLevelFromCourse(getGroupCourseName(group))),
+      })
     : t("nav.student");
 
   if (!user) return null;
@@ -65,12 +71,21 @@ const Hud = () => {
       >
         💎 <span>{coins}</span>
       </Link>
-      <div className="sp-pill" aria-label={`${t("dashboardWidgets.streak")}: ${missions?.streak ?? 0}`}>
+      <div
+        className="sp-pill"
+        aria-label={`${t("dashboardWidgets.streak")}: ${missions?.streak ?? 0}`}
+      >
         🔥 {missions?.streak ?? 0}
       </div>
-      <Link to="/notifications" className="sp-pill" aria-label={t("nav.notifications")}>
+      <Link
+        to="/notifications"
+        className="sp-pill"
+        aria-label={t("nav.notifications")}
+      >
         🔔
-        {unread > 0 && <span className="sp-dot">{unread > 99 ? "99+" : unread}</span>}
+        {unread > 0 && (
+          <span className="sp-dot">{unread > 99 ? "99+" : unread}</span>
+        )}
       </Link>
     </div>
   );
@@ -100,7 +115,10 @@ export const StudentLayout = () => {
               text={t("space.errorHint")}
               className="mt-6"
               action={
-                <button className="sp-cta" onClick={() => window.location.reload()}>
+                <button
+                  className="sp-cta"
+                  onClick={() => window.location.reload()}
+                >
                   {t("common.retry")}
                 </button>
               }

@@ -2,11 +2,19 @@
 // "Guruhlarim": search + Faol/Tugagan tabs + group cards (mock: #p-guruh).
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { GraduationCap } from "lucide-react";
 import { useGroupsQuery } from "@/hooks/queries/useGroups";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import type { Group } from "@/types/group";
-import { EmptyState, ErrorState, PageHeader, SearchBox, Segmented, Skel } from "../components/ui";
+import {
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  SearchBox,
+  Segmented,
+  Skel,
+} from "../components/ui";
 import { groupEmoji } from "../components/groups/groupEmoji";
 import "../theme/groups.css";
 
@@ -58,7 +66,10 @@ export const GroupsPage = () => {
     return (
       <div className="sp-page">
         <PageHeader title={t("groups.title")} subtitle={t("groups.subtitle")} />
-        <ErrorState message={getErrorMessage(error, t("common.error"))} onRetry={() => refetch()} />
+        <ErrorState
+          message={getErrorMessage(error, t("common.error"))}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -89,15 +100,21 @@ export const GroupsPage = () => {
   return (
     <div className="sp-page">
       <PageHeader title={t("groups.title")} subtitle={t("groups.subtitle")} />
-      <SearchBox value={search} onChange={setSearch} placeholder={t("groups.searchPlaceholder")} />
-      <Segmented<Tab>
-        value={tab}
-        onChange={setTab}
-        options={[
-          { value: "active", label: t("groups.active") },
-          { value: "completed", label: t("groups.completed") },
-        ]}
+      <SearchBox
+        value={search}
+        onChange={setSearch}
+        placeholder={t("groups.searchPlaceholder")}
       />
+      <div className="sp-groups-tabs">
+        <Segmented<Tab>
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "active", label: t("groups.active") },
+            { value: "completed", label: t("groups.completed") },
+          ]}
+        />
+      </div>
       <div className="sp-gl">
         {shown.length === 0
           ? empty
@@ -108,16 +125,29 @@ export const GroupsPage = () => {
                 </div>
                 <div className="sp-t">
                   <b>{g.name}</b>
-                  <span className={g.status === "active" ? "sp-badge" : "sp-badge sp-mute"}>
-                    {g.status === "active" ? t("groups.active") : t("groups.completed")}
+                  <span
+                    className={
+                      g.status === "active" ? "sp-badge" : "sp-badge sp-mute"
+                    }
+                  >
+                    {g.status === "active"
+                      ? t("groups.active")
+                      : t("groups.completed")}
                   </span>
                   <small>
-                    {[
-                      g.teacher?.fullName && `👩‍🏫 ${g.teacher.fullName}`,
-                      g.studentCount !== undefined && `👥 ${t("groups.studentsSuffix", { count: g.studentCount })}`,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {g.teacher?.fullName && (
+                      <span className="sp-groups-teacher">
+                        <GraduationCap aria-hidden="true" />
+                        <span className="sp-groups-teacher-name">
+                          {g.teacher.fullName}
+                        </span>
+                      </span>
+                    )}
+                    {g.teacher?.fullName &&
+                      g.studentCount !== undefined &&
+                      " · "}
+                    {g.studentCount !== undefined &&
+                      `👥 ${t("groups.studentsSuffix", { count: g.studentCount })}`}
                   </small>
                 </div>
                 <span className="sp-groups-chev" aria-hidden="true">

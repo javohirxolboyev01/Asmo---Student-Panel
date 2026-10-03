@@ -52,6 +52,29 @@
   padding: 6px 13px;
   font-size: 14px;
 }
+.sp-pay-filters .sp-chipbar button[data-payment-type="uzum"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.sp-pay-filters .sp-chipbar button[data-payment-type="uzum"] .sp-pay-uzum-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 5px;
+  background: #7000ff;
+  color: #fff;
+}
+.sp-pay-uzum-mark svg {
+  width: 13px;
+  height: 13px;
+  color: #fff;
+}
 .sp-pay-filters .sp-chipbar button span {
   color: var(--sp-mute);
   margin-left: 4px;

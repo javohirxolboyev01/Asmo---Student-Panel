@@ -16,6 +16,34 @@
 .sp-gc .sp-t > b {
   overflow-wrap: anywhere;
 }
+.sp-groups-teacher {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 100%;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.sp-groups-teacher > svg,
+.sp-groups-teacher-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.sp-groups-teacher-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sp-groups-tabs .sp-seg {
+  width: fit-content;
+}
+.sp-groups-tabs .sp-seg button {
+  flex: 0 0 auto;
+  padding: 6px 14px;
+  font-size: 13px;
+}
 
 /* Group detail info chips */
 .sp-groups-info {
@@ -23,7 +51,7 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-.sp-groups-info span {
+.sp-groups-info > span {
   background: var(--sp-card);
   border: 1px solid var(--sp-line);
   border-radius: 99px;
@@ -33,6 +61,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.sp-groups-info > .sp-groups-teacher-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
 }
 
 /* Lesson rows */
@@ -107,7 +141,11 @@
   color: var(--sp-mute);
 }
 .sp-groups-score.sp-graded {
-  background: linear-gradient(135deg, rgba(255, 201, 64, 0.28), rgba(255, 95, 168, 0.22));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 201, 64, 0.28),
+    rgba(255, 95, 168, 0.22)
+  );
 }
 .sp-groups-score.sp-graded b {
   color: var(--sp-sun-ink);

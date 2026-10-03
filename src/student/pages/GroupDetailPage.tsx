@@ -1,6 +1,6 @@
 // src/student/pages/GroupDetailPage.tsx
-// Group "mission board": group info chips, homework that is still open
-// (the fastest path for the "submit homework" mission), then every lesson.
+// Group details: group info chips and the full lesson list.
+import { GraduationCap } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useGroupDetailQuery } from "@/hooks/queries/useGroups";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -13,14 +13,21 @@ import { groupEmoji } from "../components/groups/groupEmoji";
 import "../theme/groups.css";
 
 const hwState = (l: LessonListItem) =>
-  !l.homework ? "none" : l.homework.isOverdue || isOverdue(l.homework.deadline) ? "late" : "open";
+  !l.homework
+    ? "none"
+    : l.homework.isOverdue || isOverdue(l.homework.deadline)
+      ? "late"
+      : "open";
 
 const LessonRow = ({ lesson }: { lesson: LessonListItem }) => {
   const { t } = useTranslation();
   const state = hwState(lesson);
   const cls = state === "open" ? " sp-hw" : state === "late" ? " sp-late" : "";
   return (
-    <Link to={`/lessons/${lesson.id}`} className={`sp-row sp-groups-lesson${cls}`}>
+    <Link
+      to={`/lessons/${lesson.id}`}
+      className={`sp-row sp-groups-lesson${cls}`}
+    >
       <div className="sp-ic" aria-hidden="true">
         {state === "open" ? "📝" : `#${lesson.lessonOrder}`}
       </div>
@@ -32,13 +39,24 @@ const LessonRow = ({ lesson }: { lesson: LessonListItem }) => {
             <>
               {" · "}
               <span className={state === "late" ? "sp-groups-late" : undefined}>
-                ⏰ {t("space.groups.deadline", { date: formatDate(lesson.homework.deadline) })}
+                ⏰{" "}
+                {t("space.groups.deadline", {
+                  date: formatDate(lesson.homework.deadline),
+                })}
               </span>
             </>
           )}
         </small>
       </div>
-      <span className={state === "open" ? "sp-badge sp-sun" : state === "late" ? "sp-badge sp-pink" : "sp-badge sp-mute"}>
+      <span
+        className={
+          state === "open"
+            ? "sp-badge sp-sun"
+            : state === "late"
+              ? "sp-badge sp-pink"
+              : "sp-badge sp-mute"
+        }
+      >
         {state === "open"
           ? t("space.groups.hwOpen")
           : state === "late"
@@ -90,7 +108,10 @@ export const GroupDetailPage = () => {
     return (
       <div className="sp-page">
         <PageHeader back={back} title={t("groupDetail.notFound")} />
-        <ErrorState message={getErrorMessage(error, t("groupDetail.notFound"))} onRetry={() => refetch()} />
+        <ErrorState
+          message={getErrorMessage(error, t("groupDetail.notFound"))}
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -114,9 +135,12 @@ export const GroupDetailPage = () => {
   }
 
   const lessons = data.lessons;
-  const open = lessons.filter((l) => hwState(l) === "open");
-  const schedule = [group.schedule?.days?.join(", "), group.schedule?.time].filter(Boolean).join(" · ");
-  const subtitle = [group.courseName, group.directionName].filter(Boolean).join(" · ");
+  const schedule = [group.schedule?.days?.join(", "), group.schedule?.time]
+    .filter(Boolean)
+    .join(" · ");
+  const subtitle = [group.courseName, group.directionName]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="sp-page">
@@ -133,31 +157,32 @@ export const GroupDetailPage = () => {
       />
 
       <div className="sp-groups-info">
-        {group.teacherName && <span>👩‍🏫 {group.teacherName}</span>}
+        {group.teacherName && (
+          <span className="sp-groups-teacher-chip">
+            <GraduationCap
+              className="sp-groups-teacher-icon"
+              aria-hidden="true"
+            />
+            <span className="sp-groups-teacher-name">{group.teacherName}</span>
+          </span>
+        )}
         {schedule && <span>🗓 {schedule}</span>}
         <span>📚 {t("space.groups.lessonsCount", { n: lessons.length })}</span>
       </div>
 
-      {open.length > 0 && (
-        <>
-          <div className="sp-sec">
-            <h2>📝 {t("space.groups.openHomework")}</h2>
-            <small>{t("space.groups.openHomeworkHint")}</small>
-          </div>
-          <div className="sp-groups-lessons">
-            {open.map((l) => (
-              <LessonRow key={l.id} lesson={l} />
-            ))}
-          </div>
-        </>
-      )}
-
       <div className="sp-sec">
         <h2>{t("space.groups.allLessons")}</h2>
-        <small>{lessons.length > 0 && t("space.groups.lessonsCount", { n: lessons.length })}</small>
+        <small>
+          {lessons.length > 0 &&
+            t("space.groups.lessonsCount", { n: lessons.length })}
+        </small>
       </div>
       {lessons.length === 0 ? (
-        <EmptyState emoji="📡" title={t("groupDetail.noLessons")} text={t("space.groups.noLessonsHint")} />
+        <EmptyState
+          emoji="📡"
+          title={t("groupDetail.noLessons")}
+          text={t("space.groups.noLessonsHint")}
+        />
       ) : (
         <div className="sp-groups-lessons">
           {lessons.map((l) => (
