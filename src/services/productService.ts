@@ -14,6 +14,8 @@ export interface Product {
   isPopular?: boolean;
   isNew?: boolean;
   isLimited?: boolean;
+  /** Only on the staff list (/products/manage); false = hidden from the student shop. */
+  isActive?: boolean;
 }
 
 export const productService = {
@@ -30,6 +32,12 @@ export const productService = {
       `/products${qs ? `?${qs}` : ""}`,
     );
     return Array.isArray(data) ? data : data.products ?? [];
+  },
+
+  /** Staff: every product, hidden ones included. */
+  getManagedProducts: async () => {
+    const data = await apiGet<{ products: Product[] }>("/products/manage");
+    return data.products ?? [];
   },
 
   createProduct: async (payload: Omit<Product, "id" | "rating" | "reviews">) =>

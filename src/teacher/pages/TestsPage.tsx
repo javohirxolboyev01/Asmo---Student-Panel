@@ -3,17 +3,29 @@
 // Talabaga test "Testdan o'tish" missiyasi orqali chiqadi.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BarChart3, Clock, FileQuestion, ListChecks, Pencil, Plus, Trash2, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  FileQuestion,
+  ListChecks,
+  Pencil,
+  Plus,
+  Trash2,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { useDeleteQuizMutation, useQuizzesQuery, useSetQuizActiveMutation } from "@/hooks/queries/useQuizzes";
 import type { QuizSummary } from "@/types/quiz";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
-import { EmptyState } from "@/components/common/EmptyState";
-import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
-import { Button, IconButton } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ApiError } from "@/services/apiClient";
+import { EmptyBox, PageHeader, Ring, Seg, Skel, Toggle } from "../components/ui";
+
+type Filter = "all" | "active" | "inactive";
 
 export const TestsPage = () => {
   const { t } = useTranslation();
@@ -23,6 +35,7 @@ export const TestsPage = () => {
   const deleteQuiz = useDeleteQuizMutation();
   const [deleting, setDeleting] = useState<QuizSummary | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
 
   const handleToggle = async (quiz: QuizSummary) => {
     setTogglingId(quiz.id);
@@ -49,128 +62,169 @@ export const TestsPage = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <SkeletonCardGrid count={4} />
+      <div aria-busy="true">
+        <Skel className="mt-2 h-8 w-1/2 rounded-xl" />
+        <Skel className="mt-2 h-4 w-1/3 rounded-lg" />
+        <Skel className="mt-5 h-11 w-64 rounded-[14px]" />
+        <div className="u-cols c3 u-stack mt-4">
+          {[0, 1, 2].map((i) => (
+            <Skel key={i} className="h-[250px]" />
+          ))}
+        </div>
       </div>
     );
   }
 
+  const activeCount = quizzes.filter((q) => q.isActive).length;
+  const shown = quizzes.filter((q) => filter === "all" || q.isActive === (filter === "active"));
+  const notReady = error instanceof ApiError && error.status === 503;
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">{t("quizzes.title")}</h1>
-          <p className="text-gray-500 text-sm md:text-base">{t("quizzes.subtitle")}</p>
-        </div>
-        <Button
-          leftIcon={<Plus className="w-4 h-4" />}
-          onClick={() => navigate("/tests/new")}
-          className="flex-shrink-0"
-          aria-label={t("quizzes.create")}
-        >
-          <span className="hidden sm:inline">{t("quizzes.create")}</span>
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title={t("quizzes.title")}
+        subtitle={quizzes.length ? t("us.manage.testsActive", { count: activeCount }) : t("quizzes.subtitle")}
+        right={
+          <button type="button" className="u-btn" onClick={() => navigate("/tests/new")} aria-label={t("quizzes.create")}>
+            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+            {t("us.manage.testBtn")}
+          </button>
+        }
+      />
 
-      {error instanceof ApiError && error.status === 503 ? (
-        <div className="card p-5 text-center space-y-2">
-          <p className="font-semibold text-gray-800 dark:text-gray-100">{t("quizzes.notReady")}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t("quizzes.notReadyHint")}</p>
-        </div>
+      {notReady ? (
+        <EmptyBox icon={Wrench} tone="mu" title={t("quizzes.notReady")} text={t("quizzes.notReadyHint")} />
       ) : isError ? (
-        <div className="card p-5 text-center space-y-3">
-          <p className="text-red-500">{getErrorMessage(error, t("quizzes.loadError"))}</p>
-          <Button variant="outline" size="sm" onClick={() => refetch()} isLoading={isFetching}>
-            {t("common.retry")}
-          </Button>
-        </div>
-      ) : quizzes.length === 0 ? (
-        <div className="card p-5">
-          <EmptyState icon={FileQuestion} title={t("quizzes.empty")} description={t("quizzes.emptyHint")} />
-          <div className="flex justify-center -mt-4 pb-4">
-            <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => navigate("/tests/new")}>
-              {t("quizzes.create")}
+        <EmptyBox
+          icon={AlertTriangle}
+          tone="er"
+          title={getErrorMessage(error, t("quizzes.loadError"))}
+          action={
+            <Button onClick={() => refetch()} isLoading={isFetching}>
+              {t("common.retry")}
             </Button>
-          </div>
-        </div>
+          }
+        />
+      ) : quizzes.length === 0 ? (
+        <EmptyBox
+          icon={FileQuestion}
+          tone="mu"
+          title={t("quizzes.empty")}
+          text={t("quizzes.emptyHint")}
+          action={
+            <button type="button" className="u-btn" onClick={() => navigate("/tests/new")}>
+              <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+              {t("quizzes.create")}
+            </button>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-          {quizzes.map((quiz) => (
-            <div
-              key={quiz.id}
-              className={cn("card p-4 md:p-5 flex flex-col gap-3 transition-opacity", !quiz.isActive && "opacity-60")}
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-warning/10 dark:bg-warning/15 flex items-center justify-center flex-shrink-0">
-                  <ListChecks className="w-6 h-6 text-warning" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 break-words">{quiz.title}</h3>
-                    <span
-                      className={cn(
-                        "text-[11px] font-semibold px-2 py-0.5 rounded-full",
-                        quiz.isActive
-                          ? "bg-[#E8F5E9] text-[#2E7D32] dark:bg-[#2E7D32]/20 dark:text-[#66BB6A]"
-                          : "bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400",
-                      )}
-                    >
-                      {quiz.isActive ? t("missions.active") : t("missions.inactive")}
-                    </span>
-                  </div>
-                  {quiz.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 break-words line-clamp-2">
-                      {quiz.description}
+        <>
+          <div className="mb-3.5">
+            <Seg<Filter>
+              value={filter}
+              onChange={setFilter}
+              label={t("us.manage.filterLabel")}
+              options={[
+                { value: "all", label: t("us.manage.all") },
+                { value: "active", label: t("missions.active") },
+                { value: "inactive", label: t("missions.inactive") },
+              ]}
+            />
+          </div>
+
+          <div className="u-cols c3 u-stack">
+            {shown.map((quiz) => (
+              <article key={quiz.id} className="u-card grid gap-3 content-start">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn("u-mi !w-[54px] !h-[54px]", !quiz.isActive && "opacity-60")}
+                    style={{ background: "var(--prt)", color: "var(--pr)" }}
+                  >
+                    <ListChecks className="u-i l" strokeWidth={2} aria-hidden="true" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="break-words">{quiz.title}</h3>
+                    <p className="u-sub !mt-0.5 text-sm flex items-center gap-1.5 min-w-0">
+                      <Users className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      <span className="truncate">{quiz.groupId ? quiz.groupName ?? "—" : t("missions.allStudents")}</span>
                     </p>
-                  )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <IconButton size="sm" onClick={() => navigate(`/tests/${quiz.id}/edit`)} aria-label={t("quizzes.edit")}>
-                    <Pencil className="w-4 h-4" />
-                  </IconButton>
-                  <IconButton size="sm" variant="danger" onClick={() => setDeleting(quiz)} aria-label={t("common.delete")}>
-                    <Trash2 className="w-4 h-4" />
-                  </IconButton>
+
+                {quiz.description && <p className="u-sub !mt-0 text-sm break-words line-clamp-2">{quiz.description}</p>}
+
+                <div className="u-chips">
+                  <span className="u-chip">
+                    <FileQuestion className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    {t("quizzes.questionCount", { count: quiz.questionCount })}
+                  </span>
+                  <span className="u-chip">
+                    <Clock className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    {quiz.timeLimitMin ? t("quizzes.minutes", { count: quiz.timeLimitMin }) : t("quizzes.noLimit")}
+                  </span>
                 </div>
-              </div>
 
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                  {t("quizzes.questionCount", { count: quiz.questionCount })}
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                  <Clock className="w-3.5 h-3.5" />
-                  {quiz.timeLimitMin ? t("quizzes.minutes", { count: quiz.timeLimitMin }) : t("quizzes.noLimit")}
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                  <Users className="w-3.5 h-3.5" />
-                  {quiz.groupId ? quiz.groupName ?? "—" : t("missions.allStudents")}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                <Link
-                  to={`/tests/${quiz.id}/results`}
-                  className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-warning"
-                >
-                  <BarChart3 className="w-4 h-4 text-warning" />
-                  {t("quizzes.finishedCount", { count: quiz.finishedCount })}
-                  {quiz.avgPercent != null && <> · {t("quizzes.avg", { percent: quiz.avgPercent })}</>}
+                <Link to={`/tests/${quiz.id}/results`} className="u-row" aria-label={`${t("us.manage.results")}: ${quiz.title}`}>
+                  <Ring percent={quiz.avgPercent} />
+                  <div className="g">
+                    <b>{t("us.manage.results")}</b>
+                    <small>
+                      {t("quizzes.finishedCount", { count: quiz.finishedCount })}
+                      {quiz.avgPercent != null && <> · {t("quizzes.avg", { percent: quiz.avgPercent })}</>}
+                    </small>
+                  </div>
+                  <ChevronRight className="u-i m text-u-mu" strokeWidth={2} aria-hidden="true" />
                 </Link>
-                <Button
-                  size="sm"
-                  variant={quiz.isActive ? "ghost" : "outline"}
-                  onClick={() => handleToggle(quiz)}
-                  isLoading={togglingId === quiz.id}
-                  disabled={togglingId !== null && togglingId !== quiz.id}
-                >
-                  {quiz.isActive ? t("missions.deactivate") : t("missions.activate")}
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="u-btn soft sm"
+                      onClick={() => navigate(`/tests/${quiz.id}/edit`)}
+                      aria-label={`${t("quizzes.edit")}: ${quiz.title}`}
+                    >
+                      <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      {t("common.edit")}
+                    </button>
+                    <button
+                      type="button"
+                      className="u-ib"
+                      onClick={() => setDeleting(quiz)}
+                      aria-label={t("common.delete")}
+                    >
+                      <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={quiz.isActive}
+                    onClick={() => handleToggle(quiz)}
+                    disabled={togglingId !== null}
+                    className={cn(
+                      "flex items-center gap-2 font-bold text-u-mu disabled:cursor-wait",
+                      togglingId === quiz.id && "opacity-60",
+                    )}
+                  >
+                    {quiz.isActive ? t("missions.active") : t("missions.inactive")}
+                    <Toggle on={quiz.isActive} />
+                  </button>
+                </div>
+              </article>
+            ))}
+            {shown.length === 0 && (
+              <EmptyBox
+                className="col-span-full"
+                tone="mu"
+                icon={ListChecks}
+                title={t("us.manage.emptyFilter")}
+                text={t("us.manage.emptyFilterHint")}
+              />
+            )}
+          </div>
+        </>
       )}
 
       <ConfirmModal
@@ -181,6 +235,6 @@ export const TestsPage = () => {
         onConfirm={handleDelete}
         onCancel={() => !deleteQuiz.isPending && setDeleting(null)}
       />
-    </div>
+    </>
   );
 };

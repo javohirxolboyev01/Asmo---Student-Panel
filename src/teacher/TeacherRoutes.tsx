@@ -8,9 +8,8 @@ import { studentsQueryOptions } from "@/hooks/queries/useStudents";
 import { teacherCoinTransactionsQueryOptions } from "@/hooks/queries/useCoins";
 import { paymentsQueryOptions } from "@/hooks/queries/usePayments";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "@/components/Layout/Layout";
+import { TeacherLayout } from "./layout/TeacherLayout";
 import { sharedPages, sharedPanelRoutes } from "@/pages/sharedRoutes";
-import { teacherNavigation } from "./navigation";
 
 // Each page is its own chunk; once the panel is up, the rest are fetched in
 // the background (preloadWhenIdle) so switching pages doesn't wait on code.
@@ -32,6 +31,7 @@ const pages = {
   TeachersPage: lazyPage(() => import("./pages/TeachersPage"), "TeachersPage"),
   GradingPage: lazyPage(() => import("./pages/GradingPage"), "GradingPage"),
   SubmissionGradePage: lazyPage(() => import("./pages/SubmissionGradePage"), "SubmissionGradePage"),
+  MorePage: lazyPage(() => import("./pages/MorePage"), "MorePage"),
 };
 
 // Warms the cache behind the bottom-nav tabs so their first visit shows data
@@ -52,7 +52,7 @@ export const TeacherRoutes = () => {
 
   return (
     <Routes>
-      <Route element={<Layout navigation={teacherNavigation} />}>
+      <Route element={<TeacherLayout />}>
         <Route index element={<pages.DashboardPage />} />
         <Route path="groups" element={<pages.GroupsPage />} />
         <Route path="groups/:id" element={<pages.GroupDetailPage />} />
@@ -71,6 +71,8 @@ export const TeacherRoutes = () => {
         <Route path="teachers" element={<pages.TeachersPage />} />
         <Route path="grading" element={<pages.GradingPage />} />
         <Route path="submissions/:id" element={<pages.SubmissionGradePage />} />
+        {/* Mock "Ko'proq": profile + every secondary page. /profile now lands here. */}
+        <Route path="more" element={<pages.MorePage />} />
         {sharedPanelRoutes}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

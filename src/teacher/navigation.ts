@@ -1,52 +1,60 @@
 // src/teacher/navigation.ts
+// "Ustoz paneli" menu (mock: Bosh, Guruh, Baholash, Talabalar, Coin, Ko'proq).
+// Phones show exactly those six in the bottom bar; the desktop rail also lists
+// tests, missions and payments directly, since there is room. Everything else
+// (attendance, shop, teachers, notifications, profile, settings) lives on the
+// "Ko'proq" page.
 import {
-  LayoutDashboard,
   BookOpen,
-  Calendar,
-  Coins,
-  Bell,
-  User,
-  GraduationCap,
-  Users,
-  ShoppingBag,
-  CreditCard,
   ClipboardCheck,
-  Target,
+  Coins,
+  CreditCard,
+  House,
   ListChecks,
+  Menu,
+  Target,
+  Users,
+  type LucideIcon,
 } from "lucide-react";
-import type { NavItem } from "@/components/Layout/navigation";
-import type { PanelNavigation } from "@/components/Layout/navigation";
 
-const sidebar: NavItem[] = [
-  { icon: LayoutDashboard, labelKey: "nav.dashboard", path: "/" },
-  { icon: BookOpen, labelKey: "nav.groups", path: "/groups" },
-  { icon: Users, labelKey: "nav.students", path: "/students" },
-  { icon: GraduationCap, labelKey: "nav.teachers", path: "/teachers" },
-  { icon: ClipboardCheck, labelKey: "nav.grading", path: "/grading" },
-  { icon: Calendar, labelKey: "nav.attendance", path: "/attendance" },
-  { icon: Coins, labelKey: "nav.coins", path: "/coins" },
-  { icon: Target, labelKey: "nav.missions", path: "/missions" },
-  { icon: ListChecks, labelKey: "nav.tests", path: "/tests" },
-  { icon: ShoppingBag, labelKey: "nav.shop", path: "/shop" },
-  { icon: CreditCard, labelKey: "nav.payments", path: "/payments" },
-  { icon: Bell, labelKey: "nav.notifications", path: "/notifications" },
-  { icon: User, labelKey: "nav.profile", path: "/profile" },
-];
+export interface TeacherNavItem {
+  path: string;
+  icon: LucideIcon;
+  labelKey: string;
+  /** Other routes that light this item up (nested pages). */
+  match?: string[];
+}
 
-const bottom: NavItem[] = [
-  { path: "/", icon: LayoutDashboard, labelKey: "nav.dashboardShort" },
-  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort" },
-  { path: "/grading", icon: ClipboardCheck, labelKey: "nav.grading" },
+const more: TeacherNavItem = {
+  path: "/more",
+  icon: Menu,
+  labelKey: "nav.more",
+  match: ["/profile", "/settings", "/notifications", "/attendance", "/shop", "/teachers"],
+};
+
+export const teacherMainNav: TeacherNavItem[] = [
+  { path: "/", icon: House, labelKey: "nav.dashboardShort" },
+  { path: "/groups", icon: BookOpen, labelKey: "nav.groupsShort", match: ["/lessons"] },
+  { path: "/grading", icon: ClipboardCheck, labelKey: "nav.grading", match: ["/submissions"] },
   { path: "/students", icon: Users, labelKey: "nav.students" },
   { path: "/coins", icon: Coins, labelKey: "nav.coins" },
 ];
 
-// The mobile header already links profile and notifications.
-const IN_HEADER = new Set(["/profile", "/notifications"]);
+/** Desktop-only rail entries; on phones they are reached from "Ko'proq". */
+export const teacherExtraNav: TeacherNavItem[] = [
+  { path: "/tests", icon: ListChecks, labelKey: "nav.tests" },
+  { path: "/missions", icon: Target, labelKey: "nav.missions" },
+  { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
+];
 
-export const teacherNavigation: PanelNavigation = {
-  roleLabelKey: "nav.teacher",
-  sidebar,
-  bottom,
-  more: sidebar.filter((item) => !IN_HEADER.has(item.path) && !bottom.some((b) => b.path === item.path)),
-};
+export const teacherMoreNav = more;
+
+const under = (pathname: string, path: string) =>
+  path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(`${path}/`);
+
+export const isNavActive = (item: TeacherNavItem, pathname: string) =>
+  under(pathname, item.path) || (item.match ?? []).some((path) => under(pathname, path));
+
+/** Phones: tests/missions/payments pages light up "Ko'proq". */
+export const isMoreActiveOnMobile = (pathname: string) =>
+  isNavActive(more, pathname) || teacherExtraNav.some((item) => isNavActive(item, pathname));

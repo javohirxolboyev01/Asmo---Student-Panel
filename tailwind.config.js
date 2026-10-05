@@ -50,13 +50,22 @@ export default {
           DEFAULT: "#12141A",
           hover: "#1E212B",
         },
+        // Teacher panel "Ustoz paneli" (mock tokens, css/index.css --u-*);
+        // one class covers light and dark.
+        u: Object.fromEntries(
+          ["bg", "sf", "sf2", "ln", "tx", "mu", "pr", "pr2", "prt", "on", "gd", "gdt", "gdx", "ok", "okt", "er", "ert", "field", "fieldln", "modal"].map(
+            (k) => [k, `rgb(var(--u-${k}) / <alpha-value>)`],
+          ),
+        ),
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        fd: ["Fredoka", "Figtree", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
         "card-hover": "0 4px 12px rgba(0,0,0,0.08)",
+        u: "var(--u-sh)",
         "bottom-nav": "0 -2px 10px rgba(0,0,0,0.05)",
       },
       borderRadius: {

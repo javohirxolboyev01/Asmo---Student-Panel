@@ -1,19 +1,22 @@
 // src/teacher/pages/ShopPage.tsx
+// Mock `shop` view: product cards with a quick price sheet and a
+// Sotuvda / Yashirin switch, plus the full create / edit form and delete.
 import { useMemo, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import {
-  useProductsQuery,
+  useManagedProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
 } from "@/hooks/queries/useProducts";
-import { Product } from "@/services/productService";
+import type { Product } from "@/services/productService";
 import { Modal } from "@/components/common/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button, IconButton, Input, Textarea, Checkbox } from "@/components/ui";
+import { Button, Input, Textarea, Checkbox } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { ProductCatalog } from "@/components/Shop/ProductCatalog";
+import { Toggle } from "../components/ui";
 
 const EMPTY_PRODUCT_FORM = {
   name: "",
@@ -29,18 +32,21 @@ const EMPTY_PRODUCT_FORM = {
 
 export const ShopPage = () => {
   const { t } = useTranslation();
-  const { data: products = [] } = useProductsQuery();
+  const { data: products = [], isLoading, isError, refetch } = useManagedProductsQuery();
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productForm, setProductForm] = useState(EMPTY_PRODUCT_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priceProduct, setPriceProduct] = useState<Product | null>(null);
+  const [priceValue, setPriceValue] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const { confirm, confirmModal } = useConfirm();
   const createProduct = useCreateProductMutation();
   const updateProduct = useUpdateProductMutation();
   const deleteProduct = useDeleteProductMutation();
 
   const categories = useMemo(
-    () => ["Hammasi", ...Array.from(new Set(products.map((p) => p.category))).sort()],
+    () => Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort(),
     [products],
   );
 
@@ -66,7 +72,8 @@ export const ShopPage = () => {
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = async () => {
+  const handleSaveProduct = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!productForm.name || !productForm.description || !productForm.price || !productForm.image) return;
     setIsSubmitting(true);
     try {
@@ -106,104 +113,204 @@ export const ShopPage = () => {
     }
   };
 
+  const openPrice = (product: Product) => {
+    setPriceProduct(product);
+    setPriceValue(String(product.price));
+  };
+
+  const handleSavePrice = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!priceProduct) return;
+    const price = Number(priceValue);
+    if (priceValue === "" || !Number.isFinite(price) || price < 0) return;
+    try {
+      await updateProduct.mutateAsync({ id: priceProduct.id, payload: { price } });
+      setPriceProduct(null);
+      toast.success(t("us.shop.saved"));
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
+    }
+  };
+
+  const handleToggle = async (product: Product) => {
+    const isActive = product.isActive !== false;
+    setTogglingId(product.id);
+    try {
+      await updateProduct.mutateAsync({ id: product.id, payload: { isActive: !isActive } });
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const set = <K extends keyof typeof EMPTY_PRODUCT_FORM>(key: K, value: (typeof EMPTY_PRODUCT_FORM)[K]) =>
+    setProductForm((f) => ({ ...f, [key]: value }));
+
   return (
     <ProductCatalog
+      products={products}
+      isLoading={isLoading}
+      isError={isError}
+      onRetry={() => refetch()}
       headerActions={
-        <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreateProduct}>
-          <span className="hidden sm:inline">{t("shop.addProduct")}</span>
-        </Button>
+        <button type="button" className="u-btn" onClick={openCreateProduct}>
+          <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+          {t("us.shop.add")}
+        </button>
       }
-      renderProductAction={(product) => (
-        <div className="flex items-center gap-2">
-          <IconButton
-            size="md"
-            className="rounded-lg"
-            onClick={() => openEditProduct(product)}
-          >
-            <Pencil className="w-4 h-4" />
-          </IconButton>
-          <IconButton
-            variant="danger"
-            size="md"
-            className="rounded-lg"
-            onClick={() => handleDeleteProduct(product.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </IconButton>
-        </div>
-      )}
+      renderProductAction={(product) => {
+        const on = product.isActive !== false;
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <button type="button" className="u-btn soft sm" onClick={() => openPrice(product)}>
+                <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                {t("us.shop.price")}
+              </button>
+              <button
+                type="button"
+                className="u-ib"
+                onClick={() => openEditProduct(product)}
+                aria-label={t("shop.editProduct")}
+                title={t("shop.editProduct")}
+              >
+                <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className="u-ib"
+                style={{ color: "var(--er)" }}
+                onClick={() => handleDeleteProduct(product.id)}
+                aria-label={t("common.delete")}
+                title={t("common.delete")}
+              >
+                <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+              </button>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={on}
+              disabled={togglingId === product.id}
+              onClick={() => handleToggle(product)}
+              className="flex items-center gap-2 font-bold disabled:opacity-60"
+              style={{ color: "var(--mu)" }}
+            >
+              {on ? t("us.shop.onSale") : t("us.shop.hidden")}
+              <Toggle on={on} />
+            </button>
+          </div>
+        );
+      }}
     >
+      {/* Full create / edit form */}
       <Modal
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         title={editingProduct ? t("shop.editProduct") : t("shop.addProduct")}
       >
-        <div className="space-y-3">
+        <form onSubmit={handleSaveProduct} className="u-stack">
           <Input
             type="text"
-            placeholder={t("shop.name")}
+            label={t("shop.name")}
             value={productForm.name}
-            onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+            onChange={(e) => set("name", e.target.value)}
+            required
           />
           <Textarea
-            placeholder={t("shop.description")}
+            label={t("shop.description")}
             value={productForm.description}
-            onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+            onChange={(e) => set("description", e.target.value)}
             className="min-h-[80px]"
+            required
           />
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="number"
-              placeholder={t("shop.price")}
+              min={0}
+              label={t("us.shop.priceCoin")}
               value={productForm.price}
-              onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
+              onChange={(e) => set("price", e.target.value)}
+              required
             />
             <Input
               type="number"
-              placeholder={t("shop.originalPrice")}
+              min={0}
+              label={t("shop.originalPrice")}
               value={productForm.originalPrice}
-              onChange={(e) => setProductForm({ ...productForm, originalPrice: e.target.value })}
+              onChange={(e) => set("originalPrice", e.target.value)}
             />
           </div>
           <Input
             type="text"
             list="shop-categories"
-            placeholder={t("shop.category")}
+            label={t("shop.category")}
             value={productForm.category}
-            onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+            onChange={(e) => set("category", e.target.value)}
           />
           <datalist id="shop-categories">
-            {categories.filter((c) => c !== "Hammasi").map((c) => (
+            {categories.map((c) => (
               <option key={c} value={c} />
             ))}
           </datalist>
           <Input
             type="text"
-            placeholder={t("shop.image")}
+            label={t("shop.image")}
             value={productForm.image}
-            onChange={(e) => setProductForm({ ...productForm, image: e.target.value })}
+            onChange={(e) => set("image", e.target.value)}
+            required
           />
           <div className="flex flex-wrap gap-4">
             <Checkbox
               checked={productForm.isPopular}
-              onChange={(e) => setProductForm({ ...productForm, isPopular: e.target.checked })}
+              onChange={(e) => set("isPopular", e.target.checked)}
               label={t("shop.popular")}
             />
             <Checkbox
               checked={productForm.isNew}
-              onChange={(e) => setProductForm({ ...productForm, isNew: e.target.checked })}
+              onChange={(e) => set("isNew", e.target.checked)}
               label={t("shop.new")}
             />
             <Checkbox
               checked={productForm.isLimited}
-              onChange={(e) => setProductForm({ ...productForm, isLimited: e.target.checked })}
+              onChange={(e) => set("isLimited", e.target.checked)}
               label={t("shop.limited")}
             />
           </div>
-          <Button onClick={handleSaveProduct} isLoading={isSubmitting} fullWidth>
-            {editingProduct ? t("common.update") : t("common.create")}
-          </Button>
-        </div>
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setIsProductModalOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={isSubmitting}>
+              {editingProduct ? t("common.update") : t("common.create")}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Quick price sheet */}
+      <Modal isOpen={!!priceProduct} onClose={() => setPriceProduct(null)} title={t("us.shop.priceTitle")}>
+        <form onSubmit={handleSavePrice} className="u-stack">
+          {priceProduct && <b className="break-words">{priceProduct.name}</b>}
+          <Input
+            type="number"
+            min={0}
+            label={t("us.shop.priceCoin")}
+            value={priceValue}
+            onChange={(e) => setPriceValue(e.target.value)}
+            autoFocus
+            required
+          />
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setPriceProduct(null)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={updateProduct.isPending}>
+              {t("common.save")}
+            </Button>
+          </div>
+        </form>
       </Modal>
       {confirmModal}
     </ProductCatalog>

@@ -1,52 +1,56 @@
 // src/teacher/pages/StudentDetailPage.tsx
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Phone, Mail, Plus, X, CreditCard, Pencil } from "lucide-react";
+// Mock `student` view: centred hero with actions, 3 stats, groups/grades/attendance
+// on the left, coin history and payments on the right.
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { AlertTriangle, Mail, Pencil, Phone, Plus, Trash2, X } from "lucide-react";
 import {
   useStudentDetailQuery,
   useUpdateStudentMutation,
+  useDeleteStudentMutation,
 } from "@/hooks/queries/useStudents";
 import { useGroupsQuery, useEnrollStudentMutation, useUnenrollStudentMutation } from "@/hooks/queries/useGroups";
-import { useAwardCoinsMutation } from "@/hooks/queries/useCoins";
 import { useAddPaymentMutation } from "@/hooks/queries/usePayments";
-import { Skeleton, SkeletonCard } from "@/components/common/Skeleton";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Modal } from "@/components/common/Modal";
-import { Button, IconButton, Input, Select } from "@/components/ui";
-import { getAvatarUrl, cn } from "@/lib/utils";
-import { formatDate } from "@/utilist/formatData";
+import { Button, Input, Select } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
+import type { TeacherPayment } from "@/types/teacher";
+import { Avatar, BackButton, EmptyBox, Skel, Tag, formatDate, groupColor, type Tone } from "../components/ui";
+import { GiveCoinSheet } from "../components/sheets";
 
-const PAYMENT_STATUS_KEYS: Record<string, "payments.statusPaid" | "payments.statusPending" | "payments.statusOverdue" | "payments.statusCancelled"> = {
-  paid: "payments.statusPaid",
-  pending: "payments.statusPending",
-  overdue: "payments.statusOverdue",
-  cancelled: "payments.statusCancelled",
+const PAYMENT_STATUS: Record<TeacherPayment["status"], { key: string; tone: Tone }> = {
+  paid: { key: "payments.statusPaid", tone: "ok" },
+  pending: { key: "payments.statusPending", tone: "gd" },
+  overdue: { key: "payments.statusOverdue", tone: "er" },
+  cancelled: { key: "payments.statusCancelled", tone: "mu" },
 };
+const PAYMENT_TYPES = ["CASH", "CLICK", "PAYME", "BANK", "UZUM"];
+const PAYMENT_TYPE_KEYS: Record<string, string> = { CASH: "payments.typeCash", BANK: "payments.typeBank" };
+const EMPTY_PAYMENT = { amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" };
+const money = (n: number) => new Intl.NumberFormat("ru-RU").format(n);
 
 export const StudentDetailPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { data: selectedStudent, isLoading, error } = useStudentDetailQuery(id);
+  const { data: selectedStudent, isLoading, error, refetch } = useStudentDetailQuery(id);
   const updateStudent = useUpdateStudentMutation();
+  const deleteStudent = useDeleteStudentMutation();
   const { data: groups = [] } = useGroupsQuery();
   const enrollStudent = useEnrollStudentMutation();
   const unenrollStudent = useUnenrollStudentMutation();
-  const awardCoins = useAwardCoinsMutation();
   const addPayment = useAddPaymentMutation();
-
-  const [isCoinModalOpen, setIsCoinModalOpen] = useState(false);
-  const [coinForm, setCoinForm] = useState({ amount: "", reason: "" });
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({ amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
-  const [enrollGroupId, setEnrollGroupId] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ firstName: "", lastName: "", phone: "", status: "ACTIVE" });
-  const [isSavingStudent, setIsSavingStudent] = useState(false);
   const { confirm, confirmModal } = useConfirm();
+
+  const [isCoinOpen, setIsCoinOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT);
+  const [enrollGroupId, setEnrollGroupId] = useState("");
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ firstName: "", lastName: "", phone: "", status: "ACTIVE" });
 
   useEffect(() => {
     if (!selectedStudent) return;
@@ -58,9 +62,9 @@ export const StudentDetailPage = () => {
     });
   }, [selectedStudent]);
 
-  const handleSaveStudent = async () => {
+  const handleSaveStudent = async (e: FormEvent) => {
+    e.preventDefault();
     if (!id || !editForm.firstName || !editForm.lastName) return;
-    setIsSavingStudent(true);
     try {
       await updateStudent.mutateAsync({
         id,
@@ -71,33 +75,32 @@ export const StudentDetailPage = () => {
           status: editForm.status,
         },
       });
-      setIsEditModalOpen(false);
-      toast.success(t("common.updateSuccess"));
+      setIsEditOpen(false);
+      toast.success(t("us.people.saved"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
-    } finally {
-      setIsSavingStudent(false);
     }
   };
 
-  const handleAwardCoins = async () => {
-    if (!id || !coinForm.amount || !coinForm.reason) return;
-    setIsSubmitting(true);
+  const handleDelete = async () => {
+    if (!id) return;
+    const confirmed = await confirm(t("us.people.deleteConfirm"), {
+      title: t("common.deleteTitle"),
+      tone: "danger",
+    });
+    if (!confirmed) return;
     try {
-      await awardCoins.mutateAsync({ studentId: id, amount: Number(coinForm.amount), reason: coinForm.reason });
-      setIsCoinModalOpen(false);
-      setCoinForm({ amount: "", reason: "" });
-      toast.success(t("common.createSuccess"));
+      await deleteStudent.mutateAsync(id);
+      toast.success(t("us.people.deleted"));
+      navigate("/students", { replace: true });
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleAddPayment = async () => {
+  const handleAddPayment = async (e: FormEvent) => {
+    e.preventDefault();
     if (!id || !paymentForm.amountNumber) return;
-    setIsSubmitting(true);
     try {
       await addPayment.mutateAsync({
         studentId: id,
@@ -108,13 +111,11 @@ export const StudentDetailPage = () => {
           description: paymentForm.description || undefined,
         },
       });
-      setIsPaymentModalOpen(false);
-      setPaymentForm({ amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" });
-      toast.success(t("common.createSuccess"));
+      setIsPaymentOpen(false);
+      setPaymentForm(EMPTY_PAYMENT);
+      toast.success(t("us.people.paymentAdded"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -123,7 +124,7 @@ export const StudentDetailPage = () => {
     try {
       await enrollStudent.mutateAsync({ groupId: enrollGroupId, userId: id });
       setEnrollGroupId("");
-      toast.success(t("common.createSuccess"));
+      toast.success(t("us.people.enrolled"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
     }
@@ -131,323 +132,408 @@ export const StudentDetailPage = () => {
 
   const handleUnenroll = async (groupId: string) => {
     if (!id) return;
-    const confirmed = await confirm(t("common.deleteConfirm"));
+    const confirmed = await confirm(t("us.people.unenrollConfirm"), { tone: "danger" });
     if (!confirmed) return;
     try {
       await unenrollStudent.mutateAsync({ groupId, userId: id });
-      toast.success(t("common.deleteSuccess"));
+      toast.success(t("us.people.unenrolled"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
     }
   };
 
-  if (isLoading || !selectedStudent) {
-    if (error) {
-      return (
-        <div className="card p-8 text-center">
-          <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
-        </div>
-      );
-    }
+  if (error && !selectedStudent) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <Skeleton className="w-32 h-4" />
-        <SkeletonCard lines={4} />
+      <>
+        <BackButton to="/students" />
+        <EmptyBox
+          tone="er"
+          icon={AlertTriangle}
+          title={getErrorMessage(error, t("common.error"))}
+          action={<Button onClick={() => refetch()}>{t("common.retry")}</Button>}
+        />
+      </>
+    );
+  }
+
+  if (isLoading || !selectedStudent) {
+    return (
+      <div aria-busy="true">
+        <Skel className="h-6 w-24 rounded-lg" />
+        <Skel className="mt-4 h-[250px] rounded-[28px]" />
+        <div className="u-stats3 mt-4">
+          <Skel className="h-[76px] rounded-[18px]" />
+          <Skel className="h-[76px] rounded-[18px]" />
+          <Skel className="h-[76px] rounded-[18px]" />
+        </div>
+        <div className="u-two e u-sec">
+          <Skel className="h-48" />
+          <Skel className="h-48" />
+        </div>
       </div>
     );
   }
 
   const { student, groups: studentGroups, attendance, coinTransactions, payments, submissions } = selectedStudent;
+  const name = `${student.firstName} ${student.lastName}`.trim();
   const availableGroups = groups.filter((g) => !studentGroups.some((sg) => sg.id === g.id));
+  const graded = submissions.filter((s) => s.status === "graded" && s.score !== null && s.maxScore > 0);
+  const avgGrade = graded.length
+    ? Math.round(graded.reduce((sum, s) => sum + ((s.score ?? 0) / s.maxScore) * 100, 0) / graded.length)
+    : null;
+  const attPct = attendance.stats.total > 0 ? attendance.stats.percentage : null;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Profile */}
-      <div className="card p-5 md:p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-          <img
-            src={getAvatarUrl(student.avatar, `${student.firstName} ${student.lastName}`)}
-            alt={student.firstName}
-            className="w-20 h-20 rounded-full border-4 border-warning/20"
-          />
-          <div className="flex-1">
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
-              <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                {student.firstName} {student.lastName}
-              </h1>
-              <span
-                className={cn(
-                  "text-xs font-medium px-2 py-0.5 rounded-full",
-                  student.status === "active" ? "bg-[#E8F5E9] text-[#2E7D32]" : "bg-gray-100 dark:bg-white/10 text-gray-500",
-                )}
-              >
-                {student.status === "active" ? t("students.active") : t("students.inactive")}
+    <>
+      <BackButton to="/students" />
+      <section
+        className="u-ghero grid justify-items-center gap-2 text-center"
+        style={{ "--g": groupColor(student.id) } as CSSProperties}
+      >
+        <Avatar name={name} src={student.avatar} seed={student.id} size="xl" />
+        <h1 className="break-words">{name}</h1>
+        <div className="flex flex-wrap justify-center gap-1.5">
+          {studentGroups.length ? (
+            studentGroups.map((g) => (
+              <span key={g.id} className="u-chip">
+                {g.name}
               </span>
-              <IconButton size="sm" onClick={() => setIsEditModalOpen(true)}>
-                <Pencil className="w-3.5 h-3.5" />
-              </IconButton>
-            </div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-2 text-sm text-gray-500">
-              <div className="flex items-center gap-1.5">
-                <Mail className="w-4 h-4" />
-                <span>{student.email}</span>
+            ))
+          ) : (
+            <span className="u-chip">{t("us.people.noGroup")}</span>
+          )}
+          {student.status === "inactive" && <span className="u-chip">{t("students.inactive")}</span>}
+        </div>
+        {(student.email || student.phone) && (
+          <p className="break-all text-sm opacity-90">
+            {[student.phone, student.email].filter(Boolean).join(" · ")}
+          </p>
+        )}
+        <div className="mt-1.5 flex gap-2.5">
+          {student.phone && (
+            <a className="u-ib gl" href={`tel:${student.phone}`} aria-label={t("us.people.call")}>
+              <Phone className="u-i m" strokeWidth={2} aria-hidden="true" />
+            </a>
+          )}
+          {student.email && (
+            <a className="u-ib gl" href={`mailto:${student.email}`} aria-label={t("students.email")}>
+              <Mail className="u-i m" strokeWidth={2} aria-hidden="true" />
+            </a>
+          )}
+          <button
+            type="button"
+            className="u-ib gl"
+            aria-label={t("common.edit")}
+            onClick={() => setIsEditOpen(true)}
+          >
+            <Pencil className="u-i m" strokeWidth={2} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="u-ib gl"
+            aria-label={t("common.delete")}
+            onClick={handleDelete}
+            disabled={deleteStudent.isPending}
+          >
+            <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+
+      <div className="u-stats3 mt-4">
+        <div>
+          <b style={{ color: "var(--gdx)" }}>{student.coinBalance}</b>
+          <span>{t("us.people.coin")}</span>
+        </div>
+        <div>
+          <b>{attPct === null ? "—" : `${attPct}%`}</b>
+          <span>{t("us.people.attendance")}</span>
+        </div>
+        <div>
+          <b>{avgGrade === null ? "—" : avgGrade}</b>
+          <span>{t("us.people.avgGrade")}</span>
+        </div>
+      </div>
+
+      <div className="u-two e u-sec">
+        <div className="u-stack">
+          {/* Groups */}
+          <div className="u-card">
+            <h2 className="mb-3">{t("us.people.group")}</h2>
+            {studentGroups.length > 0 ? (
+              <div className="u-stack mb-3 gap-2">
+                {studentGroups.map((g) => (
+                  <div key={g.id} className="u-row min-w-0">
+                    <b className="g truncate">{g.name}</b>
+                    <Link to={`/groups/${g.id}`} className="u-btn soft sm">
+                      {t("us.people.open")}
+                    </Link>
+                    <button
+                      type="button"
+                      className="u-ib h-9 w-9"
+                      aria-label={t("students.unenroll")}
+                      title={t("students.unenroll")}
+                      onClick={() => handleUnenroll(g.id)}
+                      disabled={unenrollStudent.isPending}
+                    >
+                      <X className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  </div>
+                ))}
               </div>
-              {student.phone && (
-                <div className="flex items-center gap-1.5">
-                  <Phone className="w-4 h-4" />
-                  <span>{student.phone}</span>
-                </div>
+            ) : (
+              <p className="u-sub mb-3 mt-0">{t("us.people.notInGroup")}</p>
+            )}
+            {availableGroups.length > 0 && (
+              <div className="flex gap-2.5">
+                <Select
+                  value={enrollGroupId}
+                  onChange={(e) => setEnrollGroupId(e.target.value)}
+                  containerClassName="min-w-0 flex-1"
+                  aria-label={t("students.enrollGroup")}
+                >
+                  <option value="">{t("us.people.chooseGroup")}</option>
+                  {availableGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.name}
+                    </option>
+                  ))}
+                </Select>
+                <button
+                  type="button"
+                  className="u-btn"
+                  onClick={handleEnroll}
+                  disabled={!enrollGroupId || enrollStudent.isPending}
+                >
+                  {t("common.add")}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Grades: every submission, graded ones with a score pill */}
+          <div className="u-card">
+            <h2 className="mb-3">{t("us.people.grades")}</h2>
+            {submissions.length === 0 ? (
+              <p className="u-sub m-0">{t("us.people.noGrades")}</p>
+            ) : (
+              <div className="u-stack gap-2">
+                {submissions.map((s) => (
+                  <div key={s.id} className="u-row min-w-0">
+                    <div className="g">
+                      <b className="truncate">{s.lessonTopic || s.homeworkTitle}</b>
+                      <small className="block truncate">
+                        {[s.lessonTopic && s.homeworkTitle !== s.lessonTopic ? s.homeworkTitle : null, formatDate(s.submittedAt)]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </small>
+                    </div>
+                    {s.status === "graded" ? (
+                      <span className="u-coin flex-none px-[11px]">
+                        {s.score ?? 0}/{s.maxScore}
+                      </span>
+                    ) : (
+                      <Tag tone="mu" className="flex-none">
+                        {t("us.people.checking")}
+                      </Tag>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Attendance history */}
+          <div className="u-card">
+            <div className="u-sech">
+              <h2>{t("students.attendanceTitle")}</h2>
+              {attPct !== null && (
+                <Tag tone={attPct < 50 ? "er" : "ok"}>
+                  {attendance.stats.present}/{attendance.stats.total}
+                </Tag>
               )}
             </div>
-          </div>
-          <div className="bg-gradient-to-br from-[#FFF8E1] to-[#FFECB3] dark:from-warning/15 dark:to-warning/5 rounded-2xl px-5 py-3 text-center border border-[#FFE082]/30 dark:border-warning/20">
-            <p className="text-2xl font-bold text-warning">{student.coinBalance}</p>
-            <p className="text-xs text-gray-500">{t("students.coinBalance")}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Groups */}
-      <div className="card p-5">
-        <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">{t("students.groupsTitle")}</h3>
-        {studentGroups.length === 0 ? (
-          <p className="text-sm text-gray-400">{t("students.noGroups")}</p>
-        ) : (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {studentGroups.map((g) => (
-              <span
-                key={g.id}
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-white/5 rounded-full text-sm"
-              >
-                {g.name}
-                <IconButton
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleUnenroll(g.id)}
-                >
-                  <X className="w-3.5 h-3.5" />
-                </IconButton>
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="flex gap-2">
-          <Select
-            value={enrollGroupId}
-            onChange={(e) => setEnrollGroupId(e.target.value)}
-            containerClassName="flex-1"
-          >
-            <option value="">{t("students.enrollGroup")}</option>
-            {availableGroups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </Select>
-          <Button variant="outline" onClick={handleEnroll} disabled={!enrollGroupId}>
-            {t("common.add")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Attendance */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100">{t("students.attendanceTitle")}</h3>
-          <span className="text-sm font-semibold text-[#2E7D32]">{attendance.stats.percentage}%</span>
-        </div>
-        {attendance.records.length === 0 ? (
-          <p className="text-sm text-gray-400">{t("students.noAttendance")}</p>
-        ) : (
-          <div className="space-y-2 max-h-72 overflow-y-auto">
-            {attendance.records.map((r) => (
-              <div key={r.id} className="flex items-center justify-between py-1.5 text-sm">
-                <div>
-                  <p className="text-gray-800 dark:text-gray-100">{r.lessonTopic ?? t("students.lessonFallback")}</p>
-                  <p className="text-xs text-gray-400">{formatDate(r.lessonDate ?? r.markedAt)}</p>
-                </div>
-                <StatusBadge status={r.status} />
+            {attendance.records.length === 0 ? (
+              <p className="u-sub m-0">{t("students.noAttendance")}</p>
+            ) : (
+              <div className="u-stack max-h-80 gap-2 overflow-y-auto">
+                {attendance.records.map((r) => (
+                  <div key={r.id} className="u-row min-w-0">
+                    <div className="g">
+                      <b className="truncate">{r.lessonTopic ?? t("students.lessonFallback")}</b>
+                      <small>{formatDate(r.lessonDate ?? r.markedAt)}</small>
+                    </div>
+                    <StatusBadge status={r.status} />
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
-
-      {/* Grades */}
-      <div className="card p-5">
-        <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-3">{t("students.gradesTitle")}</h3>
-        {submissions.length === 0 ? (
-          <p className="text-sm text-gray-400">{t("students.noGrades")}</p>
-        ) : (
-          <div className="space-y-2">
-            {submissions.map((s) => (
-              <div key={s.id} className="flex items-center justify-between py-1.5 text-sm">
-                <div className="min-w-0">
-                  <p className="text-gray-800 dark:text-gray-100 truncate">{s.homeworkTitle}</p>
-                  <p className="text-xs text-gray-400">{s.lessonTopic}</p>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <StatusBadge status={s.status} />
-                  {s.status === "graded" && (
-                    <span className="font-semibold text-warning">
-                      {s.score ?? 0}/{s.maxScore}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Coins */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100">{t("students.coinsTitle")}</h3>
-          <Button size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setIsCoinModalOpen(true)}>
-            {t("students.awardCoins")}
-          </Button>
         </div>
-        {coinTransactions.length === 0 ? (
-          <p className="text-sm text-gray-400">{t("students.noCoins")}</p>
-        ) : (
-          <div className="space-y-2">
-            {coinTransactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between py-1.5 text-sm">
-                <div>
-                  <p className="text-gray-800 dark:text-gray-100">{tx.reason}</p>
-                  <p className="text-xs text-gray-400">{formatDate(tx.createdAt)}</p>
-                </div>
-                <span className={cn("font-bold", tx.amount > 0 ? "text-[#2E7D32]" : "text-[#C62828]")}>
-                  {tx.amount > 0 ? "+" : ""}
-                  {tx.amount}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Payments */}
-      <div className="card p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100">{t("students.paymentsTitle")}</h3>
-          <Button size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />} onClick={() => setIsPaymentModalOpen(true)}>
-            {t("students.addPayment")}
-          </Button>
+        <div className="u-stack">
+          {/* Coin history */}
+          <div className="u-card">
+            <div className="u-sech">
+              <h2>{t("students.coinsTitle")}</h2>
+              <button type="button" className="u-btn sm" onClick={() => setIsCoinOpen(true)}>
+                <Plus className="u-i s" strokeWidth={2} aria-hidden="true" />
+                {t("students.awardCoins")}
+              </button>
+            </div>
+            {coinTransactions.length === 0 ? (
+              <p className="u-sub m-0">{t("students.noCoins")}</p>
+            ) : (
+              <div className="u-stack">
+                {coinTransactions.map((tx) => (
+                  <div key={tx.id} className="u-row min-w-0">
+                    <Avatar name={name} src={student.avatar} seed={student.id} size="s" />
+                    <div className="g">
+                      <b className="break-words">{tx.reason}</b>
+                      <small>{formatDate(tx.createdAt)}</small>
+                    </div>
+                    <b
+                      className="flex-none font-fd text-[19px]"
+                      style={{ color: tx.amount > 0 ? "var(--ok)" : "var(--er)" }}
+                    >
+                      {tx.amount > 0 ? "+" : ""}
+                      {tx.amount}
+                    </b>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Payments */}
+          <div className="u-card">
+            <div className="u-sech">
+              <h2>{t("students.paymentsTitle")}</h2>
+              <button type="button" className="u-btn soft sm" onClick={() => setIsPaymentOpen(true)}>
+                <Plus className="u-i s" strokeWidth={2} aria-hidden="true" />
+                {t("us.people.payment")}
+              </button>
+            </div>
+            {payments.length === 0 ? (
+              <p className="u-sub m-0">{t("students.noPayments")}</p>
+            ) : (
+              <div className="u-stack">
+                {payments.map((p) => {
+                  const st = PAYMENT_STATUS[p.status] ?? PAYMENT_STATUS.pending;
+                  const type = PAYMENT_TYPE_KEYS[p.paymentType?.toUpperCase()]
+                    ? t(PAYMENT_TYPE_KEYS[p.paymentType.toUpperCase()])
+                    : p.paymentType;
+                  return (
+                    <div key={p.id} className="u-row min-w-0">
+                      <div className="g">
+                        <b>{t("us.people.sum", { n: money(p.amountNumber) })}</b>
+                        <small className="block break-words">
+                          {[p.paidAt ? formatDate(p.paidAt) : null, type, p.description].filter(Boolean).join(" · ")}
+                        </small>
+                      </div>
+                      <Tag tone={st.tone} className="flex-none">
+                        {t(st.key)}
+                      </Tag>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-        {payments.length === 0 ? (
-          <p className="text-sm text-gray-400">{t("students.noPayments")}</p>
-        ) : (
-          <div className="space-y-2">
-            {payments.map((p) => (
-              <div key={p.id} className="flex items-center justify-between py-1.5 text-sm">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-800 dark:text-gray-100">
-                    {new Intl.NumberFormat("uz-UZ").format(p.amountNumber)} so'm
-                  </span>
-                </div>
-                <StatusBadge status={p.status} label={t(PAYMENT_STATUS_KEYS[p.status] ?? "payments.statusPending")} />
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={t("common.edit")}>
-        <div className="space-y-3">
+      <GiveCoinSheet open={isCoinOpen} onClose={() => setIsCoinOpen(false)} studentId={student.id} />
+
+      <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title={t("us.people.editStudent")}>
+        <form className="grid gap-3.5" onSubmit={handleSaveStudent}>
           <Input
-            type="text"
-            placeholder={t("students.firstName")}
+            label={t("students.firstName")}
+            required
             value={editForm.firstName}
             onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
           />
           <Input
-            type="text"
-            placeholder={t("students.lastName")}
+            label={t("students.lastName")}
+            required
             value={editForm.lastName}
             onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
           />
           <Input
-            type="text"
-            placeholder={t("students.phone")}
+            label={t("students.phone")}
+            type="tel"
+            placeholder="+998"
             value={editForm.phone}
             onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
           />
           <Select
+            label={t("students.status")}
             value={editForm.status}
             onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
           >
             <option value="ACTIVE">{t("students.active")}</option>
             <option value="INACTIVE">{t("students.inactive")}</option>
           </Select>
-          <Button onClick={handleSaveStudent} isLoading={isSavingStudent} fullWidth>
-            {t("common.update")}
-          </Button>
-        </div>
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={updateStudent.isPending}>
+              {t("common.save")}
+            </Button>
+          </div>
+        </form>
       </Modal>
 
-      <Modal isOpen={isCoinModalOpen} onClose={() => setIsCoinModalOpen(false)} title={t("students.awardCoins")}>
-        <div className="space-y-3">
+      <Modal isOpen={isPaymentOpen} onClose={() => setIsPaymentOpen(false)} title={t("students.addPayment")}>
+        <form className="grid gap-3.5" onSubmit={handleAddPayment}>
           <Input
+            label={t("us.people.sumLabel")}
             type="number"
-            placeholder={t("coins.amount")}
-            value={coinForm.amount}
-            onChange={(e) => setCoinForm({ ...coinForm, amount: e.target.value })}
-          />
-          <Input
-            type="text"
-            placeholder={t("coins.reason")}
-            value={coinForm.reason}
-            onChange={(e) => setCoinForm({ ...coinForm, reason: e.target.value })}
-          />
-          <Button onClick={handleAwardCoins} isLoading={isSubmitting} fullWidth>
-            {t("coins.give")}
-          </Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} title={t("students.addPayment")}>
-        <div className="space-y-3">
-          <Input
-            type="number"
-            placeholder={t("payments.amount")}
+            min={1}
+            required
+            autoFocus
             value={paymentForm.amountNumber}
             onChange={(e) => setPaymentForm({ ...paymentForm, amountNumber: e.target.value })}
           />
           <Select
+            label={t("payments.paymentTypeLabel")}
             value={paymentForm.paymentType}
             onChange={(e) => setPaymentForm({ ...paymentForm, paymentType: e.target.value })}
           >
-            {["CASH", "CLICK", "PAYME", "BANK", "UZUM"].map((type) => (
+            {PAYMENT_TYPES.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {PAYMENT_TYPE_KEYS[type] ? t(PAYMENT_TYPE_KEYS[type]) : type}
               </option>
             ))}
           </Select>
           <Select
+            label={t("payments.status")}
             value={paymentForm.status}
             onChange={(e) => setPaymentForm({ ...paymentForm, status: e.target.value })}
           >
-            {["PENDING", "PAID", "OVERDUE", "CANCELLED"].map((status) => (
-              <option key={status} value={status}>
-                {status}
+            {(["pending", "paid", "overdue", "cancelled"] as const).map((status) => (
+              <option key={status} value={status.toUpperCase()}>
+                {t(PAYMENT_STATUS[status].key)}
               </option>
             ))}
           </Select>
           <Input
-            type="text"
-            placeholder={t("common.optional")}
+            label={t("us.people.note")}
             value={paymentForm.description}
             onChange={(e) => setPaymentForm({ ...paymentForm, description: e.target.value })}
           />
-          <Button onClick={handleAddPayment} isLoading={isSubmitting} fullWidth>
-            {t("common.create")}
-          </Button>
-        </div>
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setIsPaymentOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={addPayment.isPending}>
+              {t("students.addPayment")}
+            </Button>
+          </div>
+        </form>
       </Modal>
       {confirmModal}
-    </div>
+    </>
   );
 };

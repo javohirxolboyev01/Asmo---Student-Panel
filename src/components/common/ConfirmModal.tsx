@@ -31,30 +31,30 @@ export const ConfirmModal = ({
   const confirmVariant: ButtonVariant = tone === "danger" ? "danger" : "primary";
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50 animate-overlay-in" onClick={onCancel} />
-      <div className="relative w-full max-w-sm bg-white dark:bg-card-dark rounded-2xl shadow-xl p-5 animate-modal-in">
+    <div className="fixed inset-0 z-[200] grid items-end sm:items-center sm:p-4">
+      <div className="u-overlay absolute inset-0 animate-overlay-in" onClick={onCancel} />
+      <div className="u-sheet relative w-full sm:max-w-sm mx-auto border-b-0 sm:border-b rounded-t-[28px] sm:rounded-[28px] px-[18px] pt-[22px] pb-[calc(22px+env(safe-area-inset-bottom,0px))] sm:pb-[22px] animate-modal-in">
         <div className="flex flex-col items-center text-center gap-3">
           <div
             className={cn(
-              "w-12 h-12 rounded-full flex items-center justify-center",
-              tone === "danger" ? "bg-[#FFEBEE] dark:bg-[#C62828]/15" : "bg-warning/10 dark:bg-warning/15",
+              "w-14 h-14 rounded-full flex items-center justify-center",
+              tone === "danger" ? "bg-u-ert" : "bg-u-gdt",
             )}
           >
             <AlertTriangle
-              className={cn("w-6 h-6", tone === "danger" ? "text-[#C62828] dark:text-[#EF5350]" : "text-warning")}
+              className={cn("w-6 h-6", tone === "danger" ? "text-u-er" : "text-u-gdx")}
             />
           </div>
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+          <h3 className="font-fd text-xl font-semibold leading-tight text-u-tx">
             {title ?? t("common.deleteTitle")}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
+          <p className="text-[15px] text-u-mu">{message}</p>
         </div>
         <div className="flex items-center gap-2 mt-5">
-          <Button variant="outline" size="sm" onClick={onCancel} disabled={isLoading} fullWidth>
+          <Button variant="outline" onClick={onCancel} disabled={isLoading} fullWidth>
             {t("common.cancel")}
           </Button>
-          <Button variant={confirmVariant} size="sm" onClick={onConfirm} isLoading={isLoading} fullWidth>
+          <Button variant={confirmVariant} onClick={onConfirm} isLoading={isLoading} fullWidth>
             {confirmLabel ?? t("common.delete")}
           </Button>
         </div>

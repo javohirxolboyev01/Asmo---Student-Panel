@@ -60,7 +60,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
+            className="block text-[13.5px] font-bold text-u-mu mb-1.5"
           >
             {label}
           </label>
@@ -75,10 +75,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             className={cn(
-              "w-full flex items-center justify-between appearance-none bg-gray-50 dark:bg-white/5 rounded-xl border outline-none transition-all text-sm text-left text-gray-800 dark:text-gray-100 px-3.5 py-2 pr-9 sm:px-4 sm:py-2.5 sm:pr-10 md:rounded-2xl",
-              "border-gray-200 dark:border-gray-700 focus:border-warning focus:ring-2 focus:ring-warning/20",
+              "w-full flex items-center justify-between appearance-none rounded-[14px] border-2 outline-none transition-[border-color,box-shadow] text-base font-medium text-left px-4 py-[11px] pr-10",
+              "u-field",
               disabled && "opacity-50 cursor-not-allowed",
-              error && "border-red-400 focus:border-red-400 focus:ring-red-400/20",
+              error && "is-error",
               className,
             )}
           >
@@ -86,7 +86,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           </button>
           <ChevronDown
             className={cn(
-              "w-4 h-4 text-gray-400 absolute right-3 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-200",
+              "w-4 h-4 text-u-mu absolute right-3 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-200",
               isOpen && "rotate-180",
             )}
           />
@@ -94,7 +94,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           {isOpen && (
             <div
               role="listbox"
-              className="absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto py-1.5 bg-white dark:bg-[#151822] rounded-xl shadow-card-hover border border-gray-100 dark:border-gray-800 origin-top animate-modal-in"
+              className="absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto u-pop p-1.5 rounded-2xl origin-top animate-modal-in"
             >
               {options.map((opt) => {
                 const isSelected = opt.value === String(value ?? "");
@@ -105,7 +105,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(opt.value)}
-                    className="w-full flex items-center gap-2 px-3.5 py-2.5 text-sm text-left text-gray-800 dark:text-gray-100 transition-colors hover:bg-warning hover:text-white"
+                    className={cn("w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[15px] font-semibold text-left transition-colors hover:bg-u-sf2", isSelected && "bg-u-prt text-u-pr hover:bg-u-prt")}
                   >
                     <Check className={cn("w-4 h-4 flex-shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
                     <span className="truncate">{opt.label}</span>
@@ -115,7 +115,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             </div>
           )}
         </div>
-        {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+        {error && <p className="mt-1.5 text-[13px] font-bold text-u-er">{error}</p>}
       </div>
     );
   },

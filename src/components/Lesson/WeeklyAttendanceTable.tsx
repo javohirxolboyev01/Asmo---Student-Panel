@@ -1,17 +1,30 @@
 // src/components/Lesson/WeeklyAttendanceTable.tsx
+// Weekly attendance of a group (teacher lesson page), in the "Ustoz paneli"
+// mock language: one `u-row` per student with a day pill per lesson of the
+// week, an optional coin award and edit / save / cancel.
 import { useEffect, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { uz } from "date-fns/locale";
-import { Coins, Pencil, Save, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Calendar, Check, Coins, Pencil, Save, X } from "lucide-react";
 import { useWeeklyAttendanceQuery, useSaveAttendanceMutation } from "@/hooks/queries/useWeeklyAttendance";
 import { useAwardCoinsMutation } from "@/hooks/queries/useCoins";
 import { WeeklyAttendanceLesson, WeeklyAttendanceStudent } from "@/types/teacher";
-import { cn, getAvatarUrl } from "@/lib/utils";
+import { queryKeys } from "@/lib/queryClient";
+import { cn, isImageUrl } from "@/lib/utils";
 import { Button, IconButton, Input } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Avatar, CoinTag, Skel } from "@/teacher/components/ui";
 
 const formatDayColumn = (isoDate: string) => format(parseISO(isoDate), "EEEEEE, dd.MM", { locale: uz });
+const formatShort = (isoDate: string) => {
+  try {
+    return format(parseISO(isoDate), "dd.MM");
+  } catch {
+    return "";
+  }
+};
 
 interface WeeklyAttendanceRowProps {
   student: WeeklyAttendanceStudent;
@@ -28,12 +41,14 @@ const buildInitialChecks = (student: WeeklyAttendanceStudent, lessons: WeeklyAtt
 
 const WeeklyAttendanceRow = ({ student, lessons }: WeeklyAttendanceRowProps) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [checks, setChecks] = useState<Record<string, boolean>>(() => buildInitialChecks(student, lessons));
   const [coin, setCoin] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const saveAttendance = useSaveAttendanceMutation();
   const awardCoins = useAwardCoinsMutation();
+  const name = `${student.firstName} ${student.lastName}`;
 
   useEffect(() => {
     setChecks(buildInitialChecks(student, lessons));
@@ -57,6 +72,8 @@ const WeeklyAttendanceRow = ({ student, lessons }: WeeklyAttendanceRowProps) => 
           }),
         ),
       );
+      // The lesson page's attendance card reads the lesson roster.
+      lessons.forEach((lesson) => queryClient.invalidateQueries({ queryKey: queryKeys.lesson(lesson.id) }));
       const coinAmount = Number(coin);
       if (coin.trim() !== "" && !Number.isNaN(coinAmount) && coinAmount !== 0) {
         await awardCoins.mutateAsync({
@@ -64,6 +81,7 @@ const WeeklyAttendanceRow = ({ student, lessons }: WeeklyAttendanceRowProps) => 
           amount: coinAmount,
           reason: t("lessonDetail.weeklyAttendanceCoinReason"),
         });
+        queryClient.invalidateQueries({ queryKey: ["attendance", "weekly"] });
       }
       toast.success(t("common.updateSuccess"));
       setCoin("");
@@ -76,65 +94,86 @@ const WeeklyAttendanceRow = ({ student, lessons }: WeeklyAttendanceRowProps) => 
   };
 
   return (
-    <tr className="border-b border-gray-100 dark:border-gray-800 last:border-b-0">
-      <td className="py-3 pr-3 whitespace-nowrap">
-        <div className="flex items-center gap-2">
-          <img
-            src={getAvatarUrl(student.avatar, `${student.firstName} ${student.lastName}`)}
-            alt=""
-            className="w-7 h-7 rounded-full flex-shrink-0"
-          />
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-              {student.firstName} {student.lastName}
-            </p>
-            <p className="text-[11px] text-gray-400 flex items-center gap-1">
-              <Coins className="w-3 h-3 text-warning" /> {student.coinBalance}
-            </p>
-          </div>
+    <div className="u-row flex-wrap !items-center gap-y-3">
+      {/* Student */}
+      <div className="flex min-w-0 flex-[1_1_200px] items-center gap-3">
+        <Avatar name={name} src={isImageUrl(student.avatar) ? student.avatar : null} seed={student.id} size="s" />
+        <div className="min-w-0">
+          <b className="truncate">{name}</b>
+          <CoinTag n={student.coinBalance} className="mt-0.5" />
         </div>
-      </td>
-      {lessons.map((lesson) => (
-        <td key={lesson.id} className="py-3 px-2 text-center">
-          <input
-            type="checkbox"
-            checked={checks[lesson.id] ?? false}
+      </div>
+
+      {/* Present / absent pill per lesson of the week */}
+      <div className="flex flex-wrap gap-2">
+        {lessons.map((lesson) => {
+          const checked = checks[lesson.id] ?? false;
+          const day = formatDayColumn(lesson.lessonDate);
+          return (
+            <label
+              key={lesson.id}
+              title={lesson.topic}
+              className={cn(
+                "flex h-14 w-[68px] select-none flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-bold capitalize transition-colors focus-within:outline focus-within:outline-[3px] focus-within:outline-offset-2 focus-within:outline-u-pr",
+                isEditing ? "cursor-pointer" : "cursor-default",
+                checked
+                  ? isEditing
+                    ? "bg-[rgb(var(--u-okf))] text-white"
+                    : "bg-u-okt text-u-ok"
+                  : isEditing
+                    ? "bg-u-ert text-u-er"
+                    : "bg-u-sf text-u-mu",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={!isEditing}
+                aria-label={`${day} — ${lesson.topic}`}
+                onChange={(e) => setChecks((prev) => ({ ...prev, [lesson.id]: e.target.checked }))}
+                className="sr-only"
+              />
+              <span className="leading-none">{day}</span>
+              {checked ? (
+                <Check className="u-i s" strokeWidth={3} aria-hidden="true" />
+              ) : (
+                <X className="u-i s" strokeWidth={3} aria-hidden="true" />
+              )}
+            </label>
+          );
+        })}
+      </div>
+
+      {/* Coin + actions */}
+      <div className="ml-auto flex items-center gap-2">
+        <div className="w-[118px]">
+          <Input
+            type="number"
+            placeholder="0"
+            value={coin}
             disabled={!isEditing}
-            onChange={(e) => setChecks((prev) => ({ ...prev, [lesson.id]: e.target.checked }))}
-            className={cn(
-              "w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-warning focus:ring-warning focus:ring-offset-0",
-              !isEditing && "opacity-70",
-            )}
+            aria-label={t("lessonDetail.coinLabel")}
+            onChange={(e) => setCoin(e.target.value)}
+            leftIcon={<Coins className="u-i s text-u-gdx" />}
+            className="!py-2"
           />
-        </td>
-      ))}
-      <td className="py-3 pl-2 pr-3 w-24">
-        <Input
-          type="number"
-          placeholder="0"
-          value={coin}
-          disabled={!isEditing}
-          onChange={(e) => setCoin(e.target.value)}
-          className="py-1.5"
-        />
-      </td>
-      <td className="py-3 whitespace-nowrap">
+        </div>
         {isEditing ? (
-          <div className="flex items-center gap-1.5">
-            <Button size="sm" onClick={handleSave} isLoading={isSaving} leftIcon={<Save className="w-3.5 h-3.5" />}>
+          <>
+            <Button size="sm" onClick={handleSave} isLoading={isSaving} leftIcon={<Save className="u-i s" />}>
               {t("common.save")}
             </Button>
-            <IconButton size="sm" onClick={cancelEdit} disabled={isSaving}>
-              <X className="w-3.5 h-3.5" />
+            <IconButton onClick={cancelEdit} disabled={isSaving} aria-label={t("common.cancel")}>
+              <X className="u-i s" />
             </IconButton>
-          </div>
+          </>
         ) : (
-          <IconButton size="sm" onClick={() => setIsEditing(true)}>
-            <Pencil className="w-3.5 h-3.5" />
+          <IconButton onClick={() => setIsEditing(true)} aria-label={t("common.edit")}>
+            <Pencil className="u-i s" />
           </IconButton>
         )}
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };
 
@@ -148,34 +187,32 @@ export const WeeklyAttendanceTable = ({ groupId, referenceDate }: WeeklyAttendan
   const { data, isLoading } = useWeeklyAttendanceQuery(groupId, referenceDate);
 
   if (isLoading) {
-    return <div className="h-24 animate-pulse bg-gray-100 dark:bg-white/5 rounded-2xl" />;
+    return <Skel className="h-40" />;
   }
 
   if (!data || data.lessons.length === 0 || data.roster.length === 0) {
-    return <p className="text-sm text-gray-400">{t("lessonDetail.noWeekLessons")}</p>;
+    return (
+      <div className="u-card">
+        <p className="u-sub !mt-0">{t("lessonDetail.noWeekLessons")}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b border-gray-100 dark:border-gray-800 text-xs text-gray-400">
-            <th className="py-2 pr-3 font-medium">{t("students.studentLabel")}</th>
-            {data.lessons.map((lesson) => (
-              <th key={lesson.id} className="py-2 px-2 font-medium text-center whitespace-nowrap capitalize">
-                {formatDayColumn(lesson.lessonDate)}
-              </th>
-            ))}
-            <th className="py-2 pl-2 pr-3 font-medium">{t("lessonDetail.coinLabel")}</th>
-            <th className="py-2 font-medium">{t("common.actions")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.roster.map((student) => (
-            <WeeklyAttendanceRow key={student.id} student={student} lessons={data.lessons} />
-          ))}
-        </tbody>
-      </table>
+    <div className="u-card">
+      {data.weekStart && data.weekEnd && (
+        <div className="u-chips mb-3">
+          <span className="u-chip">
+            <Calendar className="u-i s" strokeWidth={2} aria-hidden="true" />
+            {t("us.ld.weekRange", { from: formatShort(data.weekStart), to: formatShort(data.weekEnd) })}
+          </span>
+        </div>
+      )}
+      <div className="u-stack">
+        {data.roster.map((student) => (
+          <WeeklyAttendanceRow key={student.id} student={student} lessons={data.lessons} />
+        ))}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 // src/teacher/pages/TeachersPage.tsx
-import { useState } from "react";
-import { Plus, Pencil, Trash2, GraduationCap, Mail } from "lucide-react";
+// Mock `teachers` view: back to "Ko'proq", header + "Qo'shish", one row per teacher.
+import { useState, type FormEvent } from "react";
+import { AlertTriangle, GraduationCap, Pencil, Plus, Trash2 } from "lucide-react";
 import {
   useTeachersQuery,
   useCreateTeacherMutation,
@@ -8,31 +9,33 @@ import {
   useDeleteTeacherMutation,
 } from "@/hooks/queries/useTeachers";
 import { TeacherProfile } from "@/types/teacher";
-import { Skeleton, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { Modal } from "@/components/common/Modal";
-import { Button, IconButton, Input, Checkbox } from "@/components/ui";
-import { getAvatarUrl } from "@/lib/utils";
+import { Button, Input, Checkbox } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAuthStore } from "@/stores/authStore";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
+import { Avatar, EmptyBox, PageHeader, Skel, Tag } from "../components/ui";
+
+const EMPTY_FORM = { fullName: "", avatar: "", email: "", password: "" };
 
 export const TeachersPage = () => {
   const { t } = useTranslation();
-  const { data: teachers = [], isLoading } = useTeachersQuery();
+  const me = useAuthStore((s) => s.user);
+  const { data: teachers = [], isLoading, error, refetch } = useTeachersQuery();
   const createTeacher = useCreateTeacherMutation();
   const updateTeacher = useUpdateTeacherMutation();
   const deleteTeacher = useDeleteTeacherMutation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<TeacherProfile | null>(null);
-  const [form, setForm] = useState({ fullName: "", avatar: "", email: "", password: "" });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [wantsLogin, setWantsLogin] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const { confirm, confirmModal } = useConfirm();
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ fullName: "", avatar: "", email: "", password: "" });
+    setForm(EMPTY_FORM);
     setWantsLogin(false);
     setFormError(null);
     setIsModalOpen(true);
@@ -46,10 +49,15 @@ export const TeachersPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const isSubmitting = createTeacher.isPending || updateTeacher.isPending;
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     setFormError(null);
-    if (!form.fullName) return;
-    setIsSubmitting(true);
+    if (!form.fullName.trim()) {
+      setFormError(t("us.fillRequired"));
+      return;
+    }
     try {
       if (editing) {
         await updateTeacher.mutateAsync({
@@ -65,18 +73,19 @@ export const TeachersPage = () => {
         });
       }
       setIsModalOpen(false);
-      toast.success(editing ? t("common.updateSuccess") : t("common.createSuccess"));
+      toast.success(editing ? t("us.people.saved") : t("us.people.teacherAdded"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
       setFormError(message);
       toast.error(message);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    const confirmed = await confirm(t("teachers.deleteConfirm"));
+    const confirmed = await confirm(t("teachers.deleteConfirm"), {
+      title: t("common.deleteTitle"),
+      tone: "danger",
+    });
     if (!confirmed) return;
     try {
       await deleteTeacher.mutateAsync(id);
@@ -86,90 +95,86 @@ export const TeachersPage = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <Skeleton className="w-48 h-8" />
-        <SkeletonCardGrid count={4} cols="grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">{t("teachers.title")}</h1>
-          <p className="text-gray-500 text-xs md:text-base">{t("teachers.subtitle")}</p>
-        </div>
-        <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreate}>
-          {t("teachers.addTeacher")}
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        back={{ to: "/more" }}
+        title={t("teachers.title")}
+        subtitle={t("us.people.teachersSubtitle")}
+        right={
+          <button type="button" className="u-btn" onClick={openCreate}>
+            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+            {t("common.add")}
+          </button>
+        }
+      />
 
-      {teachers.length === 0 ? (
-        <div className="card p-8 text-center">
-          <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{t("teachers.notFound")}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-          {teachers.map((teacher) => (
-            <div key={teacher.id} className="card p-4 md:p-5">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={getAvatarUrl(teacher.avatar, teacher.fullName)}
-                    alt={teacher.fullName}
-                    className="w-11 h-11 rounded-full flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm md:text-base truncate">
-                      {teacher.fullName}
-                    </h3>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 truncate">
-                      {teacher.email ? (
-                        <>
-                          <Mail className="w-3 h-3" /> {teacher.email}
-                        </>
-                      ) : (
-                        t("teachers.noLogin")
-                      )}
-                    </p>
-                  </div>
+      <div className="u-stack max-w-[680px]">
+        {error ? (
+          <EmptyBox
+            tone="er"
+            icon={AlertTriangle}
+            title={getErrorMessage(error, t("common.error"))}
+            action={<Button onClick={() => refetch()}>{t("common.retry")}</Button>}
+          />
+        ) : isLoading ? (
+          Array.from({ length: 3 }, (_, i) => <Skel key={i} className="h-[74px] rounded-[20px]" />)
+        ) : teachers.length === 0 ? (
+          <EmptyBox tone="mu" icon={GraduationCap} title={t("teachers.notFound")} />
+        ) : (
+          teachers.map((teacher) => {
+            const isMe = !!me && !!teacher.userId && teacher.userId === me.id;
+            return (
+              <div key={teacher.id} className="u-les min-w-0">
+                <Avatar name={teacher.fullName} src={teacher.avatar} seed={teacher.userId ?? teacher.id} />
+                <div className="min-w-0 flex-1">
+                  <b className="block truncate text-[17px]">{teacher.fullName}</b>
+                  <small className="u-sub m-0 block truncate">
+                    {[teacher.email || t("teachers.noLogin"), t("teachers.groupsCount", { count: teacher.groupsCount })].join(
+                      " · ",
+                    )}
+                  </small>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <IconButton size="sm" onClick={() => openEdit(teacher)}>
-                    <Pencil className="w-4 h-4" />
-                  </IconButton>
-                  <IconButton size="sm" variant="danger" onClick={() => handleDelete(teacher.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </IconButton>
-                </div>
+                {isMe && <Tag tone="pr">{t("us.people.me")}</Tag>}
+                <button
+                  type="button"
+                  className="u-ib"
+                  aria-label={t("common.edit")}
+                  onClick={() => openEdit(teacher)}
+                >
+                  <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="u-ib"
+                  aria-label={t("common.delete")}
+                  onClick={() => handleDelete(teacher.id)}
+                  disabled={deleteTeacher.isPending}
+                >
+                  <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+                </button>
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500">
-                {t("teachers.groupsCount", { count: teacher.groupsCount })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            );
+          })
+        )}
+      </div>
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editing ? t("common.edit") : t("teachers.addTeacher")}
+        title={editing ? t("us.people.editTeacher") : t("us.people.newTeacher")}
       >
-        <div className="space-y-3">
+        <form className="grid gap-3.5" onSubmit={handleSubmit}>
           <Input
-            type="text"
-            placeholder={t("teachers.fullName")}
+            label={t("teachers.fullName")}
+            required
+            autoFocus
             value={form.fullName}
             onChange={(e) => setForm({ ...form, fullName: e.target.value })}
           />
           <Input
-            type="text"
-            placeholder="Avatar URL"
+            label={t("us.people.avatarUrl")}
+            placeholder="https://"
             value={form.avatar}
             onChange={(e) => setForm({ ...form, avatar: e.target.value })}
           />
@@ -183,14 +188,16 @@ export const TeachersPage = () => {
               {wantsLogin && (
                 <>
                   <Input
+                    label={t("teachers.email")}
                     type="email"
-                    placeholder={t("teachers.email")}
+                    autoComplete="off"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                   />
                   <Input
+                    label={t("teachers.password")}
                     type="password"
-                    placeholder={t("teachers.password")}
+                    autoComplete="new-password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                   />
@@ -198,13 +205,18 @@ export const TeachersPage = () => {
               )}
             </>
           )}
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
-          <Button onClick={handleSubmit} isLoading={isSubmitting} fullWidth>
-            {editing ? t("common.update") : t("common.create")}
-          </Button>
-        </div>
+          {formError && <p className="text-[13px] font-bold text-u-er">{formError}</p>}
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={isSubmitting}>
+              {editing ? t("common.save") : t("common.add")}
+            </Button>
+          </div>
+        </form>
       </Modal>
       {confirmModal}
-    </div>
+    </>
   );
 };

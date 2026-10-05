@@ -3,6 +3,7 @@
 // tilga (uz, ru, en) ham kalit qo'shish kerak — aks holda kalit nomi
 // ko'rinib qoladi (pastdagi useTranslation fallback'i).
 import { studentTranslations } from "@/student/i18n";
+import { teacherTranslations } from "@/teacher/i18n";
 
 export type Language = "uz" | "ru" | "en";
 
@@ -1893,6 +1894,11 @@ export const translations: Record<Language, Dict> = {
 // Student-panel strings are kept per area under src/student/i18n.
 for (const lang of Object.keys(studentTranslations) as Language[]) {
   Object.assign(translations[lang], studentTranslations[lang]);
+}
+
+// Teacher-panel strings are kept per area under src/teacher/i18n.
+for (const lang of Object.keys(teacherTranslations) as Language[]) {
+  Object.assign(translations[lang], teacherTranslations[lang]);
 }
 
 export type TranslationKey = keyof typeof translations.uz;

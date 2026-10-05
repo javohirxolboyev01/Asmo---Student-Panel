@@ -1,141 +1,124 @@
 // src/pages/NotificationsPage.tsx
+// Mock `notif` view: a stack of message rows (red mail icon when unread).
+// Opening one marks it read; a new-submission message opens the grade sheet.
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AlertTriangle, Bell, Check, Mail } from "lucide-react";
 import {
   useNotificationsQuery,
   useMarkNotificationAsReadMutation,
   useMarkAllNotificationsAsReadMutation,
 } from "@/hooks/queries/useNotifications";
-import { Notification } from "@/types/notification";
-import { Bell, Check, Clock } from "lucide-react";
+import type { Notification } from "@/types/notification";
 import { getRelativeTime } from "@/utilist/formatData";
-import { cn } from "@/lib/utils";
-import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui";
+import { GradeSheet } from "@/teacher/components/sheets";
+import { EmptyBox, PageHeader, Skel } from "@/teacher/components/ui";
 
-// Backend "submission" xabarnomasida qaysi topshiriqqa tegishli ekanini
-// turli nom bilan yuborishi mumkin — hammasini sinab ko'ramiz.
+// The backend may name the submission link differently — try each field.
 const getSubmissionId = (n: Notification): string | undefined => {
-  const candidate = n.submissionId ?? n.relatedId ?? n.entityId ?? n.targetId;
+  const candidate = n.relatedId ?? n.submissionId ?? n.entityId ?? n.targetId;
   return typeof candidate === "string" ? candidate : undefined;
 };
 
 export const NotificationsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: notifications = [], isLoading } = useNotificationsQuery();
+  const { data: notifications = [], isLoading, isError, refetch } = useNotificationsQuery();
   const markAsRead = useMarkNotificationAsReadMutation();
   const markAllAsRead = useMarkAllNotificationsAsReadMutation();
+  const [gradeId, setGradeId] = useState<string | null>(null);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleOpen = (notification: Notification) => {
-    markAsRead.mutate(notification.id);
+    if (!notification.isRead) markAsRead.mutate(notification.id);
     if (notification.type === "submission") {
       const submissionId = getSubmissionId(notification);
-      navigate(submissionId ? `/submissions/${submissionId}` : "/grading");
+      if (submissionId) setGradeId(submissionId);
+      else navigate("/grading");
     }
   };
 
-  if (isLoading && notifications.length === 0) {
+  const header = (
+    <PageHeader
+      back={{ to: "/more" }}
+      title={t("notifications.title")}
+      subtitle={unreadCount > 0 ? t("us.notif.hasNew") : t("us.notif.allRead")}
+      right={
+        unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={t("notifications.markAllRead")}
+            onClick={() => markAllAsRead.mutate()}
+            isLoading={markAllAsRead.isPending}
+            leftIcon={<Check className="u-i s" strokeWidth={2} aria-hidden="true" />}
+          >
+            <span className="hidden sm:inline">{t("notifications.markAllRead")}</span>
+          </Button>
+        )
+      }
+    />
+  );
+
+  if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <SkeletonCardGrid count={4} cols="grid-cols-1 lg:grid-cols-2" />
+      <div aria-busy="true">
+        <Skel className="mt-2 h-5 w-20 rounded-lg" />
+        <Skel className="mt-3 h-8 w-1/2 rounded-xl" />
+        <Skel className="mt-2 h-4 w-1/3 rounded-lg" />
+        <div className="u-stack mt-6" style={{ maxWidth: 680 }}>
+          {Array.from({ length: 5 }, (_, i) => (
+            <Skel key={i} className="h-[74px] rounded-[20px]" />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "homework":
-        return "📝";
-      case "lesson":
-        return "📅";
-      case "grade":
-        return "⭐";
-      case "submission":
-        return "📩";
-      default:
-        return "🔔";
-    }
-  };
-
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
-            {t("notifications.title")}
-          </h1>
-          <p className="text-gray-500 text-sm md:text-base">
-            {unreadCount > 0
-              ? t("notifications.unreadCount", { count: unreadCount })
-              : t("notifications.allRead")}
-          </p>
-        </div>
-        {unreadCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => markAllAsRead.mutate()}
-            leftIcon={<Check className="w-4 h-4" />}
-          >
-            {t("notifications.markAllRead")}
-          </Button>
-        )}
-      </div>
+    <>
+      {header}
 
-      {notifications.length === 0 ? (
-        <div className="card p-12 text-center">
-          <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">
-            {t("notifications.empty")}
-          </h3>
-          <p className="text-gray-500 text-sm">
-            {t("notifications.emptyDesc")}
-          </p>
-        </div>
+      {isError && notifications.length === 0 ? (
+        <EmptyBox
+          tone="er"
+          icon={AlertTriangle}
+          title={t("common.error")}
+          action={<Button onClick={() => refetch()}>{t("common.retry")}</Button>}
+        />
+      ) : notifications.length === 0 ? (
+        <EmptyBox tone="mu" icon={Bell} title={t("notifications.empty")} text={t("notifications.emptyDesc")} />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {notifications.map((notification) => (
-            <div
-              key={notification.id}
-              onClick={() => handleOpen(notification)}
-              className={cn(
-                "card cursor-pointer hover:shadow-card-hover transition-all duration-200",
-                !notification.isRead && "border-l-4 border-l-warning",
-              )}
-            >
-              <div className="p-4 md:p-5">
-                <div className="flex items-start gap-3">
-                  <div className="text-2xl flex-shrink-0">
-                    {getIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h4 className="font-semibold text-gray-800 dark:text-gray-100">
-                          {notification.title}
-                        </h4>
-                        <p className="text-sm text-gray-500 mt-0.5">
-                          {notification.message}
-                        </p>
-                      </div>
-                      {!notification.isRead && (
-                        <span className="w-2 h-2 bg-warning rounded-full flex-shrink-0 mt-1.5" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
-                      <Clock className="w-3 h-3" />
-                      <span>{getRelativeTime(notification.createdAt)}</span>
-                    </div>
-                  </div>
-                </div>
+        <div className="u-stack" style={{ maxWidth: 680 }}>
+          {notifications.map((n) => (
+            <button key={n.id} type="button" className="u-nt" onClick={() => handleOpen(n)}>
+              <span
+                className="u-mi"
+                style={
+                  n.isRead
+                    ? { background: "var(--sf2)", color: "var(--mu)" }
+                    : { background: "var(--ert)", color: "var(--er)" }
+                }
+              >
+                <Mail className="u-i" strokeWidth={2} aria-hidden="true" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <b className="block break-words">{n.title}</b>
+                <p className="u-sub break-words" style={{ margin: 0 }}>
+                  {n.message}
+                </p>
               </div>
-            </div>
+              <small className="u-sub flex-none whitespace-nowrap" style={{ margin: 0 }}>
+                {getRelativeTime(n.createdAt)}
+              </small>
+            </button>
           ))}
         </div>
       )}
-    </div>
+
+      {gradeId && <GradeSheet submissionId={gradeId} onClose={() => setGradeId(null)} />}
+    </>
   );
 };

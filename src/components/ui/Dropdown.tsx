@@ -29,7 +29,7 @@ export const Dropdown = ({ trigger, items, align = "right", className }: Dropdow
         <div
           role="menu"
           className={cn(
-            "absolute z-30 mt-2 min-w-[160px] sm:min-w-[180px] py-1.5 bg-white dark:bg-[#151822] rounded-xl sm:rounded-2xl shadow-card-hover border border-gray-100 dark:border-gray-800 origin-top animate-modal-in",
+            "absolute z-30 mt-2 min-w-[160px] sm:min-w-[180px] u-pop p-1.5 rounded-2xl origin-top animate-modal-in",
             align === "right" ? "right-0" : "left-0",
           )}
         >
@@ -43,10 +43,10 @@ export const Dropdown = ({ trigger, items, align = "right", className }: Dropdow
                 setOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 text-sm text-left transition-colors focus-visible:outline-none focus-visible:bg-gray-50 dark:focus-visible:bg-white/5",
+                "w-full flex items-center gap-2 px-3 py-2 sm:py-2.5 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:bg-u-sf2",
                 item.danger
-                  ? "text-danger hover:bg-red-50 dark:hover:bg-red-500/10"
-                  : "text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-white/5",
+                  ? "text-u-er hover:bg-u-ert"
+                  : "text-u-tx hover:bg-u-sf2",
               )}
             >
               {item.icon}

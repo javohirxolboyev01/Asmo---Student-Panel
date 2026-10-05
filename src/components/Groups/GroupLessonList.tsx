@@ -1,97 +1,65 @@
 // src/components/Groups/GroupLessonList.tsx
+// Lessons of a group (teacher group page), 1:1 with the mock `.les` rows:
+// date box, topic, homework tags and "sub/total topshirdi".
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { formatDate } from "@/utilist/formatData";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { LessonListItem } from "@/types/lesson";
+import { DateBox, EmptyBox, Tag } from "@/teacher/components/ui";
 
-// Lesson cards of a group, shared by the student and teacher group pages.
-export const GroupLessonList = ({ lessons }: { lessons: LessonListItem[] }) => {
+const ddmm = (date: string) => {
+  const d = new Date(date);
+  return Number.isNaN(d.getTime())
+    ? ""
+    : `${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+};
+
+export const GroupLessonList = ({
+  lessons,
+  studentCount,
+  action,
+}: {
+  lessons: LessonListItem[];
+  /** Group size, the denominator of "sub/total topshirdi". */
+  studentCount: number;
+  /** Shown in the empty state (e.g. "Dars qo'shish"). */
+  action?: ReactNode;
+}) => {
   const { t } = useTranslation();
 
+  if (lessons.length === 0) {
+    return <EmptyBox title={t("us.groups.noLessons")} text={t("us.groups.noLessonsSub")} action={action} />;
+  }
+
+  // Newest first, like the mock.
+  const sorted = [...lessons].sort((a, b) => new Date(b.lessonDate).getTime() - new Date(a.lessonDate).getTime());
+
   return (
-    <div
-      className={
-        lessons.length === 0
-          ? ""
-          : "grid grid-cols-1 lg:grid-cols-2 gap-3"
-      }
-    >
-      {lessons.length === 0 ? (
-        <div className="card p-10 text-center">
-          <p className="text-sm text-gray-400">{t("groupDetail.noLessons")}</p>
-        </div>
-      ) : (
-        lessons.map((lesson) => (
-          <Link
-            key={lesson.id}
-            to={`/lessons/${lesson.id}`}
-            className="card block hover:shadow-md transition-shadow duration-200"
-          >
-            {/* ── Row: Mavzu ── */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-gray-800">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {t("groupDetail.topics")}
-              </span>
-              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium text-right max-w-[60%] truncate">
-                {lesson.topic}
-              </span>
+    <div className="u-stack">
+      {sorted.map((lesson) => {
+        const hw = lesson.homework;
+        return (
+          <Link key={lesson.id} to={`/lessons/${lesson.id}`} className="u-les">
+            <DateBox date={lesson.lessonDate} />
+            <div className="min-w-0 flex-1">
+              <b className="block break-words text-[17px]">{lesson.topic}</b>
+              <div className="u-chips mt-1.5">
+                <Tag tone={hw ? "pr" : "mu"}>{hw ? t("us.groups.hwGiven") : t("us.groups.noHw")}</Tag>
+                {hw?.deadline && (
+                  <Tag tone="er">{t("us.groups.due", { d: ddmm(hw.deadline) })}</Tag>
+                )}
+              </div>
             </div>
-
-            {/* ── Row: Uyga vazifa holati ── */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-gray-800">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {t("groupDetail.homeworkStatus")}
+            {hw && (
+              <span className="flex-none text-right text-[13px] text-u-mu">
+                {hw.submittedCount ?? 0}/{studentCount}
+                <br />
+                {t("us.groups.submitted")}
               </span>
-              {lesson.homework ? (
-                <span
-                  className={cn(
-                    "text-xs font-medium px-2.5 py-1 rounded-full",
-                    lesson.homework.isOverdue
-                      ? "bg-[#FFEBEE] dark:bg-[#C62828]/15 text-[#C62828]"
-                      : "bg-warning/10 text-warning",
-                  )}
-                >
-                  {t("groupDetail.hasHomework")}
-                </span>
-              ) : (
-                <span className="text-sm text-gray-400">—</span>
-              )}
-            </div>
-
-            {/* ── Row: Uyga vazifa tugash vaqti ── */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 dark:border-gray-800">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {t("groupDetail.homeworkDeadline")}
-              </span>
-              {lesson.homework?.deadline ? (
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    lesson.homework.isOverdue
-                      ? "text-red-500"
-                      : "text-gray-600 dark:text-gray-300",
-                  )}
-                >
-                  {formatDate(lesson.homework.deadline)}
-                </span>
-              ) : (
-                <span className="text-sm text-gray-400">—</span>
-              )}
-            </div>
-
-            {/* ── Row: Dars sanasi ── */}
-            <div className="flex items-center justify-between px-4 py-3.5">
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                {t("groupDetail.lessonDate")}
-              </span>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {formatDate(lesson.lessonDate)}
-              </span>
-            </div>
+            )}
           </Link>
-        ))
-      )}
+        );
+      })}
     </div>
   );
 };

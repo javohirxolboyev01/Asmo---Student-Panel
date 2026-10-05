@@ -7,41 +7,44 @@ import type { lessonService } from "@/services/lessonService";
 
 type LessonInfo = Awaited<ReturnType<typeof lessonService.getLesson>>["lesson"];
 
-// Lesson title card shared by the student and teacher lesson pages; `aside`
-// is rendered on the right (the student's grade badge).
-export const LessonHeaderCard = ({ lesson, aside }: { lesson: LessonInfo; aside?: ReactNode }) => {
+// Lesson card of the teacher lesson page (mock `lesson` view): date + group
+// chips, the topic as h1, then `children` (the homework block). `aside` is
+// rendered on the right of the title.
+export const LessonHeaderCard = ({
+  lesson,
+  aside,
+  children,
+}: {
+  lesson: LessonInfo;
+  aside?: ReactNode;
+  children?: ReactNode;
+}) => {
   const { t } = useTranslation();
 
   return (
-    <div className="card">
-      <div className="p-5 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium px-2.5 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-full">
-                {t("lessonDetail.lessonNumber", { order: lesson.lessonOrder })}
-              </span>
-              <span className="text-xs font-medium px-2.5 py-1 bg-warning/10 text-warning rounded-full">
-                {lesson.groupName}
-              </span>
-            </div>
-            <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
-              {lesson.topic}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500">
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                <span>{formatDate(lesson.lessonDate)}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <User className="w-4 h-4" />
-                <span>{lesson.teacherName}</span>
-              </div>
-            </div>
-          </div>
-          {aside}
-        </div>
+    <div className="u-card">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="u-chip">
+          <Calendar className="u-i s" strokeWidth={2} aria-hidden="true" />
+          {formatDate(lesson.lessonDate)}
+        </span>
+        <span className="u-chip">{lesson.groupName}</span>
+        {lesson.lessonOrder ? (
+          <span className="u-chip">{t("lessonDetail.lessonNumber", { order: lesson.lessonOrder })}</span>
+        ) : null}
+        {lesson.teacherName && (
+          <span className="u-chip">
+            <User className="u-i s" strokeWidth={2} aria-hidden="true" />
+            {lesson.teacherName}
+          </span>
+        )}
       </div>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="mt-3 mb-1 break-words min-w-0">{lesson.topic}</h1>
+        {aside}
+      </div>
+      {lesson.description && <p className="u-sub whitespace-pre-wrap break-words">{lesson.description}</p>}
+      {children}
     </div>
   );
 };

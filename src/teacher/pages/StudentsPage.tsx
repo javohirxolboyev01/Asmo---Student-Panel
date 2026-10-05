@@ -1,224 +1,258 @@
 // src/teacher/pages/StudentsPage.tsx
-import { useEffect, useState } from "react";
+// Mock `students` view: header + "+ Talaba", name search, group chips, student cards.
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Search, Users, ChevronRight, Coins, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Plus, Search, Trash2, Users } from "lucide-react";
 import {
   useStudentsQuery,
   useCreateStudentMutation,
   useDeleteStudentMutation,
 } from "@/hooks/queries/useStudents";
 import { useGroupsQuery } from "@/hooks/queries/useGroups";
-import { SkeletonHeader, SkeletonCardGrid, Skeleton } from "@/components/common/Skeleton";
 import { Modal } from "@/components/common/Modal";
-import { Button, IconButton, Input, Select } from "@/components/ui";
-import { getAvatarUrl } from "@/lib/utils";
+import { Button, Input } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
+import { cn } from "@/lib/utils";
+import { Avatar, CoinTag, EmptyBox, PageHeader, Skel, Tag } from "../components/ui";
+
+const NO_GROUP = "__none__";
+const EMPTY_FORM = { email: "", password: "", firstName: "", lastName: "", phone: "" };
 
 export const StudentsPage = () => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [groupFilter, setGroupFilter] = useState("");
-  const [debouncedFilters, setDebouncedFilters] = useState<{ search?: string; groupId?: string }>({});
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedFilters({ search: searchQuery || undefined, groupId: groupFilter || undefined });
-    }, 250);
+    const timeout = setTimeout(() => setSearch(searchQuery.trim()), 250);
     return () => clearTimeout(timeout);
-  }, [searchQuery, groupFilter]);
+  }, [searchQuery]);
 
-  const { data: students = [], isLoading, error, refetch } = useStudentsQuery(debouncedFilters);
+  // All students (for the total) + the server-side search result (same query when the search is empty).
+  const { data: allStudents = [] } = useStudentsQuery();
+  const {
+    data: found = [],
+    isLoading,
+    error,
+    refetch,
+  } = useStudentsQuery(search ? { search } : undefined);
   const { data: groups = [] } = useGroupsQuery();
   const createStudent = useCreateStudentMutation();
   const deleteStudent = useDeleteStudentMutation();
   const { confirm, confirmModal } = useConfirm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form, setForm] = useState({ email: "", password: "", firstName: "", lastName: "", phone: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
 
-  const handleCreate = async () => {
+  const students = useMemo(
+    () =>
+      found.filter((s) =>
+        filter === "all" ? true : filter === NO_GROUP ? s.groups.length === 0 : s.groups.some((g) => g.id === filter),
+      ),
+    [found, filter],
+  );
+
+  const openCreate = () => {
+    setForm(EMPTY_FORM);
     setFormError(null);
-    if (!form.email || !form.password || !form.firstName || !form.lastName) return;
-    setIsSubmitting(true);
+    setIsModalOpen(true);
+  };
+
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    if (!form.email || !form.password || !form.firstName || !form.lastName) {
+      setFormError(t("us.fillRequired"));
+      return;
+    }
     try {
-      await createStudent.mutateAsync(form);
+      await createStudent.mutateAsync({ ...form, phone: form.phone || undefined });
       setIsModalOpen(false);
-      setForm({ email: "", password: "", firstName: "", lastName: "", phone: "" });
-      toast.success(t("common.createSuccess"));
+      setForm(EMPTY_FORM);
+      toast.success(t("us.people.added"));
     } catch (err) {
       const message = getErrorMessage(err, t("common.error"));
       setFormError(message);
       toast.error(message);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const confirmed = await confirm(t("common.deleteConfirm"), {
+  const handleDelete = async (id: string) => {
+    const confirmed = await confirm(t("us.people.deleteConfirm"), {
       title: t("common.deleteTitle"),
       tone: "danger",
     });
     if (!confirmed) return;
     try {
       await deleteStudent.mutateAsync(id);
-      toast.success(t("common.deleteSuccess"));
+      toast.success(t("us.people.deleted"));
     } catch (err) {
       toast.error(getErrorMessage(err, t("common.error")));
     }
   };
 
-  if (isLoading && students.length === 0) {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <Skeleton className="w-full h-10 rounded-xl" />
-        <SkeletonCardGrid count={6} cols="grid-cols-1 lg:grid-cols-2 xl:grid-cols-3" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="card p-8 text-center">
-        <p className="text-red-500">{getErrorMessage(error, t("common.error"))}</p>
-        <Button onClick={() => refetch()} className="mt-4">
-          {t("common.retry")}
-        </Button>
-      </div>
-    );
-  }
+  const filters: [string, string][] = [
+    ["all", t("us.people.all")],
+    ...groups.map((g) => [g.id, g.name] as [string, string]),
+    [NO_GROUP, t("us.people.noGroup")],
+  ];
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
-            {t("students.title")}
-          </h1>
-          <p className="text-gray-500 text-xs md:text-base">{t("students.subtitle")}</p>
-        </div>
-        <Button leftIcon={<Plus className="w-4 h-4" />} onClick={() => setIsModalOpen(true)}>
-          {t("students.addStudent")}
-        </Button>
-      </div>
+    <>
+      <PageHeader
+        title={t("students.title")}
+        subtitle={t("us.people.total", { n: allStudents.length || found.length })}
+        right={
+          <button type="button" className="u-btn" onClick={openCreate}>
+            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+            {t("us.people.student")}
+          </button>
+        }
+      />
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div>
         <Input
-          type="text"
-          placeholder={t("students.searchPlaceholder")}
+          type="search"
+          leftIcon={<Search className="u-i" strokeWidth={2} aria-hidden="true" />}
+          placeholder={t("us.people.search")}
+          aria-label={t("us.people.search")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          leftIcon={<Search className="w-4 h-4" />}
-          containerClassName="flex-1"
         />
-        <Select value={groupFilter} onChange={(e) => setGroupFilter(e.target.value)} containerClassName="sm:w-56">
-          <option value="">{t("students.groupFilter")}</option>
-          {groups.map((g) => (
-            <option key={g.id} value={g.id}>
-              {g.name}
-            </option>
-          ))}
-        </Select>
+      </div>
+      <div className="u-chips sc my-3.5" role="tablist">
+        {filters.map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            role="tab"
+            aria-selected={filter === value}
+            className={cn("u-chip", filter === value && "sel")}
+            onClick={() => setFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
-      {students.length === 0 ? (
-        <div className="card p-8 text-center">
-          <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{t("students.notFound")}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-          {students.map((student) => (
-            <Link
-              key={student.id}
-              to={`/students/${student.id}`}
-              className="card block hover:shadow-card-hover transition-all duration-200 hover:scale-[1.01] group p-4 md:p-5"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <img
-                    src={getAvatarUrl(student.avatar, `${student.firstName} ${student.lastName}`)}
-                    alt={student.firstName}
-                    className="w-11 h-11 rounded-full flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm md:text-base group-hover:text-warning transition-colors truncate">
-                      {student.firstName} {student.lastName}
-                    </h3>
-                    <p className="text-xs text-gray-500 truncate">
-                      {student.groups.map((g) => g.name).join(", ") || t("students.noGroups")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <IconButton
-                    type="button"
-                    size="sm"
-                    variant="danger"
-                    onClick={(e) => handleDelete(e, student.id)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </IconButton>
-                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-warning group-hover:translate-x-1 transition-all duration-200" />
-                </div>
-              </div>
-              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500">
-                <div className="flex items-center gap-1">
-                  <Coins className="w-3.5 h-3.5 text-warning" />
-                  <span>{student.coinBalance}</span>
-                </div>
-                <div>{student.attendancePercentage}% {t("students.attendance").toLowerCase()}</div>
-              </div>
-            </Link>
+      {error ? (
+        <EmptyBox
+          tone="er"
+          icon={AlertTriangle}
+          title={getErrorMessage(error, t("common.error"))}
+          action={<Button onClick={() => refetch()}>{t("common.retry")}</Button>}
+        />
+      ) : isLoading && found.length === 0 ? (
+        <div className="u-cols c3 u-stack" aria-busy="true">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skel key={i} className="h-[84px]" />
           ))}
+        </div>
+      ) : students.length === 0 ? (
+        <EmptyBox
+          tone="mu"
+          icon={Users}
+          title={t("us.people.notFound")}
+          text={t("us.people.notFoundHint")}
+        />
+      ) : (
+        <div className="u-cols c3 u-stack">
+          {students.map((s) => {
+            const name = `${s.firstName} ${s.lastName}`.trim();
+            return (
+              <div key={s.id} className="u-les min-w-0">
+                <Link to={`/students/${s.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar name={name} src={s.avatar} seed={s.id} />
+                  <span className="min-w-0">
+                    <b className="block truncate text-[17px]">{name}</b>
+                    <span className="mt-0.5 flex flex-wrap gap-1">
+                      {s.groups.length ? (
+                        s.groups.map((g) => (
+                          <Tag key={g.id} tone="pr" className="max-w-full truncate">
+                            {g.name}
+                          </Tag>
+                        ))
+                      ) : (
+                        <Tag tone="gd">{t("us.people.noGroup")}</Tag>
+                      )}
+                      {s.status === "inactive" && <Tag tone="mu">{t("students.inactive")}</Tag>}
+                    </span>
+                  </span>
+                </Link>
+                <div className="grid flex-none justify-items-end gap-1">
+                  <CoinTag n={s.coinBalance} />
+                  <small className="u-sub m-0 whitespace-nowrap text-[13px]">
+                    {s.groups.length ? t("us.people.attPct", { n: s.attendancePercentage }) : "—"}
+                  </small>
+                </div>
+                <button
+                  type="button"
+                  className="u-ib"
+                  aria-label={t("common.delete")}
+                  onClick={() => handleDelete(s.id)}
+                  disabled={deleteStudent.isPending}
+                >
+                  <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t("students.addStudent")}>
-        <div className="space-y-3">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t("us.people.newStudent")}>
+        <form className="grid gap-3.5" onSubmit={handleCreate}>
           <Input
-            type="text"
-            placeholder={t("students.firstName")}
+            label={t("students.firstName")}
+            required
+            autoFocus
             value={form.firstName}
             onChange={(e) => setForm({ ...form, firstName: e.target.value })}
           />
           <Input
-            type="text"
-            placeholder={t("students.lastName")}
+            label={t("students.lastName")}
+            required
             value={form.lastName}
             onChange={(e) => setForm({ ...form, lastName: e.target.value })}
           />
           <Input
+            label={t("students.phone")}
+            type="tel"
+            placeholder="+998"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+          <Input
+            label={t("students.email")}
             type="email"
-            placeholder={t("students.email")}
+            required
+            autoComplete="off"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
           <Input
+            label={t("students.password")}
             type="password"
-            placeholder={t("students.password")}
+            required
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
-          <Input
-            type="text"
-            placeholder={t("students.phone")}
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
-          <Button onClick={handleCreate} isLoading={isSubmitting} fullWidth>
-            {t("common.create")}
-          </Button>
-        </div>
+          {formError && <p className="text-[13px] font-bold text-u-er">{formError}</p>}
+          <div className="flex gap-2.5">
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="flex-1" isLoading={createStudent.isPending}>
+              {t("students.addStudent")}
+            </Button>
+          </div>
+        </form>
       </Modal>
       {confirmModal}
-    </div>
+    </>
   );
 };

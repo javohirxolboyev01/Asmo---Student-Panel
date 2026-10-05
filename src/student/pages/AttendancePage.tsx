@@ -236,7 +236,8 @@ export const AttendancePage = () => {
             const has = dayRecords.length > 0;
             const isAbsent = dayRecords.some((r) => r.status === "absent");
             const isToday = date.getTime() === today.getTime();
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            // Lessons run Monday–Saturday; only Sunday is a day off.
+            const isWeekend = date.getDay() === 0;
             const isFuture = date.getTime() > today.getTime();
 
             let cls = "sp-cell sp-attendance-cell";

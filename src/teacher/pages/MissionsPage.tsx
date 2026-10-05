@@ -3,7 +3,7 @@
 // Missiya bajarilganini server o'zi tekshiradi (topshiriq / davomat / baho).
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Pencil, Plus, Target, Trash2, Users, CheckCircle2, Coins } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ListChecks, Pencil, Plus, Target, Trash2, Users } from "lucide-react";
 import {
   useMissionsQuery,
   useCreateMissionMutation,
@@ -15,17 +15,19 @@ import { useQuizzesQuery } from "@/hooks/queries/useQuizzes";
 import type { Mission, MissionInput, MissionType } from "@/types/mission";
 import { Modal } from "@/components/common/Modal";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
-import { EmptyState } from "@/components/common/EmptyState";
-import { SkeletonHeader, SkeletonCardGrid } from "@/components/common/Skeleton";
-import { Button, Checkbox, IconButton, Input, Select, Textarea } from "@/components/ui";
+import { Button, Input, Select, Textarea } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { CoinTag, EmptyBox, PageHeader, Seg, Skel, Toggle } from "../components/ui";
 
-const MISSION_TYPES: MissionType[] = ["SUBMIT_HOMEWORK", "ATTEND_LESSON", "GOOD_GRADE", "PASS_QUIZ"];
+// Attendance and good-grade missions were retired (2026-10-05); the backend no longer accepts them.
+const MISSION_TYPES: MissionType[] = ["SUBMIT_HOMEWORK", "PASS_QUIZ"];
 /** Types with a minimum score percentage. */
-const USES_TARGET = new Set<MissionType>(["GOOD_GRADE", "PASS_QUIZ"]);
+const USES_TARGET = new Set<MissionType>(["PASS_QUIZ"]);
 const QUICK_EMOJIS = ["⭐", "📖", "✏️", "🎧", "🏆", "📅", "🚀", "💎"];
+
+type Filter = "all" | "active" | "inactive";
 
 interface MissionForm {
   title: string;
@@ -102,6 +104,7 @@ export const MissionsPage = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<Mission | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
 
   const isSaving = createMission.isPending || updateMission.isPending;
 
@@ -195,196 +198,284 @@ export const MissionsPage = () => {
     }
   };
 
-  const header = (
-    <div className="flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">{t("missions.title")}</h1>
-        <p className="text-gray-500 text-sm md:text-base">{t("missions.subtitle")}</p>
-      </div>
-      <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreate} className="flex-shrink-0" aria-label={t("missions.create")}>
-        <span className="hidden sm:inline">{t("missions.create")}</span>
-      </Button>
-    </div>
-  );
-
   if (isLoading) {
     return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <SkeletonCardGrid count={4} />
+      <div aria-busy="true">
+        <Skel className="mt-2 h-8 w-1/2 rounded-xl" />
+        <Skel className="mt-2 h-4 w-1/3 rounded-lg" />
+        <div className="u-stats3 mt-5">
+          {[0, 1, 2].map((i) => (
+            <Skel key={i} className="h-[76px] rounded-[18px]" />
+          ))}
+        </div>
+        <div className="u-cols c3 u-stack mt-5">
+          {[0, 1, 2].map((i) => (
+            <Skel key={i} className="h-[220px]" />
+          ))}
+        </div>
       </div>
     );
   }
 
+  const activeCount = missions.filter((m) => m.isActive).length;
+  const doneToday = missions.reduce((sum, m) => sum + m.completedToday, 0);
+  const shown = missions.filter((m) => filter === "all" || m.isActive === (filter === "active"));
+  const setField = <K extends keyof MissionForm>(key: K, value: MissionForm[K]) => setForm((f) => ({ ...f, [key]: value }));
+
   return (
-    <div className="space-y-4 md:space-y-6">
-      {header}
+    <>
+      <PageHeader
+        title={t("missions.title")}
+        subtitle={missions.length ? t("us.manage.missionsActive", { count: activeCount }) : t("missions.subtitle")}
+        right={
+          <button type="button" className="u-btn" onClick={openCreate} aria-label={t("missions.create")}>
+            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+            {t("us.manage.missionBtn")}
+          </button>
+        }
+      />
 
       {isError ? (
-        <div className="card p-5 text-center space-y-3">
-          <p className="text-red-500">{getErrorMessage(error, t("missions.loadError"))}</p>
-          <Button variant="outline" size="sm" onClick={() => refetch()} isLoading={isFetching}>
-            {t("common.retry")}
-          </Button>
-        </div>
-      ) : missions.length === 0 ? (
-        <div className="card p-5">
-          <EmptyState icon={Target} title={t("missions.empty")} description={t("missions.emptyHint")} />
-          <div className="flex justify-center -mt-4 pb-4">
-            <Button leftIcon={<Plus className="w-4 h-4" />} onClick={openCreate}>
-              {t("missions.create")}
+        <EmptyBox
+          icon={AlertTriangle}
+          tone="er"
+          title={getErrorMessage(error, t("missions.loadError"))}
+          action={
+            <Button onClick={() => refetch()} isLoading={isFetching}>
+              {t("common.retry")}
             </Button>
-          </div>
-        </div>
+          }
+        />
+      ) : missions.length === 0 ? (
+        <EmptyBox
+          icon={Target}
+          tone="mu"
+          title={t("missions.empty")}
+          text={t("missions.emptyHint")}
+          action={
+            <button type="button" className="u-btn" onClick={openCreate}>
+              <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+              {t("missions.create")}
+            </button>
+          }
+        />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
-          {missions.map((mission) => (
-            <div
-              key={mission.id}
-              className={cn("card p-4 md:p-5 flex flex-col gap-3 transition-opacity", !mission.isActive && "opacity-60")}
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-warning/10 dark:bg-warning/15 flex items-center justify-center text-2xl flex-shrink-0">
-                  {mission.emoji}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-gray-800 dark:text-gray-100 break-words">{mission.title}</h3>
-                    <span
-                      className={cn(
-                        "text-[11px] font-semibold px-2 py-0.5 rounded-full",
-                        mission.isActive
-                          ? "bg-[#E8F5E9] text-[#2E7D32] dark:bg-[#2E7D32]/20 dark:text-[#66BB6A]"
-                          : "bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400",
-                      )}
-                    >
-                      {mission.isActive ? t("missions.active") : t("missions.inactive")}
-                    </span>
-                  </div>
-                  {mission.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 break-words">{mission.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <IconButton size="sm" onClick={() => openEdit(mission)} aria-label={t("missions.edit")}>
-                    <Pencil className="w-4 h-4" />
-                  </IconButton>
-                  <IconButton
-                    size="sm"
-                    variant="danger"
-                    onClick={() => setDeleting(mission)}
-                    aria-label={t("common.delete")}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </IconButton>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-xs">
-                <span className="px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                  {t(`missions.type.${mission.type}`)}
-                  {mission.type === "PASS_QUIZ" && mission.quizTitle && <> · {mission.quizTitle}</>}
-                  {USES_TARGET.has(mission.type) && mission.target != null && (
-                    <> · {t("missions.targetLabel", { target: mission.target })}</>
-                  )}
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-warning/10 text-warning font-semibold">
-                  <Coins className="w-3.5 h-3.5" />
-                  {t("missions.reward", { count: mission.coinReward })}
-                </span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-300">
-                  <Users className="w-3.5 h-3.5" />
-                  {mission.groupId ? mission.groupName ?? "—" : t("missions.allStudents")}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-                <span className="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                  <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
-                  {t("missions.completedToday", { count: mission.completedToday })}
-                </span>
-                <Button
-                  size="sm"
-                  variant={mission.isActive ? "ghost" : "outline"}
-                  onClick={() => handleToggleActive(mission)}
-                  isLoading={togglingId === mission.id}
-                  disabled={togglingId !== null && togglingId !== mission.id}
-                >
-                  {mission.isActive ? t("missions.deactivate") : t("missions.activate")}
-                </Button>
-              </div>
+        <>
+          <div className="u-stats3">
+            <div>
+              <b className="text-u-ok">{activeCount}</b>
+              <span>{t("missions.active")}</span>
             </div>
-          ))}
-        </div>
+            <div>
+              <b className="text-u-pr">{doneToday}</b>
+              <span>{t("us.manage.statDoneToday")}</span>
+            </div>
+            <div>
+              <b>{missions.length}</b>
+              <span>{t("us.manage.statTotal")}</span>
+            </div>
+          </div>
+
+          <div className="mt-[18px] mb-3.5">
+            <Seg<Filter>
+              value={filter}
+              onChange={setFilter}
+              label={t("us.manage.filterLabel")}
+              options={[
+                { value: "all", label: t("us.manage.all") },
+                { value: "active", label: t("missions.active") },
+                { value: "inactive", label: t("missions.inactive") },
+              ]}
+            />
+          </div>
+
+          <div className="u-cols c3 u-stack">
+            {shown.map((mission) => (
+              <article key={mission.id} className="u-card grid gap-3 content-start">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn("u-mi !w-[54px] !h-[54px] text-[28px] leading-none", !mission.isActive && "opacity-60")}
+                    style={{ background: "var(--gdt)" }}
+                    aria-hidden="true"
+                  >
+                    {mission.emoji}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="break-words">{mission.title}</h3>
+                    <p className="u-sub !mt-0.5 text-sm">{t(`missions.type.${mission.type}`)}</p>
+                  </div>
+                  <CoinTag n={`+${mission.coinReward}`} className="flex-none" />
+                </div>
+
+                {mission.description && <p className="u-sub !mt-0 text-sm break-words">{mission.description}</p>}
+
+                <div className="u-chips">
+                  {mission.type === "PASS_QUIZ" && mission.quizTitle && (
+                    <span className="u-chip max-w-full">
+                      <ListChecks className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      <span className="truncate">{mission.quizTitle}</span>
+                    </span>
+                  )}
+                  {USES_TARGET.has(mission.type) && mission.target != null && (
+                    <span className="u-chip">
+                      <Target className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      {t("missions.targetLabel", { target: mission.target })}
+                    </span>
+                  )}
+                  <span className="u-chip max-w-full">
+                    <Users className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    <span className="truncate">
+                      {mission.groupId ? mission.groupName ?? "—" : t("missions.allStudents")}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="u-row">
+                  <span className="u-mi !w-9 !h-9 !rounded-xl" style={{ background: "var(--okt)", color: "var(--ok)" }}>
+                    <CheckCircle2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+                  </span>
+                  <small className="g !text-u-tx font-semibold">
+                    {t("missions.completedToday", { count: mission.completedToday })}
+                  </small>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="u-btn soft sm"
+                      onClick={() => openEdit(mission)}
+                      aria-label={`${t("missions.edit")}: ${mission.title}`}
+                    >
+                      <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      {t("common.edit")}
+                    </button>
+                    <button
+                      type="button"
+                      className="u-ib"
+                      onClick={() => setDeleting(mission)}
+                      aria-label={t("common.delete")}
+                    >
+                      <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={mission.isActive}
+                    onClick={() => handleToggleActive(mission)}
+                    disabled={togglingId !== null}
+                    className={cn(
+                      "flex items-center gap-2 font-bold text-u-mu disabled:cursor-wait",
+                      togglingId === mission.id && "opacity-60",
+                    )}
+                  >
+                    {mission.isActive ? t("missions.active") : t("missions.inactive")}
+                    <Toggle on={mission.isActive} />
+                  </button>
+                </div>
+              </article>
+            ))}
+            {shown.length === 0 && (
+              <EmptyBox
+                className="col-span-full"
+                tone="mu"
+                icon={Target}
+                title={t("us.manage.emptyFilter")}
+                text={t("us.manage.emptyFilterHint")}
+              />
+            )}
+          </div>
+        </>
       )}
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editing ? t("missions.edit") : t("missions.create")}>
-        <div className="space-y-3">
+        <div className="grid gap-3.5">
+          {/* Emoji: big preview + quick picks + free input */}
           <div>
+            <p className="text-[13.5px] font-bold text-u-mu mb-1.5">{t("missions.field.emoji")}</p>
+            <div className="flex items-center gap-3">
+              <span
+                className="u-mi !w-[58px] !h-[58px] text-[30px] leading-none"
+                style={{ background: "var(--gdt)" }}
+                aria-hidden="true"
+              >
+                {form.emoji.trim() || "?"}
+              </span>
+              <div className="u-chips flex-1 min-w-0">
+                {QUICK_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    aria-pressed={form.emoji.trim() === emoji}
+                    onClick={() => setField("emoji", emoji)}
+                    className={cn(
+                      "w-10 h-10 rounded-xl grid place-items-center text-xl transition-colors",
+                      form.emoji.trim() === emoji ? "bg-u-prt shadow-[inset_0_0_0_2px_rgb(var(--u-pr))]" : "bg-u-sf2",
+                    )}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Input
-              label={t("missions.field.emoji")}
               type="text"
+              aria-label={t("missions.field.emoji")}
+              placeholder={t("us.manage.emojiCustom")}
               value={form.emoji}
               maxLength={8}
-              onChange={(e) => setForm({ ...form, emoji: e.target.value })}
+              onChange={(e) => setField("emoji", e.target.value)}
               error={errors.emoji}
+              containerClassName="mt-2.5"
               className="text-lg"
             />
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {QUICK_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  type="button"
-                  onClick={() => setForm({ ...form, emoji })}
-                  className={cn(
-                    "w-9 h-9 rounded-xl text-lg flex items-center justify-center border transition-all active:scale-95",
-                    form.emoji.trim() === emoji
-                      ? "border-warning bg-warning/10"
-                      : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-white/5 hover:border-warning",
-                  )}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
           </div>
+
           <Input
             label={t("missions.field.title")}
             type="text"
             placeholder={t("missions.field.titlePlaceholder")}
             value={form.title}
             maxLength={100}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            onChange={(e) => setField("title", e.target.value)}
             error={errors.title}
           />
           <Textarea
             label={t("missions.field.description")}
             value={form.description}
             maxLength={200}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) => setField("description", e.target.value)}
             error={errors.description}
-            className="min-h-[70px]"
+            className="min-h-[72px]"
           />
+
+          {/* Type: chips like the mock's reason picker */}
           <div>
-            <Select
-              label={t("missions.field.type")}
-              value={form.type}
-              onChange={(e) => setForm({ ...form, type: e.target.value as MissionType })}
-            >
+            <p className="text-[13.5px] font-bold text-u-mu mb-1.5">{t("missions.field.type")}</p>
+            <div className="u-chips" role="radiogroup" aria-label={t("missions.field.type")}>
               {MISSION_TYPES.map((type) => (
-                <option key={type} value={type}>
+                <button
+                  key={type}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.type === type}
+                  className={cn("u-chip", form.type === type && "sel")}
+                  onClick={() => setField("type", type)}
+                >
                   {t(`missions.type.${type}`)}
-                </option>
+                </button>
               ))}
-            </Select>
-            <p className="mt-1.5 text-xs text-gray-400">{t(`missions.typeHint.${form.type}`)}</p>
+            </div>
+            <p className="mt-2 text-[13px] font-semibold text-u-mu">{t(`missions.typeHint.${form.type}`)}</p>
           </div>
+
           {form.type === "PASS_QUIZ" && (
             <div>
               <Select
                 label={t("missions.field.quiz")}
                 value={form.quizId}
-                onChange={(e) => setForm({ ...form, quizId: e.target.value })}
+                onChange={(e) => setField("quizId", e.target.value)}
                 error={errors.quizId}
               >
                 <option value="">{t("missions.field.quizPlaceholder")}</option>
@@ -399,39 +490,39 @@ export const MissionsPage = () => {
                 ))}
               </Select>
               {quizzes.length === 0 && (
-                <Link to="/tests/new" className="mt-1.5 inline-block text-xs text-warning hover:underline">
+                <Link to="/tests/new" className="u-chip mt-2 !bg-u-prt !text-u-pr">
                   {t("missions.createQuizFirst")}
                 </Link>
               )}
             </div>
           )}
-          <div className={cn("grid gap-3", USES_TARGET.has(form.type) ? "grid-cols-2" : "grid-cols-1")}>
+
+          <div className={cn("grid gap-3.5", USES_TARGET.has(form.type) ? "grid-cols-2" : "grid-cols-1")}>
             {USES_TARGET.has(form.type) && (
               <Input
                 label={t("missions.field.target")}
                 type="number"
+                inputMode="numeric"
                 min={1}
                 max={100}
                 value={form.target}
-                onChange={(e) => setForm({ ...form, target: e.target.value })}
+                onChange={(e) => setField("target", e.target.value)}
                 error={errors.target}
               />
             )}
             <Input
               label={t("missions.field.coinReward")}
               type="number"
+              inputMode="numeric"
               min={1}
               max={100}
               value={form.coinReward}
-              onChange={(e) => setForm({ ...form, coinReward: e.target.value })}
+              onChange={(e) => setField("coinReward", e.target.value)}
               error={errors.coinReward}
             />
           </div>
-          <Select
-            label={t("missions.field.group")}
-            value={form.groupId}
-            onChange={(e) => setForm({ ...form, groupId: e.target.value })}
-          >
+
+          <Select label={t("missions.field.group")} value={form.groupId} onChange={(e) => setField("groupId", e.target.value)}>
             <option value="">{t("missions.allStudents")}</option>
             {editing?.groupId && !groups.some((g) => g.id === editing.groupId) && (
               <option value={editing.groupId}>{editing.groupName ?? editing.groupId}</option>
@@ -442,15 +533,27 @@ export const MissionsPage = () => {
               </option>
             ))}
           </Select>
-          <Checkbox
-            checked={form.isActive}
-            onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-            label={t("missions.field.isActive")}
-          />
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
-          <Button onClick={handleSave} isLoading={isSaving} fullWidth>
-            {editing ? t("common.update") : t("common.create")}
-          </Button>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={form.isActive}
+            onClick={() => setField("isActive", !form.isActive)}
+            className="u-row"
+          >
+            <span className="g font-bold">{t("missions.field.isActive")}</span>
+            <Toggle on={form.isActive} />
+          </button>
+
+          {formError && <p className="text-[13px] font-bold text-u-er">{formError}</p>}
+          <div className="flex gap-2.5">
+            <Button variant="outline" onClick={closeModal}>
+              {t("common.cancel")}
+            </Button>
+            <Button className="flex-1" onClick={handleSave} isLoading={isSaving}>
+              {editing ? t("common.update") : t("common.create")}
+            </Button>
+          </div>
         </div>
       </Modal>
 
@@ -462,6 +565,6 @@ export const MissionsPage = () => {
         onConfirm={handleDelete}
         onCancel={() => !deleteMission.isPending && setDeleting(null)}
       />
-    </div>
+    </>
   );
 };

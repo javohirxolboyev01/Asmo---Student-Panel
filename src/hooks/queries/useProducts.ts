@@ -12,6 +12,10 @@ export const productsQueryOptions = (params?: { category?: string; search?: stri
 export const useProductsQuery = (params?: { category?: string; search?: string }) =>
   useQuery(productsQueryOptions(params));
 
+/** Staff shop management list (includes hidden products). Shares the "products" prefix, so the mutations below refresh it. */
+export const useManagedProductsQuery = () =>
+  useQuery({ queryKey: ["products", "manage"], queryFn: () => productService.getManagedProducts() });
+
 export const useCreateProductMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({

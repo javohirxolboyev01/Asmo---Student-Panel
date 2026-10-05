@@ -19,14 +19,14 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             id={checkboxId}
             type="checkbox"
             className={cn(
-              "peer appearance-none w-5 h-5 rounded-md border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-white/5 checked:bg-warning checked:border-warning transition-colors cursor-pointer",
+              "u-field peer appearance-none w-5 h-5 rounded-md border-2 transition-colors cursor-pointer",
               className,
             )}
             {...props}
           />
-          <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100" />
+          <Check strokeWidth={3} className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100" />
         </span>
-        {label && <span className="text-sm text-gray-800 dark:text-gray-200">{label}</span>}
+        {label && <span className="text-[15px] font-semibold text-u-tx">{label}</span>}
       </label>
     );
   },

@@ -18,6 +18,11 @@ export interface Group {
   teacher?: Teacher;
   studentCount?: number;
   status: "active" | "completed";
+  // Staff list extras (2026-10): schedule + capacity for the group cards.
+  courseName?: string | null;
+  maxStudents?: number;
+  schedule?: { days: string[]; time: string };
+  studentsPreview?: { id: string; firstName: string; lastName: string; avatar: string | null }[];
 }
 
 export interface GroupDetail {
@@ -32,4 +37,8 @@ export interface GroupDetail {
     days: string[];
     time: string;
   };
+  status?: "active" | "completed";
+  directionId?: string;
+  directionColor?: string;
+  teacherId?: string;
 }

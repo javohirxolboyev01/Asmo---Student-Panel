@@ -1,113 +1,235 @@
 // src/teacher/pages/CoinsPage.tsx
-import { useState } from "react";
+// Mock `coin` view: 3-step quick award (who / how many / why) + recent operations by day.
+import { useMemo, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { AlertTriangle, Coins, Search, Users } from "lucide-react";
 import { useTeacherCoinTransactionsQuery, useAwardCoinsMutation } from "@/hooks/queries/useCoins";
 import { useStudentsQuery } from "@/hooks/queries/useStudents";
-import { Coins } from "lucide-react";
-
-import { formatDate } from "@/utilist/formatData";
-import { cn } from "@/lib/utils";
-import { Skeleton, SkeletonHeader, SkeletonList } from "@/components/common/Skeleton";
-import { Button, Input, Select } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { toast, getErrorMessage } from "@/lib/toast";
+import { cn } from "@/lib/utils";
+import { Avatar, EmptyBox, PageHeader, Skel, formatDate } from "../components/ui";
+import { COIN_REASON_KEYS } from "../components/sheets";
+
+const PRESETS = [1, 5, 10, 20, -5];
+/** Show a name filter above the pickers once the row gets long. */
+const SEARCH_FROM = 9;
 
 export const CoinsPage = () => {
   const { t } = useTranslation();
-  const { data: transactions = [], isLoading: transactionsLoading } = useTeacherCoinTransactionsQuery();
+  const {
+    data: transactions = [],
+    isLoading: transactionsLoading,
+    error: transactionsError,
+    refetch: refetchTransactions,
+  } = useTeacherCoinTransactionsQuery();
   const { data: students = [], isLoading: studentsLoading } = useStudentsQuery();
   const awardCoins = useAwardCoinsMutation();
-  const [form, setForm] = useState({ studentId: "", amount: "", reason: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState("");
+  const [amount, setAmount] = useState("5");
+  const [reason, setReason] = useState(() => t(COIN_REASON_KEYS[0]));
+  const [query, setQuery] = useState("");
 
-  const handleGive = async () => {
-    if (!form.studentId || !form.amount || !form.reason) return;
-    setIsSubmitting(true);
-    setMessage(null);
+  const fullName = (s: { firstName: string; lastName: string }) => `${s.firstName} ${s.lastName}`.trim();
+  const selected = students.find((s) => s.id === studentId);
+  const n = Math.trunc(Number(amount)) || 0;
+
+  const pickers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((s) => fullName(s).toLowerCase().includes(q) || s.id === studentId);
+  }, [students, query, studentId]);
+
+  const byId = useMemo(() => new Map(students.map((s) => [s.id, s])), [students]);
+
+  // Operations grouped by calendar day, newest first (API order).
+  const days = useMemo(() => {
+    const out: [string, typeof transactions][] = [];
+    for (const tx of transactions) {
+      const day = formatDate(tx.createdAt);
+      const last = out[out.length - 1];
+      if (last && last[0] === day) last[1].push(tx);
+      else out.push([day, [tx]]);
+    }
+    return out;
+  }, [transactions]);
+
+  const handleGive = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected) return toast.error(t("us.people.pickFirst"));
+    if (!n) return toast.error(t("us.people.enterAmount"));
+    if (!reason.trim()) return toast.error(t("us.people.enterReason"));
     try {
-      await awardCoins.mutateAsync({ studentId: form.studentId, amount: Number(form.amount), reason: form.reason });
-      setMessage(t("coins.givenSuccess"));
-      setForm({ studentId: "", amount: "", reason: "" });
-    } finally {
-      setIsSubmitting(false);
+      await awardCoins.mutateAsync({ studentId: selected.id, amount: n, reason: reason.trim() });
+      const name = fullName(selected);
+      toast.success(n > 0 ? t("us.people.coinGiven", { name, n }) : t("us.people.coinTaken", { name, n: -n }));
+    } catch (err) {
+      toast.error(getErrorMessage(err, t("common.error")));
     }
   };
 
-  if (transactionsLoading || studentsLoading) {
-    return (
-      <div className="space-y-4 md:space-y-6">
-        <SkeletonHeader />
-        <Skeleton className="w-full h-40 rounded-2xl" />
-        <div className="card p-5">
-          <Skeleton className="w-32 h-5 mb-4" />
-          <SkeletonList rows={5} withAvatar />
-        </div>
-      </div>
-    );
-  }
+  const signed = (v: number) => `${v > 0 ? "+" : ""}${v}`;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div>
-        <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">{t("coins.manageTitle")}</h1>
-        <p className="text-gray-500 text-sm md:text-base">{t("coins.manageSubtitle")}</p>
-      </div>
-
-      <div className="card p-5 space-y-3">
-        <Select value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })}>
-          <option value="">{t("coins.selectStudent")}</option>
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.firstName} {s.lastName}
-            </option>
-          ))}
-        </Select>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Input
-            type="number"
-            placeholder={t("coins.amount")}
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
-          />
-          <Input
-            type="text"
-            placeholder={t("coins.reason")}
-            value={form.reason}
-            onChange={(e) => setForm({ ...form, reason: e.target.value })}
-          />
-        </div>
-        <Button onClick={handleGive} isLoading={isSubmitting} size="sm">
-          {t("coins.give")}
-        </Button>
-        {message && <p className="text-sm text-[#2E7D32]">{message}</p>}
-      </div>
-
-      <div className="card">
-        <div className="p-5">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100 mb-4">{t("coins.recentTransactions")}</h3>
-          <div className="space-y-3">
-            {transactions.length === 0 ? (
-              <div className="text-center py-8">
-                <Coins className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500">{t("coins.noTransactions")}</p>
+    <>
+      <PageHeader title={t("us.coin.title")} subtitle={t("us.people.coinSubtitle")} />
+      <div className="u-two">
+        {/* Award */}
+        <form className="u-card u-stack gap-[18px]" onSubmit={handleGive}>
+          <div className="min-w-0">
+            <h3 className="mb-2.5">{t("us.people.who")}</h3>
+            {students.length >= SEARCH_FROM && (
+              <div className="mb-2">
+                <Input
+                  type="search"
+                  leftIcon={<Search className="u-i" strokeWidth={2} aria-hidden="true" />}
+                  placeholder={t("us.people.search")}
+                  aria-label={t("us.people.search")}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
               </div>
+            )}
+            {studentsLoading ? (
+              <div className="u-chips sc" aria-busy="true">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Skel key={i} className="h-[74px] w-[76px] flex-none rounded-2xl" />
+                ))}
+              </div>
+            ) : students.length === 0 ? (
+              <p className="u-sub m-0">{t("us.people.noStudents")}</p>
+            ) : pickers.length === 0 ? (
+              <p className="u-sub m-0">{t("us.people.notFound")}</p>
             ) : (
-              transactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{tx.studentName}</p>
-                    <p className="text-xs text-gray-500 truncate">{tx.reason}</p>
-                    <p className="text-xs text-gray-400">{formatDate(tx.createdAt)}</p>
-                  </div>
-                  <span className={cn("text-base font-bold flex-shrink-0", tx.amount > 0 ? "text-[#2E7D32]" : "text-[#C62828]")}>
-                    {tx.amount > 0 ? "+" : ""}
-                    {tx.amount}
-                  </span>
-                </div>
-              ))
+              <div className="u-chips sc" role="radiogroup" aria-label={t("us.people.who")}>
+                {pickers.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={studentId === s.id}
+                    title={fullName(s)}
+                    className={cn("u-pk", studentId === s.id && "sel")}
+                    onClick={() => setStudentId(s.id)}
+                  >
+                    <Avatar name={fullName(s)} src={s.avatar} seed={s.id} />
+                    <span>{s.firstName}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
+
+          <div>
+            <h3 className="mb-2.5">{t("us.people.howMuch")}</h3>
+            <div className="u-chips items-center">
+              {PRESETS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className={cn("u-preset", n === p && "sel")}
+                  aria-pressed={n === p}
+                  onClick={() => setAmount(String(p))}
+                >
+                  {signed(p)}
+                </button>
+              ))}
+              <Input
+                type="number"
+                step={1}
+                aria-label={t("us.people.otherAmount")}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                containerClassName="w-24"
+                className="!py-2.5 !px-3.5"
+              />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="mb-2.5">{t("us.people.why")}</h3>
+            <div className="u-chips">
+              {COIN_REASON_KEYS.map((key) => {
+                const label = t(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    className={cn("u-chip", reason === label && "sel")}
+                    aria-pressed={reason === label}
+                    onClick={() => setReason(label)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <Input
+              containerClassName="mt-2.5"
+              placeholder={t("us.people.ownReason")}
+              aria-label={t("us.coin.reason")}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </div>
+
+          <button type="submit" className="u-btn block" disabled={awardCoins.isPending}>
+            <Coins className="u-i m" strokeWidth={2} aria-hidden="true" />
+            <span className="truncate">
+              {selected ? t("us.people.giveTo", { name: fullName(selected), n: signed(n) }) : t("us.coin.title")}
+            </span>
+          </button>
+        </form>
+
+        {/* Recent operations */}
+        <div className="u-card">
+          <h2 className="mb-1.5">{t("coins.recentTransactions")}</h2>
+          {transactionsError ? (
+            <EmptyBox
+              card={false}
+              tone="er"
+              icon={AlertTriangle}
+              title={getErrorMessage(transactionsError, t("common.error"))}
+              action={<Button onClick={() => refetchTransactions()}>{t("common.retry")}</Button>}
+            />
+          ) : transactionsLoading ? (
+            <div className="u-stack mt-4" aria-busy="true">
+              {Array.from({ length: 5 }, (_, i) => (
+                <Skel key={i} className="h-[62px] rounded-[18px]" />
+              ))}
+            </div>
+          ) : days.length === 0 ? (
+            <EmptyBox card={false} tone="mu" icon={Users} title={t("coins.noTransactions")} />
+          ) : (
+            days.map(([day, list]) => (
+              <div key={day}>
+                <div className="u-day">{day}</div>
+                <div className="u-stack">
+                  {list.map((tx) => {
+                    const s = byId.get(tx.userId);
+                    return (
+                      <Link key={tx.id} to={`/students/${tx.userId}`} className="u-row min-w-0">
+                        <Avatar name={tx.studentName} src={s?.avatar} seed={tx.userId} size="s" />
+                        <div className="g">
+                          <b className="truncate">{tx.studentName}</b>
+                          <small className="block break-words">{tx.reason}</small>
+                        </div>
+                        <b
+                          className="flex-none font-fd text-[19px]"
+                          style={{ color: tx.amount > 0 ? "var(--ok)" : "var(--er)" }}
+                        >
+                          {signed(tx.amount)}
+                        </b>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 };

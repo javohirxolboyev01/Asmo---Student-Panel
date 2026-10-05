@@ -1,20 +1,31 @@
 // src/pages/SettingsPage.tsx
+// Mock `settings` view: stacked cards — appearance (Kunduz / Tun), language,
+// and the account forms (change email, change password).
 import { useState } from "react";
-import {
-  Mail,
-  Lock,
-  Check,
-  Globe,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { Check, Moon, Sun } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsStore, type Theme } from "@/stores/settingsStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LANGUAGES, Language } from "@/i18n/translations";
+import { LANGUAGES, type Language } from "@/i18n/translations";
 import { cn } from "@/lib/utils";
 import { Button, Input } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
+import { PageHeader, Seg } from "@/teacher/components/ui";
+
+type Message = { type: "success" | "error"; text: string } | null;
+
+const Notice = ({ message }: { message: Message }) =>
+  message ? (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold",
+        message.type === "success" ? "bg-u-okt text-u-ok" : "bg-u-ert text-u-er",
+      )}
+    >
+      {message.type === "success" && <Check className="u-i s" strokeWidth={2} aria-hidden="true" />}
+      {message.text}
+    </div>
+  ) : null;
 
 export const SettingsPage = () => {
   const user = useAuthStore((state) => state.user);
@@ -26,12 +37,12 @@ export const SettingsPage = () => {
   const { t, language, setLanguage } = useTranslation();
 
   const [email, setEmail] = useState(user?.email ?? "");
-  const [emailMessage, setEmailMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [emailMessage, setEmailMessage] = useState<Message>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<Message>(null);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,27 +86,54 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:max-w-2xl lg:mx-auto">
-      <div>
-        <h1 className="text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100">
-          {t("settings.title")}
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">
-          {t("settings.subtitle")}
-        </p>
-      </div>
+    <>
+      <PageHeader title={t("settings.title")} back={{ to: "/more" }} />
 
-      {/* ── Account: Email ── */}
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-warning" />
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
-              {t("settings.accountSection")}
-            </span>
-          </div>
+      <div className="u-stack" style={{ maxWidth: 680 }}>
+        {/* Appearance */}
+        <div className="u-card">
+          <h3 className="mb-3">{t("settings.themeSection")}</h3>
+          <Seg<Theme>
+            value={theme}
+            label={t("settings.themeSection")}
+            onChange={setTheme}
+            options={[
+              {
+                value: "light",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Sun className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    {t("us.set.light")}
+                  </span>
+                ),
+              },
+              {
+                value: "dark",
+                label: (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Moon className="u-i s" strokeWidth={2} aria-hidden="true" />
+                    {t("us.set.dark")}
+                  </span>
+                ),
+              },
+            ]}
+          />
         </div>
-        <form onSubmit={handleEmailSubmit} className="p-5 space-y-3">
+
+        {/* Language */}
+        <div className="u-card">
+          <h3 className="mb-3">{t("settings.languageSection")}</h3>
+          <Seg<Language>
+            value={language}
+            label={t("settings.languageSection")}
+            onChange={setLanguage}
+            options={LANGUAGES.map((lang) => ({ value: lang.code, label: lang.label }))}
+          />
+        </div>
+
+        {/* Email */}
+        <form onSubmit={handleEmailSubmit} className="u-card u-stack">
+          <h3>{t("settings.accountSection")}</h3>
           <Input
             type="email"
             label={t("auth.email")}
@@ -104,43 +142,21 @@ export const SettingsPage = () => {
             placeholder={t("auth.emailPlaceholder")}
             required
           />
-
-          {emailMessage && (
-            <div
-              className={cn(
-                "text-sm p-3 rounded-2xl flex items-center gap-2",
-                emailMessage.type === "success"
-                  ? "text-[#2E7D32] bg-[#E8F5E9] dark:bg-[#2E7D32]/15"
-                  : "text-[#C62828] bg-[#FFEBEE] dark:bg-[#C62828]/15",
-              )}
-            >
-              {emailMessage.type === "success" && <Check className="w-4 h-4 flex-shrink-0" />}
-              {emailMessage.text}
-            </div>
-          )}
-
-          <Button type="submit" isLoading={isLoading} disabled={email.trim() === user?.email}>
+          <Notice message={emailMessage} />
+          <Button type="submit" isLoading={isLoading} disabled={email.trim() === user?.email} className="justify-self-start">
             {t("settings.changeEmail")}
           </Button>
         </form>
-      </div>
 
-      {/* ── Password ── */}
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-warning" />
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
-              {t("settings.passwordSection")}
-            </span>
-          </div>
-        </div>
-        <form onSubmit={handlePasswordSubmit} className="p-5 space-y-3">
+        {/* Password */}
+        <form onSubmit={handlePasswordSubmit} className="u-card u-stack">
+          <h3>{t("settings.passwordSection")}</h3>
           <Input
             type="password"
             label={t("settings.currentPassword")}
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
             required
           />
           <Input
@@ -149,6 +165,7 @@ export const SettingsPage = () => {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder={t("auth.minPassword")}
+            autoComplete="new-password"
             required
           />
           <Input
@@ -156,98 +173,15 @@ export const SettingsPage = () => {
             label={t("settings.confirmNewPassword")}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
+            autoComplete="new-password"
             required
           />
-
-          {passwordMessage && (
-            <div
-              className={cn(
-                "text-sm p-3 rounded-2xl flex items-center gap-2",
-                passwordMessage.type === "success"
-                  ? "text-[#2E7D32] bg-[#E8F5E9] dark:bg-[#2E7D32]/15"
-                  : "text-[#C62828] bg-[#FFEBEE] dark:bg-[#C62828]/15",
-              )}
-            >
-              {passwordMessage.type === "success" && <Check className="w-4 h-4 flex-shrink-0" />}
-              {passwordMessage.text}
-            </div>
-          )}
-
-          <Button type="submit" isLoading={isLoading}>
+          <Notice message={passwordMessage} />
+          <Button type="submit" isLoading={isLoading} className="justify-self-start">
             {t("settings.changePasswordButton")}
           </Button>
         </form>
       </div>
-
-      {/* ── Language ── */}
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-warning" />
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
-              {t("settings.languageSection")}
-            </span>
-          </div>
-        </div>
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => setLanguage(lang.code as Language)}
-              className={cn(
-                "flex items-center gap-1.5 justify-center px-3 py-2 text-xs rounded-xl border-2 font-medium transition-all sm:gap-2 sm:px-4 sm:py-3 sm:text-sm sm:rounded-2xl",
-                language === lang.code
-                  ? "border-warning bg-warning/10 text-warning"
-                  : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
-              )}
-            >
-              <span>{lang.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Appearance ── */}
-      <div className="card">
-        <div className="card-header">
-          <div className="flex items-center gap-2">
-            {theme === "dark" ? (
-              <Moon className="w-4 h-4 text-warning" />
-            ) : (
-              <Sun className="w-4 h-4 text-warning" />
-            )}
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">
-              {t("settings.themeSection")}
-            </span>
-          </div>
-        </div>
-        <div className="p-5 grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setTheme("light")}
-            className={cn(
-              "flex items-center gap-2 justify-center px-4 py-3 rounded-2xl border-2 text-sm font-medium transition-all",
-              theme === "light"
-                ? "border-warning bg-warning/10 text-warning"
-                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
-            )}
-          >
-            <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            {t("settings.themeLight")}
-          </button>
-          <button
-            onClick={() => setTheme("dark")}
-            className={cn(
-              "flex items-center gap-2 justify-center px-4 py-3 rounded-2xl border-2 text-sm font-medium transition-all",
-              theme === "dark"
-                ? "border-warning bg-warning/10 text-warning"
-                : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-warning/50",
-            )}
-          >
-            <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            {t("settings.themeDark")}
-          </button>
-        </div>
-      </div>
-    </div>
+    </>
   );
 };

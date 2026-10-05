@@ -23,14 +23,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-gray-800 dark:text-gray-200 mb-1.5"
+            className="block text-[13.5px] font-bold text-u-mu mb-1.5"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+            <span className="absolute left-[15px] top-1/2 -translate-y-1/2 text-u-mu pointer-events-none">
               {leftIcon}
             </span>
           )}
@@ -38,11 +38,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full bg-gray-50 dark:bg-white/5 rounded-xl border outline-none transition-all text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400",
-              "border-gray-200 dark:border-gray-700 focus:border-warning focus:ring-2 focus:ring-warning/20",
-              error && "border-red-400 focus:border-red-400 focus:ring-red-400/20",
-              uiSize === "lg" ? "py-3.5" : "py-2.5",
-              leftIcon ? "pl-10 pr-4" : "px-4",
+              "w-full rounded-[14px] border-2 outline-none transition-[border-color,box-shadow] text-base font-medium",
+              "u-field",
+              error && "is-error",
+              uiSize === "lg" ? "py-3.5" : "py-[11px]",
+              leftIcon ? "pl-[46px] pr-4" : "px-4",
               rightSlot && "pr-10",
               className,
             )}
@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           />
           {rightSlot && <span className="absolute right-3 top-1/2 -translate-y-1/2">{rightSlot}</span>}
         </div>
-        {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+        {error && <p className="mt-1.5 text-[13px] font-bold text-u-er">{error}</p>}
       </div>
     );
   },

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Check } from "lucide-react";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/ui";
-import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AVATAR_OPTIONS } from "@/components/common/avatars";
 
@@ -33,10 +32,8 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
 
   const renderGroup = (gender: "boy" | "girl", heading: string) => (
     <div>
-      <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
-        {heading}
-      </p>
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
+      <h3 className="mb-3">{heading}</h3>
+      <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
         {AVATAR_OPTIONS.filter((a) => a.gender === gender).map((avatar) => {
           const isSelected = selectedId === avatar.id;
           const isCurrent = !selectedId && !!currentAvatar && currentAvatar.endsWith(avatar.path);
@@ -48,22 +45,19 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
               onClick={() => setSelectedId(avatar.id)}
               aria-label={avatar.label}
               aria-pressed={isActive}
-              className="group flex items-center justify-center"
+              className="grid place-items-center"
             >
               <span
-                className={cn(
-                  "relative w-16 h-16 sm:w-20 sm:h-20 rounded-full ring-2 ring-offset-2 dark:ring-offset-card-dark transition-all duration-200 overflow-hidden shadow-sm",
-                  isActive
-                    ? "ring-warning scale-105 shadow-md shadow-warning/20"
-                    : "ring-transparent group-hover:ring-gray-200 dark:group-hover:ring-gray-700 group-hover:scale-105 group-active:scale-95",
-                )}
+                className="relative block aspect-square w-full max-w-[76px] overflow-hidden rounded-full bg-u-sf2 transition-shadow"
+                style={{ boxShadow: `0 0 0 3px ${isActive ? "var(--pr)" : "var(--ln)"}` }}
               >
-                <img src={avatar.path} alt="" className="w-full h-full" />
+                <img src={avatar.path} alt="" className="h-full w-full" />
                 {isActive && (
-                  <span className="absolute inset-0 flex items-end justify-end p-1">
-                    <span className="w-5 h-5 rounded-full bg-warning text-white flex items-center justify-center ring-2 ring-white dark:ring-card-dark">
-                      <Check className="w-3 h-3" strokeWidth={3} />
-                    </span>
+                  <span
+                    className="absolute bottom-0.5 right-0.5 grid h-5 w-5 place-items-center rounded-full"
+                    style={{ background: "var(--prf)", color: "#fff", boxShadow: "0 0 0 2px var(--sf)" }}
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
                   </span>
                 )}
               </span>
@@ -75,19 +69,19 @@ export const AvatarPickerModal = ({ isOpen, currentAvatar, isSaving, onClose, on
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={t("profile.chooseAvatar")} maxWidth="max-w-xl">
-      <p className="text-sm text-gray-500 dark:text-gray-400 -mt-1 mb-5">{t("profile.chooseAvatarDesc")}</p>
-      <div className="space-y-6">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t("profile.chooseAvatar")} maxWidth="sm:max-w-[520px]">
+      <div className="u-stack" style={{ gap: 20 }}>
+        <p className="u-sub" style={{ marginTop: -6 }}>{t("profile.chooseAvatarDesc")}</p>
         {renderGroup("boy", t("profile.avatarBoys"))}
         {renderGroup("girl", t("profile.avatarGirls"))}
-      </div>
-      <div className="flex items-center gap-2 mt-6">
-        <Button variant="outline" size="sm" onClick={handleClose} disabled={isSaving} fullWidth>
-          {t("common.cancel")}
-        </Button>
-        <Button size="sm" onClick={handleSave} isLoading={isSaving} disabled={!selected} fullWidth>
-          {t("common.save")}
-        </Button>
+        <div className="flex gap-2.5">
+          <Button variant="outline" onClick={handleClose} disabled={isSaving}>
+            {t("common.cancel")}
+          </Button>
+          <Button className="flex-1" onClick={handleSave} isLoading={isSaving} disabled={!selected}>
+            {t("common.save")}
+          </Button>
+        </div>
       </div>
     </Modal>
   );

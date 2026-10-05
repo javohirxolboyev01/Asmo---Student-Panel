@@ -5,15 +5,15 @@
 import { cn } from "@/lib/utils";
 
 export const Skeleton = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-xl bg-gray-200 dark:bg-white/10", className)} />
+  <div className={cn("animate-pulse rounded-xl bg-u-sf2", className)} />
 );
 
 export const SkeletonAvatar = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-full bg-gray-200 dark:bg-white/10", className)} />
+  <div className={cn("animate-pulse rounded-full bg-u-sf2", className)} />
 );
 
 export const SkeletonText = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-md bg-gray-200 dark:bg-white/10 h-3.5", className)} />
+  <div className={cn("animate-pulse rounded-md bg-u-sf2 h-3.5", className)} />
 );
 
 export const SkeletonHeader = () => (
@@ -36,7 +36,7 @@ export const SkeletonStatGrid = ({ count = 4 }: { count?: number }) => (
 );
 
 export const SkeletonListRow = ({ withAvatar = true }: { withAvatar?: boolean }) => (
-  <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl">
+  <div className="flex items-center gap-3 p-4 bg-u-sf shadow-u rounded-[20px]">
     {withAvatar && <SkeletonAvatar className="w-10 h-10 flex-shrink-0" />}
     <div className="flex-1 space-y-2 min-w-0">
       <SkeletonText className="w-1/2" />
@@ -73,7 +73,7 @@ export const SkeletonCardGrid = ({ count = 4, cols = "grid-cols-1 lg:grid-cols-2
 
 export const SkeletonTable = ({ rows = 5, cols = 3 }: { rows?: number; cols?: number }) => (
   <div className="space-y-2">
-    <div className="flex gap-3 pb-2 border-b border-gray-100 dark:border-gray-800">
+    <div className="flex gap-3 pb-2 border-b border-u-ln">
       {Array.from({ length: cols }).map((_, i) => (
         <SkeletonText key={i} className="flex-1 h-3" />
       ))}
@@ -92,32 +92,27 @@ export const SkeletonTable = ({ rows = 5, cols = 3 }: { rows?: number; cols?: nu
 // to'liq sahifa skeleti — Header/Sidebar/kontent shaklini taxminan takrorlaydi,
 // shu bilan ekranga birdaniga tarkib "sakrab tushmaydi" (layout shift kamayadi).
 export const AppShellSkeleton = () => (
-  <div className="min-h-screen bg-background dark:bg-background-dark">
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-surface-dark border-b border-gray-100 dark:border-gray-800 z-40">
-      <div className="flex items-center justify-between h-full px-4 md:px-6 max-w-[1400px] mx-auto">
-        <Skeleton className="w-32 h-7" />
-        <div className="flex items-center gap-3">
-          <SkeletonAvatar className="w-9 h-9" />
-          <SkeletonAvatar className="w-8 h-8" />
+  <div className="min-h-screen bg-u-bg min-[960px]:pl-[272px]">
+    <aside className="hidden min-[960px]:flex flex-col fixed inset-y-0 left-0 w-[272px] bg-u-sf px-4 py-[22px] space-y-2">
+      <Skeleton className="w-28 h-7 mb-4" />
+      {Array.from({ length: 8 }).map((_, i) => (
+        <Skeleton key={i} className="w-full h-9 rounded-2xl" />
+      ))}
+    </aside>
+
+    <main className="max-w-[1160px] mx-auto px-4 sm:px-7 py-3 md:py-6 space-y-4 md:space-y-6">
+      <div className="flex items-center gap-2">
+        <SkeletonAvatar className="w-11 h-11 md:w-12 md:h-12" />
+        <div className="flex-1 space-y-1.5">
+          <SkeletonText className="w-32 h-4" />
+          <SkeletonText className="w-20 h-3" />
         </div>
+        <Skeleton className="w-10 h-10 rounded-full" />
       </div>
-    </header>
-
-    <div className="flex pt-16">
-      <aside className="hidden md:flex flex-col fixed top-16 left-0 h-[calc(100vh-4rem)] w-[260px] bg-white dark:bg-surface-dark border-r border-gray-100 dark:border-gray-800 p-4 space-y-2">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="w-full h-9 rounded-xl" />
-        ))}
-      </aside>
-
-      <main className="flex-1 min-w-0 md:ml-[260px] pb-8">
-        <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
-          <SkeletonHeader />
-          <SkeletonStatGrid count={4} />
-          <Skeleton className="w-full h-40" />
-        </div>
-      </main>
-    </div>
+      <SkeletonHeader />
+      <SkeletonStatGrid count={4} />
+      <Skeleton className="w-full h-40" />
+    </main>
   </div>
 );
 
@@ -130,7 +125,7 @@ export const SkeletonProductGrid = ({ count = 6 }: { count?: number }) => (
           <SkeletonText className="w-2/3 h-5" />
           <SkeletonText className="w-full" />
         </div>
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between pt-3 border-t border-u-ln">
           <SkeletonText className="w-16 h-6" />
           <SkeletonText className="w-20 h-9 rounded-xl" />
         </div>
