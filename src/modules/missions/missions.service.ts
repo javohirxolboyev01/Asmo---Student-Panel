@@ -7,6 +7,14 @@ import { newId } from "../../utils/ids.js";
 export const MISSION_TYPES = ["SUBMIT_HOMEWORK", "ATTEND_LESSON", "GOOD_GRADE", "PASS_QUIZ"] as const;
 export type MissionType = (typeof MISSION_TYPES)[number];
 
+/**
+ * Types teachers can still create and students still see (2026-10-05: the
+ * attendance and good-grade missions were retired). Old rows of the retired
+ * types stay in the DB for coin history but are hidden everywhere.
+ */
+export const ACTIVE_MISSION_TYPES = ["SUBMIT_HOMEWORK", "PASS_QUIZ"] as const;
+const ACTIVE_TYPES: string[] = [...ACTIVE_MISSION_TYPES];
+
 export const CHEST_REWARDS = [5, 10, 20] as const;
 
 // Asia/Tashkent is UTC+5 all year (no DST), so a fixed offset is exact.
@@ -43,7 +51,11 @@ export async function missionsForStudent(studentId: string, key = dayKey()) {
   });
   const groupIds = enrollments.map((e) => e.groupId);
   const missions = await prisma.mission.findMany({
-    where: { isActive: true, OR: [{ groupId: null }, { groupId: { in: groupIds } }] },
+    where: {
+      isActive: true,
+      type: { in: ACTIVE_TYPES },
+      OR: [{ groupId: null }, { groupId: { in: groupIds } }],
+    },
     include: { Quiz: { select: { isActive: true, groupId: true } } },
     orderBy: { createdAt: "asc" },
   });

@@ -20,7 +20,20 @@ const productData = z.object({
   isPopular: z.boolean().optional(),
   isNew: z.boolean().optional(),
   isLimited: z.boolean().optional(),
+  // "Sotuvda / Yashirin": hidden products disappear from the student shop and can't be bought.
+  isActive: z.boolean().optional(),
 });
+
+// Staff shop management: every product, hidden ones included, with isActive.
+productsRouter.get(
+  "/products/manage",
+  requireAuth,
+  requireRole(...staff),
+  asyncRoute(async (_req: any, res: any) => {
+    const products = await prisma.product.findMany({ orderBy: { createdAt: "desc" } });
+    res.json({ products });
+  }),
+);
 
 productsRouter.get(
   "/products",

@@ -10,7 +10,7 @@ import { newId } from "../../utils/ids.js";
 import { uid } from "../../utils/teacherScope.js";
 import {
   CHEST_REWARDS,
-  MISSION_TYPES,
+  ACTIVE_MISSION_TYPES,
   awardCoins,
   dayKey,
   httpError,
@@ -128,14 +128,14 @@ missionsRouter.post(
 
 // ── Staff ──
 
-const USES_TARGET = new Set(["GOOD_GRADE", "PASS_QUIZ"]);
+const USES_TARGET = new Set(["PASS_QUIZ"]);
 
 const missionBody = z
   .object({
     title: z.string().trim().min(1).max(100),
     description: z.string().trim().max(200).nullable().optional(),
     emoji: z.string().trim().min(1).max(8).default("⭐"),
-    type: z.enum(MISSION_TYPES),
+    type: z.enum(ACTIVE_MISSION_TYPES),
     target: z.number().int().min(1).max(100).nullable().optional(),
     // Capped so a typo can't flood the coin economy.
     coinReward: z.number().int().min(1).max(100),
@@ -195,7 +195,11 @@ missionsRouter.get(
   requireRole(...staff),
   asyncRoute(async (_req: any, res: any) => {
     const [missions, counts] = await Promise.all([
-      prisma.mission.findMany({ orderBy: { createdAt: "desc" }, include: missionInclude }),
+      prisma.mission.findMany({
+        where: { type: { in: [...ACTIVE_MISSION_TYPES] } },
+        orderBy: { createdAt: "desc" },
+        include: missionInclude,
+      }),
       prisma.missionCompletion.groupBy({ by: ["missionId"], where: { day: dayKey() }, _count: { _all: true } }),
     ]);
     const today = new Map(counts.map((c) => [c.missionId, c._count._all]));

@@ -15,12 +15,24 @@ groupsRouter.get(
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
     const current = currentUser(req);
+    const isStudent = current.role === "STUDENT";
     const groups = await prisma.group.findMany({
-      where:
-        current.role === "STUDENT"
-          ? { Enrollment: { some: { studentId: current.id } } }
-          : await groupScope(req),
-      include: { Direction: true, Teacher: true, _count: { select: { Enrollment: true } } },
+      where: isStudent ? { Enrollment: { some: { studentId: current.id } } } : await groupScope(req),
+      include: {
+        Direction: true,
+        Teacher: true,
+        _count: { select: { Enrollment: true } },
+        // Staff cards show the first few members' avatars.
+        ...(isStudent
+          ? {}
+          : {
+              Enrollment: {
+                take: 3,
+                orderBy: { joinedAt: "asc" as const },
+                include: { User: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
+              },
+            }),
+      },
     });
     res.json({
       groups: groups.map((group) => ({
@@ -30,6 +42,22 @@ groupsRouter.get(
         teacher: { id: group.Teacher.id, fullName: group.Teacher.fullName, avatar: group.Teacher.avatar },
         studentCount: group._count.Enrollment,
         status: lower(group.status),
+        courseName: group.courseName,
+        maxStudents: group.maxStudents,
+        schedule: {
+          days: group.scheduleDays ? group.scheduleDays.split(",").filter(Boolean) : [],
+          time: group.scheduleTime,
+        },
+        ...(isStudent
+          ? {}
+          : {
+              studentsPreview: ((group as any).Enrollment ?? []).map((enrollment: any) => ({
+                id: enrollment.User.id,
+                firstName: enrollment.User.firstName,
+                lastName: enrollment.User.lastName,
+                avatar: enrollment.User.avatar,
+              })),
+            }),
       })),
     });
   }),
@@ -107,11 +135,15 @@ groupsRouter.get(
       include: {
         Direction: true,
         Teacher: true,
-        Enrollment: current.role === "STUDENT" ? false : { include: { User: { select: publicUser } } },
+        Enrollment:
+          current.role === "STUDENT" ? false : { include: { User: { select: { ...publicUser, coinBalance: true } } } },
         Lesson: {
           orderBy: { lessonDate: "desc" },
           include: {
-            Homework: true,
+            Homework:
+              current.role === "STUDENT"
+                ? true
+                : { include: { Submission: { select: { status: true } } } },
             AttendanceRecord: current.role === "STUDENT" ? { where: { studentId: current.id } } : true,
           },
         },
@@ -130,6 +162,10 @@ groupsRouter.get(
         teacherName: group.Teacher.fullName,
         studentCount: group.Enrollment?.length ?? 0,
         maxStudents: group.maxStudents,
+        status: lower(group.status),
+        directionId: group.directionId,
+        directionColor: group.Direction.color,
+        teacherId: group.teacherId,
         schedule: {
           days: group.scheduleDays ? group.scheduleDays.split(",").filter(Boolean) : [],
           time: group.scheduleTime,
@@ -148,7 +184,14 @@ groupsRouter.get(
               isOverdue: lesson.Homework.deadline < new Date(),
               ...(current.role === "STUDENT"
                 ? { status: "not_submitted", score: null, maxScore: lesson.Homework.maxScore }
-                : { submittedCount: 0, gradedCount: 0 }),
+                : (() => {
+                    const submissions: { status: string }[] = (lesson.Homework as any).Submission ?? [];
+                    return {
+                      submittedCount: submissions.length,
+                      gradedCount: submissions.filter((sub) => sub.status === "GRADED").length,
+                      maxScore: lesson.Homework.maxScore,
+                    };
+                  })()),
             }
           : undefined,
       })),

@@ -12,7 +12,11 @@ wishlistRouter.get(
   asyncRoute(async (req: any, res: any) =>
     res.json({
       wishlist: (
-        await prisma.wishlistItem.findMany({ where: { studentId: uid(req) }, include: { Product: true } })
+        await prisma.wishlistItem.findMany({
+          // Products hidden by staff can't be bought, so they leave the cart too.
+          where: { studentId: uid(req), Product: { isActive: true } },
+          include: { Product: true },
+        })
       ).map((item) => item.Product),
     }),
   ),
