@@ -74,7 +74,7 @@ const useThemeColor = () => {
       document.head.appendChild(meta);
     }
     const before = meta.content;
-    meta.content = theme === "dark" ? "#000000" : "#f2f2f7";
+    meta.content = theme === "dark" ? "#17120e" : "#fbf5ee";
     return () => {
       if (created) meta?.remove();
       else if (meta) meta.content = before;

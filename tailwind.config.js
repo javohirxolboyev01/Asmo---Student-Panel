@@ -59,14 +59,16 @@ export default {
         ),
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        // Teacher panel display face: Apple system font (SF Pro), Inter elsewhere.
-        fd: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Inter", "Segoe UI", "Roboto", "sans-serif"],
+        sans: ["Nunito", "ui-rounded", "system-ui", "sans-serif"],
+        // Display face (headings, numbers): same rounded family as body.
+        fd: ["Nunito", "ui-rounded", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
         "card-hover": "0 4px 12px rgba(0,0,0,0.08)",
         u: "var(--u-sh)",
+        "u-hover": "var(--u-sh-hover)",
+        "u-lg": "var(--u-sh-lg)",
         "bottom-nav": "0 -2px 10px rgba(0,0,0,0.05)",
       },
       borderRadius: {

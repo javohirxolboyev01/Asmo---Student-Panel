@@ -138,7 +138,7 @@
   place-items: center;
   font-size: 15px;
   z-index: 2;
-  box-shadow: 0 4px 12px rgba(35, 25, 60, 0.18);
+  box-shadow: 0 4px 12px rgba(90, 55, 25, 0.18);
 }
 .sp-pf-who {
   min-width: 0;
@@ -322,7 +322,7 @@
 
 /* ───────────── Character editor ("Qahramoningni yarat") ───────────── */
 .sp-ce-ov {
-  --ce-ov: rgba(0, 0, 0, 0.4);
+  --ce-ov: var(--sp-overlay);
   --ce-sheet: var(--sp-bg1);
   --ce-line: transparent;
   --ce-btn: var(--sp-card);
@@ -344,11 +344,11 @@
   animation: sp-ce-fade 0.2s;
 }
 .dark .sp-ce-ov {
-  --ce-ov: rgba(0, 0, 0, 0.6);
+  --ce-ov: var(--sp-overlay);
   --ce-sheet: var(--sp-card);
   --ce-btn: var(--sp-elev);
   --ce-tab: var(--sp-elev);
-  --ce-tab-on: #3a3a3c;
+  --ce-tab-on: var(--sp-fill-strong);
   --ce-tile: var(--sp-elev);
 }
 .sp-ce-ov.sp-ce-buy {

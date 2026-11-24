@@ -1,172 +1,146 @@
 /* src/index.css */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Teacher panel tokens — iOS system colours (same names as the old
- * "Ustoz paneli" mock tokens so every page and shared component follows).
- * Global (not scoped) so portals, toasts and the boot skeleton get them too.
+/* Shared design tokens — "Iliq" warm theme (teacher panel, shared modals,
+ * toasts, auth). The student panel has the same palette as --sp-* tokens in
+ * student/theme/space.css. Global (not scoped) so portals get them too.
  * Channel triplets so Tailwind's `u-*` colours support opacity (bg-u-pr/10).
- * pr/ok/er/gdx = text colours, *f = solid fills (white text on them); all
- * pairs are WCAG AA. */
+ * pr/ok/er/gdx = text colours (WCAG AA on sf and bg), *f = solid fills
+ * (white text on them, AA), *t = pale tints for backgrounds. */
 :root {
-  --u-bg: 242 242 247;
+  --u-bg: 251 245 238;
   --u-sf: 255 255 255;
-  --u-sf2: 239 239 240;
-  --u-ln: 226 226 230;
-  --u-tx: 0 0 0;
-  --u-mu: 103 103 108;
-  --u-pr: 0 102 204;
-  --u-pr2: 0 102 204;
-  --u-prt: 230 240 250;
+  --u-sf2: 245 237 228;
+  --u-ln: 235 223 210;
+  --u-tx: 46 36 28;
+  --u-mu: 122 106 93;
+  --u-pr: 171 67 29;
+  --u-pr2: 171 67 29;
+  --u-prt: 251 231 221;
   --u-on: 255 255 255;
-  --u-gd: 255 149 0;
-  --u-gdt: 255 243 224;
-  --u-gdx: 201 52 0;
-  --u-ok: 25 122 53;
-  --u-okt: 227 247 232;
-  --u-er: 215 0 21;
-  --u-ert: 255 232 234;
-  --u-sh: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
-  --u-prf: 0 102 204;
-  --u-prf2: 0 102 204;
-  --u-okf: 30 124 53;
-  --u-erf: 215 0 21;
-  --u-field: 239 239 240;
-  --u-fieldln: 226 226 230;
-  --u-modal: 242 242 247;
-  --u-overlay: rgba(0, 0, 0, 0.4);
+  --u-gd: 233 162 59;
+  --u-gdt: 252 239 216;
+  --u-gdx: 146 85 6;
+  --u-ok: 44 107 67;
+  --u-okt: 226 241 231;
+  --u-er: 176 56 42;
+  --u-ert: 251 227 223;
+  --u-sh: 0 1px 2px rgba(90, 55, 25, 0.05), 0 6px 20px rgba(90, 55, 25, 0.07);
+  --u-sh-hover: 0 2px 4px rgba(90, 55, 25, 0.06), 0 12px 30px rgba(90, 55, 25, 0.11);
+  --u-sh-lg: 0 24px 60px rgba(70, 40, 15, 0.22);
+  --u-prf: 191 79 39;
+  --u-prf2: 214 106 62;
+  --u-okf: 55 125 80;
+  --u-erf: 196 64 47;
+  --u-field: 255 255 255;
+  --u-fieldln: 232 220 207;
+  --u-modal: 251 245 238;
+  --u-overlay: rgba(46, 30, 18, 0.42);
+  --u-font: "Nunito", ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --u-ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .dark {
-  --u-bg: 0 0 0;
-  --u-sf: 28 28 30;
-  --u-sf2: 44 44 46;
-  --u-ln: 56 56 58;
-  --u-tx: 255 255 255;
-  --u-mu: 152 152 159;
-  --u-pr: 100 181 255;
-  --u-pr2: 100 181 255;
-  --u-prt: 10 46 82;
+  --u-bg: 23 18 14;
+  --u-sf: 35 28 22;
+  --u-sf2: 45 36 29;
+  --u-ln: 58 47 38;
+  --u-tx: 246 236 226;
+  --u-mu: 180 163 149;
+  --u-pr: 244 162 124;
+  --u-pr2: 244 162 124;
+  --u-prt: 74 42 28;
   --u-on: 255 255 255;
-  --u-gd: 255 159 10;
-  --u-gdt: 58 42 10;
-  --u-gdx: 255 159 10;
-  --u-ok: 48 209 88;
-  --u-okt: 18 48 28;
-  --u-er: 255 105 97;
-  --u-ert: 58 20 20;
-  --u-sh: none;
-  --u-prf: 0 113 227;
-  --u-prf2: 0 113 227;
-  --u-okf: 30 124 53;
-  --u-erf: 215 0 21;
-  --u-field: 44 44 46;
-  --u-fieldln: 56 56 58;
-  --u-modal: 28 28 30;
+  --u-gd: 240 176 79;
+  --u-gdt: 69 51 26;
+  --u-gdx: 245 194 114;
+  --u-ok: 132 211 163;
+  --u-okt: 30 54 38;
+  --u-er: 255 147 132;
+  --u-ert: 74 36 32;
+  --u-sh: 0 1px 0 rgba(255, 235, 210, 0.03) inset, 0 6px 20px rgba(0, 0, 0, 0.28);
+  --u-sh-hover: 0 1px 0 rgba(255, 235, 210, 0.04) inset, 0 12px 30px rgba(0, 0, 0, 0.38);
+  --u-sh-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --u-prf: 184 78 39;
+  --u-prf2: 208 98 58;
+  --u-okf: 55 125 80;
+  --u-erf: 196 64 47;
+  --u-field: 45 36 29;
+  --u-fieldln: 58 47 38;
+  --u-modal: 35 28 22;
   --u-overlay: rgba(0, 0, 0, 0.6);
 }
 
-/* ── Teacher modals & form fields ──
- * Plain CSS (not Tailwind colour classes), so they always render solid even
- * before a dev server picks up tailwind.config changes. Solid surfaces only:
- * nothing behind a modal shows through it. */
+/* ── Modals & form fields (shared components/common + components/ui) ──
+ * Plain CSS on the tokens above; solid surfaces only. */
 .u-overlay {
-  background: rgba(0, 0, 0, 0.4);
-}
-.dark .u-overlay {
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--u-overlay);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 
-/* iOS sheet: grouped-background surface, large top radius, no outline. */
+/* Sheet / dialog: warm surface, large radius */
 .u-sheet {
-  background: #f2f2f7;
-  color: #000000;
-  border: 0;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+  background: rgb(var(--u-modal));
+  color: rgb(var(--u-tx));
+  border: 1px solid rgb(var(--u-ln));
+  box-shadow: var(--u-sh-lg);
 }
 .u-sheet-head {
-  background: rgba(242, 242, 247, 0.86);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.18);
+  background: rgb(var(--u-modal) / 0.9);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid rgb(var(--u-ln));
 }
 .dark .u-sheet {
-  background: #1c1c1e;
-  color: #ffffff;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  /* Cards inside a dark sheet sit one step up (iOS elevated surfaces). */
-  --u-sf: 44 44 46;
-  --u-sf2: 58 58 60;
-  --u-ln: 72 72 74;
-  --u-field: 44 44 46;
-  --sf: rgb(44 44 46);
-  --sf2: rgb(58 58 60);
-  --ln: rgb(72 72 74);
-  --field: rgb(44 44 46);
-}
-.dark .u-sheet-head {
-  background: rgba(28, 28, 30, 0.86);
-  border-bottom-color: rgba(84, 84, 88, 0.6);
+  /* Cards inside a dark sheet sit one step up. */
+  --u-sf: 45 36 29;
+  --u-sf2: 58 47 38;
+  --u-ln: 72 59 48;
+  --u-field: 45 36 29;
+  --sf: rgb(45 36 29);
+  --sf2: rgb(58 47 38);
+  --ln: rgb(72 59 48);
+  --field: rgb(45 36 29);
 }
 
-/* Popover lists (Select options, Dropdown menus): iOS context menu. */
+/* Popover lists (Select options, Dropdown menus) */
 .u-pop {
-  background: rgba(250, 250, 250, 0.92);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
-}
-.dark .u-pop {
-  background: rgba(44, 44, 46, 0.92);
-  border-color: rgba(84, 84, 88, 0.6);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  background: rgb(var(--u-sf));
+  border: 1px solid rgb(var(--u-ln));
+  border-radius: 18px;
+  box-shadow: var(--u-sh-lg);
 }
 
-/* Inputs, textareas, selects, checkboxes: iOS filled fields. */
+/* Inputs, textareas, selects, checkboxes */
 .u-field {
-  background: rgba(118, 118, 128, 0.12);
-  border-color: transparent;
-  color: #000000;
+  background: rgb(var(--u-field));
+  border: 1.5px solid rgb(var(--u-fieldln));
+  color: rgb(var(--u-tx));
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .u-field::placeholder {
-  color: #8a8a8e;
-  opacity: 1;
+  color: rgb(var(--u-mu));
+  opacity: 0.8;
 }
 .u-field:hover:not(:disabled):not(:focus) {
-  border-color: transparent;
+  border-color: rgb(var(--u-mu) / 0.45);
 }
 .u-field:focus {
-  background: #ffffff;
-  border-color: #0066cc;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.16);
-}
-.dark .u-field {
-  background: rgba(118, 118, 128, 0.24);
-  border-color: transparent;
-  color: #ffffff;
-}
-.dark .u-field::placeholder {
-  color: #8d8d93;
-}
-.dark .u-field:hover:not(:disabled):not(:focus) {
-  border-color: transparent;
-}
-.dark .u-field:focus {
-  background: #2c2c2e;
-  border-color: #64b5ff;
-  box-shadow: 0 0 0 3px rgba(100, 181, 255, 0.22);
+  outline: 0;
+  border-color: rgb(var(--u-prf2));
+  box-shadow: 0 0 0 4px rgb(var(--u-prf2) / 0.16);
 }
 .u-field.is-error,
 .dark .u-field.is-error {
   border-color: rgb(var(--u-er));
 }
 .u-field.is-error:focus {
-  box-shadow: 0 0 0 3px rgb(var(--u-er) / 0.2);
+  box-shadow: 0 0 0 4px rgb(var(--u-er) / 0.18);
 }
 .u-field:disabled {
   opacity: 0.6;
@@ -175,15 +149,9 @@
 .u-field:-webkit-autofill,
 .u-field:-webkit-autofill:hover,
 .u-field:-webkit-autofill:focus {
-  -webkit-text-fill-color: #000000;
-  -webkit-box-shadow: 0 0 0 1000px #e9e9eb inset;
+  -webkit-text-fill-color: rgb(var(--u-tx));
+  -webkit-box-shadow: 0 0 0 1000px rgb(var(--u-sf2)) inset;
   transition: background-color 9999s;
-}
-.dark .u-field:-webkit-autofill,
-.dark .u-field:-webkit-autofill:hover,
-.dark .u-field:-webkit-autofill:focus {
-  -webkit-text-fill-color: #ffffff;
-  -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset;
 }
 input[type="checkbox"].u-field:checked {
   background: rgb(var(--u-prf));
@@ -198,11 +166,8 @@ input[type="checkbox"].u-field:checked {
   }
 
   body {
-    font-family:
-      "Inter",
-      -apple-system,
-      BlinkMacSystemFont,
-      sans-serif;
+    font-family: var(--u-font);
+    -webkit-font-smoothing: antialiased;
     background-color: rgb(var(--u-bg));
     color: rgb(var(--u-tx));
     transition: background-color 0.2s ease, color 0.2s ease;
@@ -217,7 +182,8 @@ input[type="checkbox"].u-field:checked {
   /* Surfaces / badges used by the teacher panel ("Ustoz paneli" mock). */
   .card {
     background: rgb(var(--u-sf));
-    border-radius: 22px;
+    border: 1px solid rgb(var(--u-ln) / 0.6);
+    border-radius: 24px;
     box-shadow: var(--u-sh);
   }
 
@@ -304,7 +270,7 @@ input[type="checkbox"].u-field:checked {
   @keyframes modal-in {
     from {
       opacity: 0;
-      transform: scale(1.06);
+      transform: translateY(12px) scale(0.97);
     }
     to {
       opacity: 1;
@@ -323,7 +289,7 @@ input[type="checkbox"].u-field:checked {
   }
   @media (min-width: 640px) {
     .animate-modal-in {
-      animation: modal-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      animation: modal-in 0.32s var(--u-ease);
     }
   }
   @media (prefers-reduced-motion: reduce) {

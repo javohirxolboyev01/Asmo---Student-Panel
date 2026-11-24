@@ -1,5 +1,5 @@
 // src/student/layout/StudentLayout.tsx
-// App shell of the student panel (iOS style): top bar with avatar, coin /
+// App shell of the student panel ("Iliq" warm theme): top bar with avatar, coin /
 // streak capsules and the bell; one nav that is a floating glass tab bar on
 // mobile and a sidebar on desktop (pure CSS, see space.css); iOS push/pop
 // transitions between pages. The teacher panel keeps the shared
@@ -128,13 +128,13 @@ const usePageTransition = (pathname: string) => {
     const a = depthOf(from);
     const b = depthOf(pathname);
     cls.current =
-      isTab(pathname) && isTab(from) ? "" : b > a ? "sp-push" : b < a ? "sp-pop" : "sp-fade";
+      isTab(pathname) && isTab(from) ? "" : b > a ? "sp-push" : b < a ? "sp-back-in" : "sp-fade";
     prev.current = pathname;
   }
   return cls.current;
 };
 
-/** Browser chrome / status bar colour follows the iOS background of the theme. */
+/** Browser chrome / status bar colour follows the page background of the theme. */
 const useThemeColor = () => {
   const theme = useSettingsStore((s) => s.theme);
   useEffect(() => {
@@ -146,7 +146,7 @@ const useThemeColor = () => {
       document.head.appendChild(meta);
     }
     const before = meta.content;
-    meta.content = theme === "dark" ? "#000000" : "#f2f2f7";
+    meta.content = theme === "dark" ? "#17120e" : "#fbf5ee";
     return () => {
       if (created) meta?.remove();
       else if (meta) meta.content = before;
