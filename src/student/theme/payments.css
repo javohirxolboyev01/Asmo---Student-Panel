@@ -159,7 +159,7 @@
   margin: 0 auto 8px;
 }
 .sp-pay-amount {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 32px;
   line-height: 1.1;
   text-align: center;
@@ -174,4 +174,10 @@
   .sp-pay-factions {
     grid-column: 1 / -1;
   }
+}
+
+/* The amount is the key fact of a payment row — wrap it, never truncate. */
+.sp-pay-row .sp-t b {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }

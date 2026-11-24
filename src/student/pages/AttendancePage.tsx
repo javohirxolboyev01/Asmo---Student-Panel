@@ -16,7 +16,25 @@ import {
   Segmented,
   Skel,
 } from "../components/ui";
+import {
+  BookOpen,
+  CalendarOff,
+  CalendarX2,
+  ChevronLeft,
+  ChevronRight,
+  CircleCheck,
+  CircleMinus,
+} from "lucide-react";
+import { IconTile } from "../components/icons";
 import "../theme/attendance.css";
+
+/** Present = green check, absent = red minus (iOS status glyphs). */
+const StatusIcon = ({ present }: { present: boolean }) =>
+  present ? (
+    <CircleCheck className="sp-st sp-st-ok" aria-hidden="true" />
+  ) : (
+    <CircleMinus className="sp-st sp-st-no" aria-hidden="true" />
+  );
 
 type ViewMode = "weekly" | "monthly";
 
@@ -195,7 +213,7 @@ export const AttendancePage = () => {
                   : "space.attendance.prevMonth",
               )}
             >
-              ‹
+              <ChevronLeft aria-hidden="true" />
             </button>
             <b aria-live="polite">{label}</b>
             <button
@@ -207,7 +225,7 @@ export const AttendancePage = () => {
                   : "space.attendance.nextMonth",
               )}
             >
-              ›
+              <ChevronRight aria-hidden="true" />
             </button>
           </span>
         </div>
@@ -247,7 +265,7 @@ export const AttendancePage = () => {
               if (isToday) cls += " sp-attendance-ring";
               small = isAbsent
                 ? t("attendance.legendAbsent")
-                : `✓ ${t("attendance.legendPresent")}`;
+                : t("attendance.legendPresent");
             } else if (isToday) {
               cls += " sp-today";
               small = t("space.attendance.todayCell");
@@ -255,7 +273,7 @@ export const AttendancePage = () => {
               cls += " sp-rest";
               small = t("space.attendance.restCell");
             } else if (isFuture) {
-              small = "⏳";
+              small = " ";
             }
 
             return (
@@ -303,7 +321,7 @@ export const AttendancePage = () => {
         {sortedRecords.length === 0 ? (
           <EmptyState
             panel={false}
-            emoji="🔭"
+            icon={CalendarX2}
             title={t("space.attendance.noRecords")}
             text={t("space.attendance.noRecordsHint")}
           />
@@ -312,9 +330,7 @@ export const AttendancePage = () => {
             {sortedRecords.map((r) => {
               const content = (
                 <>
-                  <span aria-hidden="true">
-                    {r.status === "present" ? "✅" : "🌑"}
-                  </span>
+                  <StatusIcon present={r.status === "present"} />
                   <span>
                     <span className="block truncate">{r.lessonTopic}</span>
                     <small>{formatDate(r.lessonDate)}</small>
@@ -352,12 +368,15 @@ export const AttendancePage = () => {
         open={dayModal !== null}
         onClose={() => setDayModal(null)}
         labelledBy="sp-attendance-day"
+        sheet
       >
         {dayModal && (
           <>
-            <div className="text-5xl" aria-hidden="true">
-              {dayModal.records.length ? "📚" : "🪐"}
-            </div>
+            <IconTile
+              icon={dayModal.records.length ? BookOpen : CalendarOff}
+              tint={dayModal.records.length ? "blue" : "gray"}
+              size="lg"
+            />
             <h2 id="sp-attendance-day">
               {dayModal.records.length
                 ? t("space.attendance.dayLessons")
@@ -371,9 +390,7 @@ export const AttendancePage = () => {
                 {dayModal.records.map((r) => {
                   const inner = (
                     <>
-                      <span aria-hidden="true">
-                        {r.status === "present" ? "✅" : "🌑"}
-                      </span>
+                      <StatusIcon present={r.status === "present"} />
                       <span className="truncate">{r.lessonTopic}</span>
                       <span
                         className={

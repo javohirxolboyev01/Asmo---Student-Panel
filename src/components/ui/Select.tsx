@@ -75,7 +75,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             className={cn(
-              "w-full flex items-center justify-between appearance-none rounded-[14px] border-2 outline-none transition-[border-color,box-shadow] text-base font-medium text-left px-4 py-[11px] pr-10",
+              "w-full flex items-center justify-between appearance-none rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal text-left px-4 py-[11px] pr-10",
               "u-field",
               disabled && "opacity-50 cursor-not-allowed",
               error && "is-error",
@@ -94,7 +94,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           {isOpen && (
             <div
               role="listbox"
-              className="absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto u-pop p-1.5 rounded-2xl origin-top animate-modal-in"
+              className="absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto u-pop p-1.5 rounded-2xl origin-top animate-pop-in"
             >
               {options.map((opt) => {
                 const isSelected = opt.value === String(value ?? "");

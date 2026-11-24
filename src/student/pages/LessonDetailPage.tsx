@@ -9,7 +9,24 @@ import { getErrorMessage } from "@/lib/toast";
 import { queryKeys } from "@/lib/queryClient";
 import { getHoursUntilDeadline, isOverdue } from "@/utilist/calculateDeadline";
 import { formatDate, formatDateTime } from "@/utilist/formatData";
+import {
+  BookOpen,
+  CircleCheck,
+  CircleX,
+  Clock,
+  Hourglass,
+  Lock,
+  MessageSquare,
+  Moon,
+  OctagonX,
+  Paperclip,
+  PencilLine,
+  Search,
+  Send,
+  Star,
+} from "lucide-react";
 import { EmptyState, ErrorState, Modal, PageHeader, Skel, Spinner } from "../components/ui";
+import { IconTile, InlineIcon } from "../components/icons";
 import "../theme/groups.css";
 
 const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
@@ -29,7 +46,7 @@ const Attachment = ({ url, label }: { url: string; label: string }) => {
         className="sp-groups-file"
         {...(isData ? { download: `attachment.${ext}` } : { target: "_blank", rel: "noopener noreferrer" })}
       >
-        <span aria-hidden="true">📎</span>
+        <Paperclip className="sp-ii" aria-hidden="true" />
         <span>{label}</span>
       </a>
     </div>
@@ -131,7 +148,7 @@ export const LessonDetailPage = () => {
           <ErrorState message={getErrorMessage(error, t("lessonDetail.notFound"))} onRetry={() => refetch()} />
         ) : (
           <EmptyState
-            emoji="🔭"
+            icon={Search}
             title={t("lessonDetail.notFound")}
             action={
               <Link to="/groups" className="sp-cta inline-block no-underline">
@@ -169,15 +186,18 @@ export const LessonDetailPage = () => {
         title={lesson.topic}
         subtitle={[
           t("lessonDetail.lessonNumber", { order: lesson.lessonOrder }),
-          `📅 ${formatDate(lesson.lessonDate)}`,
-          lesson.teacherName && `👩‍🏫 ${lesson.teacherName}`,
+          formatDate(lesson.lessonDate),
+          lesson.teacherName,
         ]
           .filter(Boolean)
           .join(" · ")}
         right={
           graded && homework ? (
             <div className="sp-pill" aria-label={t("lessonDetail.graded")}>
-              ⭐ {submission?.score}/{homework.maxScore}
+              <Star className="sp-flame-ic" aria-hidden="true" strokeWidth={2.2} />
+              <span>
+                {submission?.score}/{homework.maxScore}
+              </span>
             </div>
           ) : undefined
         }
@@ -185,16 +205,20 @@ export const LessonDetailPage = () => {
 
       {lesson.description && (
         <div className="sp-panel mb-3.5">
-          <h2>📘 {t("space.groups.lessonAbout")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={BookOpen} tint="blue" size="sm" /> {t("space.groups.lessonAbout")}
+          </h2>
           <p className="sp-groups-text">{lesson.description}</p>
         </div>
       )}
 
       {!homework ? (
-        <EmptyState emoji="🌙" title={t("space.groups.noHomework")} text={t("space.groups.noHomeworkHint")} />
+        <EmptyState icon={Moon} title={t("space.groups.noHomework")} text={t("space.groups.noHomeworkHint")} />
       ) : (
         <div className="sp-panel">
-          <h2>📝 {t("lessonDetail.homeworkTitle")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={PencilLine} tint="orange" size="sm" /> {t("lessonDetail.homeworkTitle")}
+          </h2>
 
           <div className="sp-groups-hw">
             <div className="min-w-0">
@@ -202,11 +226,17 @@ export const LessonDetailPage = () => {
               {homework.description && <p className="sp-groups-text">{homework.description}</p>}
               <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
                 <span className={overdue ? "sp-badge sp-pink" : "sp-badge sp-sun"}>
-                  ⏰ {t("lessonDetail.deadlineLabel", { date: formatDateTime(homework.deadline) })}
+                  <InlineIcon icon={Clock} /> {t("lessonDetail.deadlineLabel", { date: formatDateTime(homework.deadline) })}
                 </span>
-                {graded && <span className="sp-badge">✓ {t("lessonDetail.graded")}</span>}
+                {graded && (
+                  <span className="sp-badge">
+                    <InlineIcon icon={CircleCheck} /> {t("lessonDetail.graded")}
+                  </span>
+                )}
                 {submission?.status === "submitted" && (
-                  <span className="sp-badge sp-cyan">⏳ {t("lessonDetail.waiting")}</span>
+                  <span className="sp-badge sp-cyan">
+                    <InlineIcon icon={Hourglass} /> {t("lessonDetail.waiting")}
+                  </span>
                 )}
               </div>
             </div>
@@ -222,7 +252,7 @@ export const LessonDetailPage = () => {
             ) : submission?.status === "submitted" ? (
               <div className="sp-groups-score">
                 <span className="sp-groups-big-ic" aria-hidden="true">
-                  ⏳
+                  <Hourglass />
                 </span>
                 <strong className="text-base" style={{ color: "var(--sp-ink)" }}>
                   {t("lessonDetail.waiting")}
@@ -241,24 +271,26 @@ export const LessonDetailPage = () => {
 
           {graded && submission?.feedback && (
             <div className="sp-groups-block">
-              <h3>💬 {t("space.groups.feedback")}</h3>
+              <h3 className="sp-h-ic">
+                <InlineIcon icon={MessageSquare} /> {t("space.groups.feedback")}
+              </h3>
               <p className="sp-groups-answer">{submission?.feedback}</p>
             </div>
           )}
 
           {overdue && homework.status !== "closed" && (
             <div className="sp-groups-alert sp-pink" role="status">
-              ⛔ {t("lessonDetail.overdue")}
+              <InlineIcon icon={OctagonX} /> {t("lessonDetail.overdue")}
             </div>
           )}
           {homework.status === "closed" && !graded && (
             <div className="sp-groups-alert sp-mute" role="status">
-              🔒 {t("space.groups.closed")}
+              <InlineIcon icon={Lock} /> {t("space.groups.closed")}
             </div>
           )}
           {!overdue && homework.status === "active" && !submission && (
             <div className="sp-groups-alert" role="status">
-              ⏰ {timeLeft()}
+              <InlineIcon icon={Clock} /> {timeLeft()}
             </div>
           )}
 
@@ -301,7 +333,7 @@ export const LessonDetailPage = () => {
               {attachment && (
                 <div>
                   <div className="sp-groups-file">
-                    <span aria-hidden="true">📎</span>
+                    <Paperclip className="sp-ii" aria-hidden="true" />
                     <span>{attachment.name}</span>
                     <button
                       type="button"
@@ -309,7 +341,7 @@ export const LessonDetailPage = () => {
                       aria-label={t("space.groups.removeFile")}
                       disabled={pending}
                     >
-                      ✕
+                      <CircleX aria-hidden="true" />
                     </button>
                   </div>
                   {submission?.attachmentUrl && <small className="sp-groups-meta">{t("space.groups.replaceFile")}</small>}
@@ -323,16 +355,16 @@ export const LessonDetailPage = () => {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={pending}
                 >
-                  📎 {t("lessonDetail.uploadFile")}
+                  <Paperclip aria-hidden="true" /> {t("lessonDetail.uploadFile")}
                 </button>
                 <button type="button" className="sp-cta" onClick={handleSubmit} disabled={!content.trim() || pending}>
-                  {pending ? <Spinner /> : "🚀"} {submission ? t("lessonDetail.resubmit") : t("lessonDetail.submit")}
+                  {pending ? <Spinner /> : <Send aria-hidden="true" />}{" "}
+                  {submission ? t("lessonDetail.resubmit") : t("lessonDetail.submit")}
                 </button>
               </div>
               {message && (
                 <p className={message.type === "error" ? "sp-msg sp-err" : "sp-msg"} role="status">
-                  {message.type === "success" ? "✓ " : ""}
-                  {message.text}
+                  {message.type === "success" && <InlineIcon icon={CircleCheck} />} {message.text}
                 </p>
               )}
             </div>
@@ -340,22 +372,21 @@ export const LessonDetailPage = () => {
 
           {!canSubmit && message?.type === "success" && (
             <p className="sp-msg" role="status">
-              ✓ {message.text}
+              <InlineIcon icon={CircleCheck} /> {message.text}
             </p>
           )}
 
           {graded && (
             <p className="sp-msg mt-4" role="status">
-              ✓ {t("lessonDetail.gradedFooter", { score: submission?.score, max: homework.maxScore })}
+              <InlineIcon icon={CircleCheck} />{" "}
+              {t("lessonDetail.gradedFooter", { score: submission?.score, max: homework.maxScore })}
             </p>
           )}
         </div>
       )}
 
       <Modal open={sentOpen} onClose={() => setSentOpen(false)} labelledBy="sp-hw-sent">
-        <div className="text-5xl" aria-hidden="true">
-          🚀
-        </div>
+        <IconTile icon={Send} tint="green" size="lg" />
         <h2 id="sp-hw-sent">{t("space.groups.sentTitle")}</h2>
         <p>{t("space.groups.sentText")}</p>
         <div className="flex flex-wrap justify-center gap-2">

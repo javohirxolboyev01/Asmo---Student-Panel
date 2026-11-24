@@ -1,10 +1,20 @@
 // src/student/pages/DashboardPage.tsx
-// "Kosmik maktab" home: the rocket flies from the current level to the next
-// one as the group's course progress (fuel) grows, and gets a turbo kick for
-// every claimed mission (components/Rocket); daily missions and the
-// daily chest are verified/rolled by the backend (modules/missions).
+// Student home: a course-progress ring from the current level to the next
+// one (pulses for every claimed mission, components/ProgressRing); daily
+// missions and the daily chest are verified/rolled by the backend
+// (modules/missions).
 import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import {
+  BookOpen,
+  CalendarCheck,
+  CalendarDays,
+  ChevronRight,
+  CircleCheck,
+  Gem,
+  Telescope,
+  Trophy,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -24,13 +34,14 @@ import { SpaceAvatar } from "../components/SpaceAvatar";
 import { ErrorState } from "../components/ui";
 import { Missions, MissionsSkeleton } from "../components/Missions";
 import { DailyChest } from "../components/DailyChest";
-import { Rocket, type RocketBoost } from "../components/Rocket";
+import { ProgressRing, type RingBoost } from "../components/ProgressRing";
+import { CoinGlyph, IconTile } from "../components/icons";
 
 const CREW_SIZE = 5;
 const RANK_BADGE: Record<number, CSSProperties> = {
-  1: { background: "var(--sp-sun)", color: "#3A2A00" },
-  2: { background: "var(--sp-cyan)", color: "#06303a" },
-  3: { background: "var(--sp-pink)", color: "#fff" },
+  1: { background: "var(--sp-tint-yellow)", color: "#fff" },
+  2: { background: "var(--sp-tint-gray)", color: "#fff" },
+  3: { background: "var(--sp-tint-brown)", color: "#fff" },
 };
 const FILTER_LABEL: Record<LeaderboardFilter, string> = {
   week: "dashboardWidgets.filterWeek",
@@ -42,7 +53,7 @@ const DashboardSkeleton = () => (
   <div className="sp-layout" aria-busy="true">
     <div className="sp-col">
       <div className="sp-skel mt-6 h-16" />
-      <div className="sp-skel sp-orbit" />
+      <div className="sp-skel sp-ring-card" />
       <div className="sp-stats mt-6">
         <div className="sp-skel h-24" />
         <div className="sp-skel h-24" />
@@ -66,7 +77,7 @@ export const DashboardPage = () => {
     useLeaderboardQuery(filter);
   const { data: attendance } = useAttendanceQuery();
   const missions = useMissionsTodayQuery();
-  const [boost, setBoost] = useState<RocketBoost | null>(null);
+  const [boost, setBoost] = useState<RingBoost | null>(null);
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -126,7 +137,11 @@ export const DashboardPage = () => {
           <small>
             {isMe && rank > 1
               ? t("space.crewGap", { rank: rank - 1, gap: Math.max(1, gap) })
-              : `💎 ${s.coins}`}
+              : (
+                <>
+                  <CoinGlyph /> {s.coins}
+                </>
+              )}
           </small>
         </span>
         <span
@@ -161,51 +176,31 @@ export const DashboardPage = () => {
 
         {group && level ? (
           <>
-            <div className="sp-orbit">
-              <div className="sp-planet" />
-              <div className="sp-pl">
-                <b>{nextLevel ?? level}</b>
-                {t("space.targetPlanet")}
-              </div>
-              <div className="sp-home">{level}</div>
-              <svg
-                className="sp-trail"
-                viewBox="0 0 400 250"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M60 118 Q180 40 320 70"
-                  fill="none"
-                  stroke="var(--sp-trail)"
-                  strokeWidth="3"
-                  strokeDasharray="3 10"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <Rocket fuel={fuel} boost={boost} />
-              <div className="sp-fuel">
-                <div className="sp-fuel-head">
-                  <span>⛽ {t("space.fuel")}</span>
-                  <span>{Math.round(fuel)}%</span>
+            <div className="sp-ring-card">
+              <ProgressRing value={fuel} boost={boost} label={t("space.fuel")} />
+              <div className="sp-ring-info">
+                <small>{t("space.fuel")}</small>
+                <div className="sp-ring-levels">
+                  <span>{level}</span>
+                  {nextLevel && (
+                    <>
+                      <ChevronRight aria-hidden="true" />
+                      <b>{nextLevel}</b>
+                    </>
+                  )}
                 </div>
-                <div
-                  className="sp-bar"
-                  role="progressbar"
-                  aria-valuenow={Math.round(fuel)}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={t("space.fuel")}
-                >
-                  <span style={{ width: `${fuel}%` }} />
-                </div>
+                {nextLevel && <small>{t("space.targetPlanet")}</small>}
               </div>
             </div>
             <div className="sp-chips">
-              <span>📘 {unit}</span>
-              <span>🗓 {t("dashboardWidgets.week", { week })}</span>
               <span>
-                ✅{" "}
+                <BookOpen aria-hidden="true" /> {unit}
+              </span>
+              <span>
+                <CalendarDays aria-hidden="true" /> {t("dashboardWidgets.week", { week })}
+              </span>
+              <span>
+                <CircleCheck aria-hidden="true" />{" "}
                 {t("dashboardWidgets.completed", {
                   percentage: Math.round(fuel),
                 })}
@@ -214,7 +209,9 @@ export const DashboardPage = () => {
           </>
         ) : (
           <div className="sp-panel sp-empty mt-4">
-            <div>🔭</div>
+            <div className="sp-empty-ic" aria-hidden="true">
+              <Telescope strokeWidth={1.6} />
+            </div>
             <b>{t("dashboard.noGroup")}</b>
           </div>
         )}
@@ -224,17 +221,17 @@ export const DashboardPage = () => {
         </div>
         <div className="sp-stats">
           <div className="sp-s">
-            <div>🏆</div>
+            <IconTile icon={Trophy} tint="orange" soft />
             <b>{myRank ?? "-"}</b>
             <small>{t("dashboard.rank")}</small>
           </div>
           <Link to="/attendance" className="sp-s">
-            <div>📅</div>
+            <IconTile icon={CalendarCheck} tint="green" soft />
             <b>{attendance?.stats.present ?? 0}</b>
             <small>{t("dashboard.attendedDays")}</small>
           </Link>
           <Link to="/coins" className="sp-s">
-            <div>💎</div>
+            <IconTile icon={Gem} tint="teal" soft />
             <b>+{coinsThisMonth}</b>
             <small>{t("space.thisMonth")}</small>
           </Link>

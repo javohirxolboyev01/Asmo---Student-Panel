@@ -2,13 +2,15 @@
 // Student-only "Do'kon" catalog (space theme): search, category chips and the
 // product grid. Same data + filtering as the shared components/Shop catalog
 // (which the teacher panel keeps using); cart controls are plugged in by the page.
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { isImageUrl } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/toast";
 import { useProductsQuery } from "@/hooks/queries/useProducts";
 import type { Product } from "@/services/productService";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Gift, Heart, PackageSearch, Search, Sparkles, Star, Tag, Zap } from "lucide-react";
 import { EmptyState, ErrorState, SearchBox, Skel } from "../ui";
+import { CoinGlyph } from "../icons";
 
 const ALL = "Hammasi";
 
@@ -24,12 +26,27 @@ export const ProductImage = ({
   name: string;
 }) =>
   isImageUrl(image) ? (
-    <img src={image} alt={name} loading="lazy" />
-  ) : (
+    <ProductPhoto src={image} name={name} />
+  ) : image && !/[\p{L}\p{N}]/u.test(image) ? (
+    // An emoji the teacher picked as the product picture.
     <span className="sp-shop-emoji" aria-hidden="true">
-      {image || "🎁"}
+      {image}
     </span>
+  ) : (
+    // No picture (or plain text in the image field): neutral placeholder.
+    <Gift className="sp-shop-ph" aria-hidden="true" strokeWidth={1.5} />
   );
+
+/** Product photo; a broken link shows the placeholder instead of the alt text. */
+const ProductPhoto = ({ src, name }: { src: string; name: string }) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  return failed ? (
+    <Gift className="sp-shop-ph" role="img" aria-label={name} strokeWidth={1.5} />
+  ) : (
+    <img src={src} alt={name} loading="lazy" onError={() => setFailed(true)} />
+  );
+};
 
 export interface CartControls {
   quantity: (productId: string) => number;
@@ -88,13 +105,19 @@ const ProductCard = ({
             </span>
           )}
           {product.isPopular && (
-            <span className="sp-badge sp-sun">⚡ {t("shop.popular")}</span>
+            <span className="sp-badge sp-sun">
+              <Zap className="sp-ii" aria-hidden="true" /> {t("shop.popular")}
+            </span>
           )}
           {product.isNew && (
-            <span className="sp-badge">✨ {t("shop.new")}</span>
+            <span className="sp-badge">
+              <Sparkles className="sp-ii" aria-hidden="true" /> {t("shop.new")}
+            </span>
           )}
           {product.isLimited && (
-            <span className="sp-badge sp-pink">🎁 {t("shop.limited")}</span>
+            <span className="sp-badge sp-pink">
+              <Tag className="sp-ii" aria-hidden="true" /> {t("shop.limited")}
+            </span>
           )}
         </div>
         {!soldOut && (
@@ -111,7 +134,7 @@ const ProductCard = ({
               qty > 0 ? cart.remove(product.id) : cart.add(product)
             }
           >
-            {qty > 0 ? "💖" : "🤍"}
+            <Heart aria-hidden="true" className={qty > 0 ? "sp-heart-on" : undefined} />
           </button>
         )}
         {discount > 0 && <span className="sp-shop-off">-{discount}%</span>}
@@ -124,7 +147,7 @@ const ProductCard = ({
 
       <div className="sp-shop-meta">
         <span>
-          ⭐ {product.rating ?? 0} (
+          <Star className="sp-ii sp-star" aria-hidden="true" /> {product.rating ?? 0} (
           {t("shop.reviewsSuffix", { count: product.reviews ?? 0 })})
         </span>
         {stock !== null && stock > 0 && (
@@ -133,7 +156,7 @@ const ProductCard = ({
       </div>
 
       <div className="sp-price">
-        💎 {product.price}
+        <CoinGlyph /> {product.price}
         {product.originalPrice ? <s>{product.originalPrice}</s> : null}
       </div>
 
@@ -232,7 +255,7 @@ export const ProductCatalog = ({
   } else if (products.length === 0) {
     body = (
       <EmptyState
-        emoji="🛸"
+        icon={PackageSearch}
         title={t("shop.notFound")}
         text={t("shop.noProductsYet")}
       />
@@ -264,7 +287,7 @@ export const ProductCatalog = ({
         </div>
         {filtered.length === 0 ? (
           <EmptyState
-            emoji="🔭"
+            icon={Search}
             title={t("space.shop.noResults")}
             text={
               query

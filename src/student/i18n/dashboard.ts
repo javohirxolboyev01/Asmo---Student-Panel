@@ -17,11 +17,11 @@ const dict: StudentDict = {
     "space.missionGoAttend": "Davomatni ko'rish",
     "space.missionReady": "Bajarildi! Bosib coinni ol",
     "space.missionNotYet":
-      "Shartni bajarganingdan keyin shu yerda bosib {{coins}} 💎 olasan.",
+      "Shartni bajarganingdan keyin shu yerda bosib {{coins}} coin olasan.",
     "space.missionStatusPENDING": "Hali bajarilmagan",
     "space.missionStatusREADY": "Coin olishga tayyor",
     "space.missionStatusCLAIMED": "Bajarilgan",
-    "space.allDoneTitle": "🚀 Uchish!",
+    "space.allDoneTitle": "Uchish!",
     "space.allDoneText": "Bugungi barcha missiyalar bajarildi. Zo'r ish!",
     "space.chest": "Sirli sandiq",
     "space.chestPickTitle": "Kapsula tanla!",
@@ -29,7 +29,7 @@ const dict: StudentDict = {
     "space.chestAdded": "Sovg'a hisobingga qo'shildi!",
     "space.chestTomorrowTitle": "Ertaga qayt!",
     "space.chestTomorrowText":
-      "Bugungi sandiqdan {{reward}} 💎 olding. Ertaga yangisi keladi.",
+      "Bugungi sandiqdan {{reward}} coin olding. Ertaga yangisi keladi.",
     "space.capsule": "{{n}}-kapsula",
   },
   ru: {
@@ -46,11 +46,11 @@ const dict: StudentDict = {
     "space.missionGoAttend": "Посмотреть посещаемость",
     "space.missionReady": "Выполнено! Нажми и забери монеты",
     "space.missionNotYet":
-      "Выполни условие и нажми здесь, чтобы получить {{coins}} 💎.",
+      "Выполни условие и нажми здесь, чтобы получить {{coins}} коинов.",
     "space.missionStatusPENDING": "Ещё не выполнено",
     "space.missionStatusREADY": "Можно забрать монеты",
     "space.missionStatusCLAIMED": "Выполнено",
-    "space.allDoneTitle": "🚀 Взлёт!",
+    "space.allDoneTitle": "Взлёт!",
     "space.allDoneText": "Все миссии на сегодня выполнены. Отличная работа!",
     "space.chest": "Таинственный сундук",
     "space.chestPickTitle": "Выбери капсулу!",
@@ -58,7 +58,7 @@ const dict: StudentDict = {
     "space.chestAdded": "Подарок добавлен на твой счёт!",
     "space.chestTomorrowTitle": "Возвращайся завтра!",
     "space.chestTomorrowText":
-      "Из сегодняшнего сундука ты получил {{reward}} 💎. Завтра будет новый.",
+      "Из сегодняшнего сундука ты получил {{reward}} коинов. Завтра будет новый.",
     "space.capsule": "Капсула {{n}}",
   },
   en: {
@@ -76,11 +76,11 @@ const dict: StudentDict = {
     "space.missionGoAttend": "View attendance",
     "space.missionReady": "Done! Tap to collect your coins",
     "space.missionNotYet":
-      "Complete it, then tap here to collect {{coins}} 💎.",
+      "Complete it, then tap here to collect {{coins}} coins.",
     "space.missionStatusPENDING": "Not done yet",
     "space.missionStatusREADY": "Ready to collect",
     "space.missionStatusCLAIMED": "Completed",
-    "space.allDoneTitle": "🚀 Lift-off!",
+    "space.allDoneTitle": "Lift-off!",
     "space.allDoneText": "All of today's missions are done. Great job!",
     "space.chest": "Mystery chest",
     "space.chestPickTitle": "Pick a capsule!",
@@ -88,7 +88,7 @@ const dict: StudentDict = {
     "space.chestAdded": "The prize was added to your balance!",
     "space.chestTomorrowTitle": "Come back tomorrow!",
     "space.chestTomorrowText":
-      "You got {{reward}} 💎 from today's chest. A new one arrives tomorrow.",
+      "You got {{reward}} coins from today's chest. A new one arrives tomorrow.",
     "space.capsule": "Capsule {{n}}",
   },
 };

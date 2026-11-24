@@ -5,15 +5,18 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { formatDate } from "@/utilist/formatData";
 import type { CoinRecord } from "@/types/coin";
+import { ArrowDownRight, ArrowUpRight, Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel } from "../components/ui";
+import { CoinGlyph, IconTile, type Tint } from "../components/icons";
+import type { LucideIcon } from "lucide-react";
 
-/** Emoji by source (backend reasons: "Missiya: …", "Kunlik sandiq", "Do'kondan xarid") or sign. */
-const coinEmoji = ({ reason, amount }: CoinRecord) => {
+/** Symbol by source (backend reasons: "Missiya: …", "Kunlik sandiq", "Do'kondan xarid") or sign. */
+const coinIcon = ({ reason, amount }: CoinRecord): { icon: LucideIcon; tint: Tint } => {
   const r = reason.toLowerCase();
-  if (r.startsWith("missiya")) return "🎯";
-  if (r.includes("sandiq")) return "🛸";
-  if (r.includes("do'kon") || r.includes("dokon")) return "🛍";
-  return amount >= 0 ? "🪙" : "💸";
+  if (r.startsWith("missiya")) return { icon: Target, tint: "indigo" };
+  if (r.includes("sandiq")) return { icon: Gift, tint: "purple" };
+  if (r.includes("do'kon") || r.includes("dokon")) return { icon: ShoppingBag, tint: "orange" };
+  return amount >= 0 ? { icon: Plus, tint: "green" } : { icon: Minus, tint: "red" };
 };
 
 const CoinsSkeleton = () => (
@@ -62,14 +65,16 @@ export const CoinsPage = () => {
       <PageHeader title={t("coins.title")} subtitle={t("coins.subtitle")} />
 
       <div className="sp-bal">
-        <div style={{ fontSize: 48 }} aria-hidden="true">
-          💎
-        </div>
+        <IconTile icon={Gem} tint="teal" size="lg" />
         <div className="sp-big">{data.balance}</div>
         <div>{t("coins.totalBalance")}</div>
         <div className="sp-bs">
-          <span style={{ color: "var(--sp-lime-ink)" }}>↗ +{totalEarned}</span>
-          <span style={{ color: "var(--sp-pink-ink)" }}>↘ -{totalSpent}</span>
+          <span style={{ color: "var(--sp-lime-ink)" }}>
+            <ArrowUpRight className="sp-ii" aria-hidden="true" /> +{totalEarned}
+          </span>
+          <span style={{ color: "var(--sp-pink-ink)" }}>
+            <ArrowDownRight className="sp-ii" aria-hidden="true" /> -{totalSpent}
+          </span>
         </div>
       </div>
 
@@ -91,23 +96,21 @@ export const CoinsPage = () => {
       <div className="sp-panel mt-3.5">
         <h2>{t("coins.history")}</h2>
         {transactions.length === 0 ? (
-          <EmptyState panel={false} emoji="💎" title={t("coins.noTransactions")} text={t("space.coins.noTransactionsHint")} />
+          <EmptyState panel={false} icon={Gem} title={t("coins.noTransactions")} text={t("space.coins.noTransactionsHint")} />
         ) : (
           <div>
             {transactions.map((record) => {
               const plus = record.amount > 0;
               return (
                 <div key={record.id} className="sp-hr">
-                  <span className="text-2xl" aria-hidden="true">
-                    {coinEmoji(record)}
-                  </span>
+                  <IconTile {...coinIcon(record)} size="sm" />
                   <span>
                     <span className="block truncate">{record.reason}</span>
                     <small>{formatDate(record.createdAt)}</small>
                   </span>
                   <b style={{ color: plus ? "var(--sp-lime-ink)" : "var(--sp-pink-ink)" }}>
                     {plus ? "+" : ""}
-                    {record.amount}
+                    {record.amount} <CoinGlyph />
                   </b>
                 </div>
               );

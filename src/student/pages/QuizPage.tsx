@@ -10,7 +10,21 @@ import { ApiError } from "@/services/apiClient";
 import { quizService } from "@/services/quizService";
 import { getErrorMessage } from "@/lib/toast";
 import type { QuizPlay } from "@/types/quiz";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CircleAlert,
+  CircleHelp,
+  FlaskConical,
+  ListOrdered,
+  SearchX,
+  Timer,
+  Trophy,
+  TrendingUp,
+  RotateCcw,
+} from "lucide-react";
 import { EmptyState, ErrorState, Modal, PageHeader, Skel, Spinner, burst } from "../components/ui";
+import { IconTile, InlineIcon } from "../components/icons";
 import "../theme/quiz.css";
 
 const LETTERS = "ABCDEF";
@@ -59,13 +73,15 @@ const Intro = ({ play, onStart, starting }: { play: QuizPlay; onStart: () => voi
   const { t } = useTranslation();
   return (
     <div className="sp-panel sp-quiz-intro">
-      <div className="sp-quiz-big" aria-hidden="true">
-        🧪
-      </div>
+      <IconTile icon={FlaskConical} tint="purple" size="lg" className="sp-quiz-big" />
       {play.description && <p className="sp-quiz-desc">{play.description}</p>}
       <div className="sp-quiz-facts">
-        <span>📝 {t("quizPlay.questions", { count: play.questionCount })}</span>
-        <span>⏱ {play.timeLimitMin ? t("quizPlay.minutes", { count: play.timeLimitMin }) : t("quizPlay.noLimit")}</span>
+        <span>
+          <InlineIcon icon={ListOrdered} /> {t("quizPlay.questions", { count: play.questionCount })}
+        </span>
+        <span>
+          <InlineIcon icon={Timer} />{" "}
+          {play.timeLimitMin ? t("quizPlay.minutes", { count: play.timeLimitMin }) : t("quizPlay.noLimit")}</span>
       </div>
       <p className="sp-quiz-rule">{t("quizPlay.onceRule")}</p>
       <button className="sp-cta sp-quiz-go" onClick={onStart} disabled={starting || play.questionCount === 0}>
@@ -82,7 +98,12 @@ const Result = ({ play }: { play: QuizPlay }) => {
   const navigate = useNavigate();
   const attempt = play.attempt!;
   const percent = attempt.percent ?? 0;
-  const emoji = percent >= 80 ? "🏆" : percent >= 50 ? "🚀" : "🛰";
+  const badge =
+    percent >= 80
+      ? { icon: Trophy, tint: "orange" as const }
+      : percent >= 50
+        ? { icon: TrendingUp, tint: "blue" as const }
+        : { icon: RotateCcw, tint: "gray" as const };
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (percent >= 80) burst(ref.current, "⭐", 8);
@@ -90,9 +111,7 @@ const Result = ({ play }: { play: QuizPlay }) => {
 
   return (
     <div className="sp-panel sp-quiz-result" ref={ref}>
-      <div className="sp-quiz-big" aria-hidden="true">
-        {emoji}
-      </div>
+      <IconTile {...badge} size="lg" className="sp-quiz-big" />
       <div className="sp-quiz-percent">{percent}%</div>
       <p>{t("quizPlay.score", { score: attempt.score ?? 0, total: attempt.total })}</p>
       <p className="sp-quiz-desc">
@@ -199,7 +218,7 @@ const Runner = ({ play }: { play: QuizPlay }) => {
   const isLast = index === questions.length - 1;
   const busy = submit.isPending;
 
-  if (!question) return <EmptyState emoji="🔭" title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} />;
+  if (!question) return <EmptyState icon={SearchX} title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} />;
 
   return (
     <>
@@ -249,7 +268,7 @@ const Runner = ({ play }: { play: QuizPlay }) => {
 
       <div className="sp-quiz-nav">
         <button className="sp-cta sp-ghost" onClick={() => setIndex(index - 1)} disabled={index === 0 || busy}>
-          ‹ {t("quizPlay.prev")}
+          <ChevronLeft aria-hidden="true" /> {t("quizPlay.prev")}
         </button>
         {isLast ? (
           <button
@@ -261,15 +280,13 @@ const Runner = ({ play }: { play: QuizPlay }) => {
           </button>
         ) : (
           <button className="sp-cta" onClick={() => setIndex(index + 1)} disabled={busy}>
-            {t("quizPlay.next")} ›
+            {t("quizPlay.next")} <ChevronRight aria-hidden="true" />
           </button>
         )}
       </div>
 
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} labelledBy="sp-quiz-confirm">
-        <div className="text-5xl" aria-hidden="true">
-          🤔
-        </div>
+        <IconTile icon={CircleHelp} tint="orange" size="lg" />
         <h2 id="sp-quiz-confirm">{t("quizPlay.confirmTitle")}</h2>
         <p>{t("quizPlay.confirmText", { count: questions.length - answeredCount })}</p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -283,9 +300,7 @@ const Runner = ({ play }: { play: QuizPlay }) => {
       </Modal>
 
       <Modal open={Boolean(error)} onClose={() => setError(null)}>
-        <div className="text-5xl" aria-hidden="true">
-          🛰
-        </div>
+        <IconTile icon={CircleAlert} tint="red" size="lg" />
         <h2>{t("common.error")}</h2>
         <p>{error}</p>
         <button
@@ -320,7 +335,7 @@ export const QuizPage = () => {
       <>
         {header}
         {notFound ? (
-          <EmptyState emoji="🔭" title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} className="mt-4" />
+          <EmptyState icon={SearchX} title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} className="mt-4" />
         ) : (
           <ErrorState onRetry={() => refetch()} />
         )}

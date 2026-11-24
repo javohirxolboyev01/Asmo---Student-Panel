@@ -2,6 +2,7 @@
 // "Kosmik maktab" edit profile (first / last name, phone) — same
 // authStore.updateProfile call as src/pages/EditProfilePage.tsx.
 import "../theme/profile.css";
+import { UserRoundX } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -33,7 +34,7 @@ export const EditProfilePage = () => {
     return (
       <div className="sp-page">
         <PageHeader title={t("editProfile.title")} back={back} />
-        <EmptyState emoji="🛸" title={t("profile.notFound")} />
+        <EmptyState icon={UserRoundX} title={t("profile.notFound")} />
       </div>
     );
   }

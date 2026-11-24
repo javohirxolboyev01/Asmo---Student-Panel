@@ -29,7 +29,7 @@ export const Dropdown = ({ trigger, items, align = "right", className }: Dropdow
         <div
           role="menu"
           className={cn(
-            "absolute z-30 mt-2 min-w-[160px] sm:min-w-[180px] u-pop p-1.5 rounded-2xl origin-top animate-modal-in",
+            "absolute z-30 mt-2 min-w-[160px] sm:min-w-[180px] u-pop p-1.5 rounded-2xl origin-top animate-pop-in",
             align === "right" ? "right-0" : "left-0",
           )}
         >

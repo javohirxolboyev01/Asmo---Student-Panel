@@ -2,7 +2,24 @@
 // Student-only "Kosmik maktab" version of the shared PaymentsView: stats,
 // search, status/type filters, list with "show more", per-payment details.
 import { useMemo, useState } from "react";
-import { CreditCard, ReceiptText } from "lucide-react";
+import {
+  Banknote,
+  CalendarDays,
+  CircleAlert,
+  CircleCheck,
+  CircleX,
+  CreditCard,
+  Hourglass,
+  Landmark,
+  ReceiptText,
+  Search,
+  SlidersHorizontal,
+  Smartphone,
+  User,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import { IconTile, InlineIcon, type Tint } from "../icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { usePaymentsQuery } from "@/hooks/queries/usePayments";
 import type { RawPayment } from "@/services/paymentService";
@@ -23,35 +40,35 @@ type PayType = RawPayment["paymentType"];
 
 const STATUS: Record<
   Status,
-  { labelKey: string; badge: string; emoji: string }
+  { labelKey: string; badge: string; icon: LucideIcon }
 > = {
-  paid: { labelKey: "payments.statusPaid", badge: "sp-badge", emoji: "✅" },
+  paid: { labelKey: "payments.statusPaid", badge: "sp-badge", icon: CircleCheck },
   pending: {
     labelKey: "payments.statusPending",
     badge: "sp-badge sp-sun",
-    emoji: "⏳",
+    icon: Hourglass,
   },
   overdue: {
     labelKey: "payments.statusOverdue",
     badge: "sp-badge sp-pink",
-    emoji: "⚠️",
+    icon: CircleAlert,
   },
   cancelled: {
     labelKey: "payments.statusCancelled",
     badge: "sp-badge sp-mute",
-    emoji: "✖️",
+    icon: CircleX,
   },
 };
 
 const TYPES: Record<
   PayType,
-  { labelKey?: string; label?: string; emoji: string }
+  { labelKey?: string; label?: string; icon: LucideIcon; tint: Tint }
 > = {
-  cash: { labelKey: "payments.typeCash", emoji: "💵" },
-  click: { label: "Click", emoji: "📱" },
-  payme: { label: "Payme", emoji: "📲" },
-  bank: { labelKey: "payments.typeBank", emoji: "🏦" },
-  uzum: { label: "Uzum", emoji: "🍇" },
+  cash: { labelKey: "payments.typeCash", icon: Banknote, tint: "green" },
+  click: { label: "Click", icon: Smartphone, tint: "blue" },
+  payme: { label: "Payme", icon: Smartphone, tint: "teal" },
+  bank: { labelKey: "payments.typeBank", icon: Landmark, tint: "indigo" },
+  uzum: { label: "Uzum", icon: CreditCard, tint: "purple" },
 };
 
 const PAGE_SIZE = 10;
@@ -189,7 +206,8 @@ export const StudentPayments = () => {
         subtitle={t("payments.subtitle")}
         right={
           <div className="sp-pill">
-            🧾 {t("payments.countSuffix", { count: payments.length })}
+            <ReceiptText aria-hidden="true" strokeWidth={2.2} />{" "}
+            <span>{t("payments.countSuffix", { count: payments.length })}</span>
           </div>
         }
       />
@@ -247,7 +265,7 @@ export const StudentPayments = () => {
           aria-expanded={showFilters}
           aria-controls="sp-pay-filters"
         >
-          ⚙ {t("payments.filter")}
+          <SlidersHorizontal aria-hidden="true" /> {t("payments.filter")}
           {activeFilters > 0 && (
             <span className="sp-pay-fdot" aria-hidden="true" />
           )}
@@ -287,7 +305,7 @@ export const StudentPayments = () => {
                     setLimit(PAGE_SIZE);
                   }}
                 >
-                  {STATUS[k].emoji} {t(STATUS[k].labelKey)}
+                  <InlineIcon icon={STATUS[k].icon} /> {t(STATUS[k].labelKey)}
                   <span>{countBy.byStatus[k] ?? 0}</span>
                 </button>
               ))}
@@ -328,7 +346,7 @@ export const StudentPayments = () => {
                       <CreditCard />
                     </span>
                   ) : (
-                    TYPES[k].emoji
+                    <InlineIcon icon={TYPES[k].icon} />
                   )}{" "}
                   {typeLabel(k)}
                   <span>{countBy.byType[k] ?? 0}</span>
@@ -348,7 +366,7 @@ export const StudentPayments = () => {
                 className="sp-mute-btn"
                 onClick={clearFilters}
               >
-                ✕ {t("space.payments.clearFilters")}
+                <X className="sp-ii" aria-hidden="true" /> {t("space.payments.clearFilters")}
               </button>
             )}
           </div>
@@ -357,7 +375,7 @@ export const StudentPayments = () => {
 
       {payments.length === 0 ? (
         <EmptyState
-          emoji="🧾"
+          icon={ReceiptText}
           title={t("space.payments.emptyTitle")}
           text={t("space.payments.emptyHint")}
         />
@@ -373,7 +391,7 @@ export const StudentPayments = () => {
           {filtered.length === 0 ? (
             <EmptyState
               panel={false}
-              emoji="🔭"
+              icon={Search}
               title={t("space.payments.noResultsTitle")}
               text={
                 query.trim()
@@ -388,7 +406,7 @@ export const StudentPayments = () => {
                       className="sp-cta sp-ghost"
                       onClick={() => onQuery("")}
                     >
-                      ✕ {query.trim()}
+                      <X aria-hidden="true" /> {query.trim()}
                     </button>
                   )}
                   {activeFilters > 0 && (
@@ -417,19 +435,19 @@ export const StudentPayments = () => {
                     aria-label={`${t("space.payments.open")} #${p.orderNumber}`}
                   >
                     <div className="sp-ic" aria-hidden="true">
-                      {ty.emoji}
+                      <IconTile icon={ty.icon} tint={ty.tint} />
                     </div>
                     <div className="sp-t">
                       <b>{money(p.amountNumber)}</b>
                       <small>
-                        👩‍🏫 {p.teacherName || "—"} · {typeLabel(p.paymentType)}
+                        <InlineIcon icon={User} /> {p.teacherName || "—"} · {typeLabel(p.paymentType)}
                       </small>
                       <small>
-                        📅{" "}
+                        <InlineIcon icon={CalendarDays} />{" "}
                         {p.paidAt
                           ? `${formatDate(p.paidAt)} · ${formatTime(p.paidAt)}`
                           : t("space.payments.notPaidYet")}
-                        {p.receiptNumber ? ` · 🧾 #${p.receiptNumber}` : ""}
+                        {p.receiptNumber ? ` · #${p.receiptNumber}` : ""}
                       </small>
                       {p.description && (
                         <small className="sp-pay-desc">{p.description}</small>
@@ -460,6 +478,7 @@ export const StudentPayments = () => {
         open={Boolean(selected)}
         onClose={() => setOpenId(null)}
         wide
+        sheet
         labelledBy="sp-pay-title"
       >
         {selected && (

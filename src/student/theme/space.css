@@ -1,95 +1,115 @@
 /* src/student/theme/space.css
- * "Kosmik maktab" — student panel theme. Everything is scoped under `.sp`
- * (the StudentLayout root), so the teacher panel is untouched.
- * Dark variant = the original design; light variant = same layout on a pale
- * lavender sky. Accents that are used as *text* get a separate `-ink` token,
- * because the bright neon fills (lime/sun) are unreadable on a light background.
+ * Student panel theme — iOS style (system font, iOS system colours, grouped
+ * cards, frosted bars). Everything is scoped under `.sp` (the StudentLayout
+ * root), so the teacher panel is untouched.
+ * Token names are kept from the earlier "Kosmik maktab" theme so components
+ * didn't change: lime = systemGreen (success), pink = systemRed, cyan =
+ * systemTeal, sun = systemOrange, plus --sp-accent = systemBlue (tint colour
+ * for buttons, selection, links). `-ink` variants are the accessible text
+ * shades of each colour.
  */
-@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* ── Tokens ── */
 .sp {
-  --sp-bg1: #efe9ff;
-  --sp-bg2: #dcd0ff;
-  --sp-card: rgba(255, 255, 255, 0.72);
+  --sp-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter",
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sp-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --sp-bg1: #f2f2f7;
+  --sp-bg2: #f2f2f7;
+  --sp-card: #ffffff;
   --sp-card-solid: #ffffff;
-  --sp-line: rgba(43, 20, 102, 0.12);
-  --sp-ink: #22114f;
-  --sp-mute: #6e5fa8;
-  --sp-lime: #b6f23c;
-  --sp-pink: #ff5fa8;
-  --sp-cyan: #4fe3f5;
-  --sp-sun: #ffc940;
-  --sp-lime-ink: #4d8a00;
-  --sp-nav-on: #b6f23c;
-  --sp-sun-ink: #b77900;
-  --sp-pink-ink: #d63384;
-  --sp-cyan-ink: #0e93ad;
-  --sp-on-lime: #06311f;
-  --sp-nav: rgba(255, 255, 255, 0.92);
-  --sp-orbit: rgba(255, 255, 255, 0.55);
-  --sp-track: rgba(43, 20, 102, 0.12);
-  --sp-trail: rgba(43, 20, 102, 0.3);
-  --sp-star: #8f7ad6;
-  --sp-shadow: 0 5px 0 rgba(43, 20, 102, 0.12);
+  --sp-elev: #ffffff;
+  --sp-fill: rgba(120, 120, 128, 0.12);
+  --sp-line: rgba(60, 60, 67, 0.14);
+  --sp-ink: #000000;
+  --sp-mute: #6e6e73;
+  --sp-accent: #0066cc;
+  --sp-accent-ink: #0066cc;
+  --sp-accent-soft: rgba(0, 102, 204, 0.12);
+  --sp-on-accent: #ffffff;
+  --sp-lime: #34c759;
+  --sp-pink: #d70015;
+  --sp-cyan: #30b0c7;
+  --sp-sun: #ff9500;
+  --sp-lime-ink: #197a35;
+  --sp-nav-on: #0066cc;
+  --sp-sun-ink: #c93400;
+  --sp-pink-ink: #d70015;
+  --sp-cyan-ink: #0071a4;
+  --sp-on-lime: #ffffff;
+  --sp-lime-soft: rgba(52, 199, 89, 0.14);
+  --sp-pink-soft: rgba(255, 59, 48, 0.12);
+  --sp-cyan-soft: rgba(48, 176, 199, 0.14);
+  --sp-sun-soft: rgba(255, 149, 0, 0.14);
+  --sp-nav: rgba(249, 249, 249, 0.78);
+  --sp-track: rgba(120, 120, 128, 0.16);
+  --sp-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --sp-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.16);
+  --sp-r: 14px;
+  --sp-r-lg: 20px;
 }
 
 .dark .sp {
-  --sp-bg1: #140b3c;
-  --sp-bg2: #2b1466;
-  --sp-card: rgba(255, 255, 255, 0.1);
-  --sp-card-solid: #2b1466;
-  --sp-line: rgba(255, 255, 255, 0.16);
-  --sp-ink: #f4eeff;
-  --sp-mute: #b3a5e6;
-  --sp-lime-ink: #b6f23c;
-  --sp-nav-on: #b6f23c;
-  --sp-sun-ink: #ffc940;
-  --sp-pink-ink: #ff5fa8;
-  --sp-cyan-ink: #4fe3f5;
-  --sp-nav: #0c0626;
-  --sp-orbit: rgba(255, 255, 255, 0.07);
-  --sp-track: rgba(255, 255, 255, 0.18);
-  --sp-trail: rgba(255, 255, 255, 0.4);
-  --sp-star: #ffffff;
-  --sp-shadow: 0 5px 0 rgba(0, 0, 0, 0.28);
+  --sp-bg1: #000000;
+  --sp-bg2: #000000;
+  --sp-card: #1c1c1e;
+  --sp-card-solid: #1c1c1e;
+  --sp-elev: #2c2c2e;
+  --sp-fill: rgba(118, 118, 128, 0.24);
+  --sp-line: rgba(84, 84, 88, 0.6);
+  --sp-ink: #ffffff;
+  --sp-mute: #98989f;
+  --sp-accent: #0071e3;
+  --sp-accent-ink: #64b5ff;
+  --sp-accent-soft: rgba(10, 132, 255, 0.22);
+  --sp-lime: #30d158;
+  --sp-pink: #d70015;
+  --sp-cyan: #40c8e0;
+  --sp-sun: #ff9f0a;
+  --sp-lime-ink: #30d158;
+  --sp-nav-on: #64b5ff;
+  --sp-sun-ink: #ff9f0a;
+  --sp-pink-ink: #ff6961;
+  --sp-cyan-ink: #5ac8f5;
+  --sp-on-lime: #000000;
+  --sp-lime-soft: rgba(48, 209, 88, 0.2);
+  --sp-pink-soft: rgba(255, 69, 58, 0.2);
+  --sp-cyan-soft: rgba(64, 200, 224, 0.2);
+  --sp-sun-soft: rgba(255, 159, 10, 0.2);
+  --sp-nav: rgba(30, 30, 30, 0.72);
+  --sp-track: rgba(120, 120, 128, 0.32);
+  --sp-shadow: none;
+  --sp-shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Root ── */
 .sp {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(var(--sp-bg1), var(--sp-bg2)) fixed;
+  background: var(--sp-bg1);
   color: var(--sp-ink);
-  font-family: "Nunito", system-ui, sans-serif;
-  font-weight: 700;
+  font-family: var(--sp-font);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
+  overflow-x: clip; /* clip, not hidden: hidden would break the sticky nav bar */
   padding-top: env(safe-area-inset-top, 0px);
 }
 .sp-display,
 .sp h1,
 .sp h2 {
-  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-family: var(--sp-font-display);
+  letter-spacing: -0.02em;
 }
-
-.sp-stars {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(2px 2px at 20px 30px, var(--sp-star), transparent),
-    radial-gradient(1.5px 1.5px at 90px 120px, var(--sp-star), transparent),
-    radial-gradient(2px 2px at 160px 60px, var(--sp-star), transparent),
-    radial-gradient(1.5px 1.5px at 230px 170px, var(--sp-star), transparent),
-    radial-gradient(2px 2px at 300px 20px, var(--sp-star), transparent);
-  background-size: 340px 220px;
-  animation: sp-twinkle 4s ease-in-out infinite alternate;
-  opacity: 0.7;
-}
-@keyframes sp-twinkle {
-  to {
-    opacity: 0.3;
-  }
+.sp b,
+.sp strong {
+  font-weight: 600;
 }
 
 .sp-app {
@@ -148,7 +168,7 @@
   border: 1px solid var(--sp-line);
   padding: 6px 11px;
   border-radius: 99px;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 17px;
   color: inherit;
   text-decoration: none;
@@ -165,7 +185,7 @@
   border-radius: 99px;
   background: var(--sp-pink);
   color: #fff;
-  font-family: "Nunito", sans-serif;
+  font-family: var(--sp-font);
   font-size: 10px;
   display: grid;
   place-items: center;
@@ -176,7 +196,7 @@
   font-size: 28px;
   line-height: 1.1;
   margin: 20px 0 4px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp-hero-name {
   color: #b6f23c;
@@ -193,164 +213,6 @@
   font-size: 14px;
 }
 
-/* ── Orbit (level progress) ── */
-.sp-orbit {
-  position: relative;
-  margin-top: 16px;
-  height: 250px;
-  border-radius: 32px;
-  background:
-    radial-gradient(
-      circle at 80% 18%,
-      rgba(255, 95, 168, 0.35),
-      transparent 45%
-    ),
-    var(--sp-orbit);
-  border: 1px solid var(--sp-line);
-  overflow: hidden;
-}
-.sp-planet {
-  position: absolute;
-  left: 80%;
-  top: 28%;
-  width: clamp(110px, 24%, 200px);
-  aspect-ratio: 1;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, #ffe08a, #ff8a4c 60%, #c2477a);
-  box-shadow: inset -14px -10px 0 rgba(0, 0, 0, 0.15);
-}
-.sp-planet::after {
-  content: "";
-  position: absolute;
-  left: -22%;
-  top: 42%;
-  width: 144%;
-  height: 18%;
-  border-radius: 50%;
-  border: 5px solid rgba(255, 255, 255, 0.55);
-  transform: rotate(-14deg);
-}
-.sp-pl {
-  position: absolute;
-  right: 16px;
-  top: 62%;
-  font-size: 12px;
-  text-align: right;
-  color: var(--sp-mute);
-  z-index: 2;
-}
-.sp-pl b {
-  display: block;
-  color: var(--sp-ink);
-  font-family: "Baloo 2", sans-serif;
-  font-size: 18px;
-  line-height: 1;
-}
-.sp-home {
-  position: absolute;
-  left: 18px;
-  bottom: 62px;
-  min-width: 46px;
-  height: 46px;
-  padding: 0 6px;
-  border-radius: 99px;
-  background: radial-gradient(circle at 35% 30%, #8ff0c0, #2ba37a);
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  color: #333333;
-  text-align: center;
-  line-height: 1;
-  z-index: 2;
-}
-.sp-trail {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.sp-rocket {
-  position: absolute;
-  font-size: 38px;
-  transform: translate(-50%, calc(-50% + 10px)) rotate(45deg);
-  /* left/top are animated frame by frame (components/Rocket.tsx) so the
-     flight follows the arc; a CSS transition would cut straight across. */
-  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.25));
-  animation: sp-wobble 0.6s infinite alternate;
-}
-@keyframes sp-wobble {
-  to {
-    translate: 0 -5px;
-  }
-}
-/* Inner glyph: boosts move it along the rocket's own nose direction
-   (the 🚀 glyph points up-right, so "forward" is +x / -y here). */
-.sp-rocket-body {
-  position: relative;
-  display: inline-block;
-}
-.sp-flame {
-  position: absolute;
-  left: -4px;
-  bottom: -2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    #fff6c2 0%,
-    #ffc940 35%,
-    #ff6a2a 65%,
-    transparent 72%
-  );
-  opacity: 0;
-  pointer-events: none;
-}
-.sp-turbo {
-  animation: sp-turbo 0.7s ease-out;
-}
-.sp-turbo .sp-flame {
-  animation: sp-flame 0.7s ease-out;
-}
-.sp-launch {
-  animation: sp-launch 1.5s cubic-bezier(0.3, 0, 0.2, 1);
-}
-.sp-launch .sp-flame {
-  animation: sp-flame 1.5s ease-out;
-}
-@keyframes sp-turbo {
-  35% {
-    transform: translate(12px, -12px) scale(1.12);
-  }
-}
-@keyframes sp-launch {
-  40% {
-    transform: translate(34px, -34px) scale(1.25);
-  }
-  70% {
-    transform: translate(28px, -28px) scale(1.2);
-  }
-}
-@keyframes sp-flame {
-  25%,
-  60% {
-    opacity: 1;
-    transform: translate(-6px, 6px) scale(1.6);
-  }
-}
-.sp-fuel {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
-}
-.sp-fuel-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  margin-bottom: 5px;
-}
 .sp-bar {
   height: 16px;
   border-radius: 9px;
@@ -389,7 +251,7 @@
 }
 .sp-sec h2 {
   font-size: 21px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp-sec small {
   color: var(--sp-mute);
@@ -441,7 +303,7 @@
   font-size: 12px;
 }
 .sp-row .sp-rw {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 14px;
   color: var(--sp-sun-ink);
   text-align: right;
@@ -469,7 +331,7 @@
 }
 .sp-s b {
   display: block;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 22px;
   line-height: 1.1;
 }
@@ -532,7 +394,7 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 14px;
   background: var(--sp-pink);
   color: #fff;
@@ -583,7 +445,7 @@
 .sp-empty b {
   display: block;
   color: var(--sp-ink);
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 20px;
 }
 
@@ -591,7 +453,7 @@
   margin-top: 16px;
   border: 0;
   font: inherit;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 14px;
   background: var(--sp-lime);
   color: var(--sp-on-lime);
@@ -698,9 +560,6 @@
   .sp-sub {
     font-size: 16px;
   }
-  .sp-orbit {
-    height: 340px;
-  }
   .sp-row {
     padding: 14px 18px;
   }
@@ -739,9 +598,6 @@
   .sp-col-side .sp-sec:first-child {
     margin-top: 0;
   }
-  .sp-orbit {
-    height: clamp(380px, 48vh, 520px);
-  }
   .sp h1.sp-title {
     font-size: 40px;
     margin-top: 26px;
@@ -772,9 +628,9 @@
   }
   .sp-logo {
     display: block;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--sp-font-display);
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 700;
     padding: 0 14px 18px;
     color: var(--sp-lime-ink);
   }
@@ -819,10 +675,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sp-stars,
-  .sp-rocket,
-  .sp-rocket-body,
-  .sp-flame,
   .sp-skel {
     animation: none;
   }
@@ -932,7 +784,7 @@
   min-width: 0;
 }
 .sp-gc b {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 20px;
 }
 .sp-gc small {
@@ -942,7 +794,7 @@
 }
 .sp-badge {
   display: inline-block;
-  background: rgba(182, 242, 60, 0.2);
+  background: var(--sp-lime-soft);
   color: var(--sp-lime-ink);
   border-radius: 99px;
   padding: 2px 10px;
@@ -951,15 +803,15 @@
   vertical-align: middle;
 }
 .sp-badge.sp-pink {
-  background: rgba(255, 95, 168, 0.18);
+  background: var(--sp-pink-soft);
   color: var(--sp-pink-ink);
 }
 .sp-badge.sp-sun {
-  background: rgba(255, 201, 64, 0.22);
+  background: var(--sp-sun-soft);
   color: var(--sp-sun-ink);
 }
 .sp-badge.sp-cyan {
-  background: rgba(79, 227, 245, 0.2);
+  background: var(--sp-cyan-soft);
   color: var(--sp-cyan-ink);
 }
 .sp-badge.sp-mute {
@@ -1028,13 +880,13 @@
   opacity: 0.55;
 }
 .sp-cell.sp-present {
-  background: rgba(182, 242, 60, 0.25);
+  background: var(--sp-lime-soft);
 }
 .sp-cell.sp-present small {
   color: var(--sp-lime-ink);
 }
 .sp-cell.sp-absent {
-  background: rgba(255, 95, 168, 0.22);
+  background: var(--sp-pink-soft);
 }
 .sp-cell.sp-absent small {
   color: var(--sp-pink-ink);
@@ -1042,7 +894,7 @@
 .sp-cell.sp-today {
   background: linear-gradient(var(--sp-sun), var(--sp-pink));
   color: #3a1a00;
-  box-shadow: 0 0 18px rgba(255, 201, 64, 0.5);
+  box-shadow: 0 0 18px var(--sp-sun-soft);
 }
 .sp-cell.sp-today small {
   color: #3a1a00;
@@ -1098,15 +950,15 @@
   padding: 22px 16px;
   background: linear-gradient(
     135deg,
-    rgba(255, 201, 64, 0.3),
-    rgba(255, 95, 168, 0.28)
+    var(--sp-sun-soft),
+    var(--sp-pink-soft)
   );
   border: 1px solid var(--sp-line);
 }
 .sp-bal .sp-big {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 56px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
   color: var(--sp-sun-ink);
 }
@@ -1138,7 +990,7 @@
   font-size: 12px;
 }
 .sp-hr b {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 18px;
   white-space: nowrap;
 }
@@ -1211,7 +1063,7 @@
   display: grid;
   place-items: center;
   font-size: 76px;
-  box-shadow: 0 0 0 7px rgba(255, 201, 64, 0.25);
+  box-shadow: 0 0 0 7px var(--sp-sun-soft);
 }
 .sp-pav > .sp-pav-img {
   width: 100%;
@@ -1298,8 +1150,7 @@
   background: none;
   color: var(--sp-ink);
   font:
-    800 18px "Baloo 2",
-    sans-serif;
+    700 18px var(--sp-font-display);
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.1s;
@@ -1476,7 +1327,7 @@ textarea.sp-in {
   -webkit-box-orient: vertical;
 }
 .sp-price {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 18px;
   color: var(--sp-sun-ink);
 }
@@ -1530,7 +1381,7 @@ textarea.sp-in {
 }
 .sp-row.sp-ready {
   border-color: var(--sp-lime-ink);
-  box-shadow: 0 0 0 3px rgba(182, 242, 60, 0.18);
+  box-shadow: 0 0 0 3px var(--sp-lime-soft);
 }
 .sp-ck {
   width: 28px;
@@ -1569,7 +1420,7 @@ textarea.sp-in {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 14px;
   animation: sp-bob 2s ease-in-out infinite;
 }
@@ -1667,7 +1518,7 @@ textarea.sp-in {
   padding: 12px 4px;
   color: var(--sp-ink);
   cursor: pointer;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 16px;
   transition: transform 0.2s;
 }
@@ -1797,8 +1648,1316 @@ textarea.sp-in {
 /* Page canvas behind the student shell (overscroll / bounce areas, and
  * anything taller than the fixed sky) matches the sky's bottom colour. */
 body:has(.sp) {
-  background-color: #dcd0ff;
+  background-color: #f2f2f7;
 }
 .dark body:has(.sp) {
-  background-color: #2b1466;
+  background-color: #000000;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * iOS layer — restyles the shared pieces above to iOS conventions without
+ * moving anything: cards lose their outline (borders go transparent so box
+ * sizes stay identical) and get a soft shadow, nested surfaces use the iOS
+ * grey fill, controls use the blue tint, the nav becomes frosted glass.
+ * Kept last in this file so it wins over the rules above at equal
+ * specificity.
+ * ══════════════════════════════════════════════════════════════════════ */
+
+/* Cards */
+.sp-pill,
+.sp-ring-card,
+.sp-row,
+.sp-s,
+.sp-crew,
+.sp-panel,
+.sp-gc,
+.sp-prod,
+.sp-note,
+.sp-bal {
+  border-color: transparent;
+  box-shadow: var(--sp-shadow);
+}
+.sp-row {
+  border-radius: 16px;
+}
+.sp-s,
+.sp-crew,
+.sp-panel,
+.sp-gc,
+.sp-prod {
+  border-radius: var(--sp-r-lg);
+}
+.sp-pill {
+  font-family: var(--sp-font);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Nested surfaces → iOS grey fill */
+.sp-row .sp-ic,
+.sp-gc .sp-a,
+.sp-mem .sp-a,
+.sp-prod-img,
+.sp-qty,
+.sp-cnav button,
+.sp-cell,
+.sp-chips span,
+.sp-badge.sp-mute,
+.sp-cap,
+.sp-in,
+.sp-btn,
+.sp-skel,
+.sp-search {
+  background: var(--sp-fill);
+  border-color: transparent;
+}
+.sp-row .sp-ic,
+.sp-gc .sp-a {
+  border-radius: 12px;
+}
+.sp-qty button {
+  background: var(--sp-card);
+}
+.sp-search,
+.sp-in {
+  border-radius: 12px;
+}
+.sp-in:focus {
+  border-color: var(--sp-accent);
+  background: var(--sp-card);
+}
+.sp-search:focus-within {
+  border-color: transparent;
+}
+.sp-ava {
+  border: 0;
+  background: var(--sp-fill);
+}
+.sp-heart {
+  box-shadow: var(--sp-shadow);
+}
+
+/* Typography accents */
+.sp h1.sp-title {
+  font-weight: 700;
+}
+.sp-hero-name,
+.dark .sp .sp-hero-name {
+  color: var(--sp-accent-ink);
+  -webkit-text-stroke: 0;
+}
+.sp-s b,
+.sp-gc b,
+.sp-hr b,
+.sp-price,
+.sp-bal .sp-big,
+.sp-empty b {
+  font-weight: 700;
+}
+.sp-mem.sp-me {
+  color: var(--sp-accent-ink);
+}
+.sp-mem .sp-k {
+  background: var(--sp-accent);
+}
+.sp-badge {
+  font-weight: 600;
+}
+
+/* Progress bar → tint */
+.sp-bar {
+  height: 10px;
+}
+.sp-bar > span {
+  background: var(--sp-accent);
+}
+
+/* Buttons */
+.sp-cta {
+  background: var(--sp-accent);
+  color: var(--sp-on-accent);
+  font-family: var(--sp-font);
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 12px;
+  padding: 9px 18px;
+  box-shadow: none;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
+}
+.sp-cta:not(:disabled):active,
+.sp-btn:not(:disabled):active,
+.sp-chipbar button:active {
+  opacity: 0.7;
+}
+.sp-cta.sp-ghost {
+  background: var(--sp-fill);
+  color: var(--sp-accent-ink);
+  border: 1px solid transparent;
+}
+.sp-cta.sp-danger {
+  background: var(--sp-pink);
+  color: #ffffff;
+  box-shadow: none;
+}
+.sp-btn {
+  font-weight: 500;
+}
+.sp-btn.on {
+  border-color: var(--sp-accent);
+  color: var(--sp-accent-ink);
+  background: var(--sp-accent-soft);
+}
+.sp-mute-btn,
+.sp-cnav button {
+  color: var(--sp-accent-ink);
+}
+.sp-back {
+  color: var(--sp-accent-ink);
+  font: 400 17px var(--sp-font);
+}
+
+/* Segmented control (iOS) */
+.sp-tabs,
+.sp-seg {
+  background: var(--sp-fill);
+  border-color: transparent;
+  border-radius: 9px;
+  padding: 2px;
+  gap: 2px;
+}
+.sp-tabs button,
+.sp-seg button {
+  border-radius: 7px;
+  color: var(--sp-ink);
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.sp-tabs button.on,
+.sp-seg button.on {
+  background: var(--sp-card);
+  color: var(--sp-ink);
+  font-weight: 600;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 3px 1px rgba(0, 0, 0, 0.04);
+}
+.dark .sp-tabs button.on,
+.dark .sp-seg button.on {
+  background: #636366;
+}
+
+/* Filter chips */
+.sp-chipbar button {
+  background: var(--sp-card);
+  border-color: transparent;
+  font-weight: 500;
+  box-shadow: var(--sp-shadow);
+}
+.sp-chipbar button.on {
+  background: var(--sp-accent);
+  border-color: var(--sp-accent);
+  color: #ffffff;
+}
+
+/* Focus ring */
+.sp a:focus-visible,
+.sp button:focus-visible,
+.sp-back:focus-visible {
+  outline: 2px solid var(--sp-accent);
+  outline-offset: 2px;
+}
+
+/* Calendar */
+.sp-cell.sp-today {
+  background: var(--sp-accent);
+  color: #ffffff;
+  box-shadow: none;
+}
+.sp-cell.sp-today small {
+  color: #ffffff;
+}
+
+.sp-cell.sp-rest {
+  opacity: 1;
+  background: transparent;
+  color: var(--sp-mute);
+}
+/* Coins hero, profile avatar, missions */
+.sp-bal {
+  background:
+    linear-gradient(135deg, var(--sp-sun-soft), transparent 70%),
+    var(--sp-card);
+}
+.sp-pav {
+  background: var(--sp-fill);
+  box-shadow: none;
+}
+.sp-pav button {
+  background: var(--sp-accent);
+  color: #ffffff;
+  border-color: var(--sp-card);
+}
+.sp-mi i {
+  border-radius: 12px;
+}
+.sp-row.sp-ready {
+  box-shadow:
+    0 0 0 2px var(--sp-lime-soft),
+    var(--sp-shadow);
+}
+
+/* Daily chest button */
+.sp-box {
+  background: var(--sp-nav);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  color: var(--sp-ink);
+  border: 0.5px solid var(--sp-line);
+  border-radius: 16px;
+  font-family: var(--sp-font);
+  font-weight: 600;
+  box-shadow: var(--sp-shadow-lg);
+}
+
+/* Modal (iOS alert / sheet) */
+.sp-modal {
+  background: rgba(0, 0, 0, 0.4);
+}
+.dark .sp-modal {
+  background: rgba(0, 0, 0, 0.6);
+}
+.sp-mb {
+  background: var(--sp-elev);
+  border-color: transparent;
+  border-radius: 22px;
+  box-shadow: var(--sp-shadow-lg);
+  animation: sp-ios-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sp-cap.sp-shown {
+  background: var(--sp-accent);
+  color: #ffffff;
+}
+@keyframes sp-ios-in {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+/* Navigation: frosted glass tab bar (mobile) / sidebar (desktop) */
+.sp-nav {
+  background: var(--sp-nav);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid var(--sp-line);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.sp-nav a {
+  color: var(--sp-mute);
+}
+.sp-nav a.on,
+.dark .sp-nav a.on {
+  color: var(--sp-accent-ink);
+}
+.sp-nav a.on svg {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent-ink);
+}
+.sp-nav a svg {
+  transition: background 0.2s;
+}
+
+@media (min-width: 900px) {
+  .sp-pill {
+    font-size: 16px;
+  }
+  .sp-nav {
+    background: var(--sp-nav);
+    border: 0;
+    border-right: 0.5px solid var(--sp-line);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .sp-logo {
+    color: var(--sp-ink);
+    font-weight: 700;
+  }
+  .sp-logo svg {
+    color: var(--sp-accent);
+  }
+  .sp-nav a {
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .sp-nav a:hover {
+    background: var(--sp-fill);
+  }
+  .sp-nav a.on,
+  .dark .sp-nav a.on {
+    background: var(--sp-accent);
+    color: #ffffff;
+  }
+  .sp-nav a.on svg {
+    background: none;
+    color: #ffffff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-mb {
+    animation: none;
+  }
+}
+
+/* Small phones (≤360px): keep every label visible */
+.sp-nm small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sp-frow > .sp-search {
+  min-width: 0;
+}
+.sp-search input {
+  width: 100%;
+}
+@media (max-width: 360px) {
+  .sp-nav {
+    padding: 4px 6px;
+  }
+  .sp-nav a {
+    padding: 0 1px;
+  }
+  .sp-nav a svg {
+    width: 24px;
+    height: 24px;
+    padding: 7px;
+  }
+  .sp-pill {
+    padding: 5px 9px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * iOS components (navigation bar, tab bar, tiles, sheets, lists, motion)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+/* System tints (fills). Glyphs on them are white; *-soft tiles use the
+ * matching -ink colour on a pale tint. */
+.sp {
+  --sp-tint-blue: #0066cc;
+  --sp-tint-green: #1e8e3e;
+  --sp-tint-orange: #e07800;
+  --sp-tint-red: #d70015;
+  --sp-tint-purple: #8944ab;
+  --sp-tint-teal: #0e7c8f;
+  --sp-tint-indigo: #3634a3;
+  --sp-tint-pink: #c41c5f;
+  --sp-tint-yellow: #b25000;
+  --sp-tint-gray: #636366;
+  --sp-tint-mint: #0c817b;
+  --sp-tint-brown: #7f6545;
+  --sp-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+.dark .sp {
+  --sp-tint-blue: #0a6fe0;
+  --sp-tint-green: #248a3d;
+  --sp-tint-orange: #c96a00;
+  --sp-tint-red: #d70015;
+  --sp-tint-purple: #9a4fc0;
+  --sp-tint-teal: #0e7c8f;
+  --sp-tint-indigo: #4c4ad1;
+  --sp-tint-pink: #c41c5f;
+  --sp-tint-yellow: #a35c00;
+  --sp-tint-gray: #636366;
+  --sp-tint-mint: #0c817b;
+  --sp-tint-brown: #8a6e4b;
+}
+
+/* iOS text basics */
+.sp {
+  font-size: 17px;
+  line-height: 1.35;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+.sp button,
+.sp a,
+.sp-nav,
+.sp-pill,
+.sp-tabs,
+.sp-seg {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.sp input,
+.sp textarea {
+  font-size: 17px; /* ≥16px stops iOS Safari zooming into fields */
+}
+.sp-sub {
+  font-size: 15px;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+/* Icon tile (Settings-style rounded square) */
+.sp-tile {
+  --tile: 40px;
+  display: inline-grid;
+  place-items: center;
+  width: var(--tile);
+  height: var(--tile);
+  border-radius: calc(var(--tile) * 0.26);
+  background: var(--tint);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+.sp-tile svg {
+  width: 58%;
+  height: 58%;
+}
+.sp-tile-sm {
+  --tile: 30px;
+}
+.sp-tile-lg {
+  --tile: 56px;
+}
+.sp-tile-soft {
+  background: color-mix(in srgb, var(--tint) 14%, transparent);
+  color: var(--tint);
+}
+.dark .sp .sp-tile-soft {
+  background: color-mix(in srgb, var(--tint) 30%, transparent);
+  color: color-mix(in srgb, var(--tint) 45%, #ffffff);
+}
+/* Icon tiles replace the old emoji boxes: no extra frame around them. */
+.sp-row .sp-ic:has(> .sp-tile),
+.sp-gc .sp-a:has(> .sp-tile) {
+  background: none;
+  border: 0;
+  width: auto;
+  height: auto;
+}
+
+/* Coin glyph & HUD icons */
+.sp-coin {
+  width: 1em;
+  height: 1em;
+  color: var(--sp-cyan-ink);
+  vertical-align: -0.12em;
+  flex-shrink: 0;
+}
+.sp-flame-ic {
+  width: 1em;
+  height: 1em;
+  color: var(--sp-sun);
+  fill: var(--sp-sun-soft);
+}
+.sp-pill svg {
+  width: 18px;
+  height: 18px;
+}
+.sp-pill-round {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+.sp-pill,
+.sp-pill-round {
+  background: var(--sp-nav);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid var(--sp-line);
+  min-height: 40px;
+}
+.sp-hud {
+  min-height: 52px;
+}
+
+/* ── Navigation bar (sticky, collapses the large title) ── */
+.sp-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 -14px;
+  padding: env(safe-area-inset-top, 0px) 8px 0;
+  border-bottom: 0.5px solid transparent;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+.sp-navbar-on {
+  background: var(--sp-nav);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom-color: var(--sp-line);
+}
+.sp-navbar:not(:has(.sp-back)):not(.sp-navbar-on) {
+  min-height: 0;
+  height: 0;
+  overflow: visible;
+}
+.sp-navbar-side {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.sp-navbar-end {
+  justify-content: flex-end;
+}
+.sp-navbar-title {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60vw;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.sp-navbar-on .sp-navbar-title {
+  opacity: 1;
+  transform: none;
+}
+.sp-navbar .sp-back {
+  margin: 0;
+  padding: 10px 8px 10px 0;
+}
+.sp-navbar .sp-back svg {
+  width: 28px;
+  height: 28px;
+  margin-right: -2px;
+}
+.sp-ph {
+  margin-top: 6px;
+}
+@media (min-width: 640px) {
+  .sp-navbar {
+    margin: 0 -24px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+@media (min-width: 900px) {
+  .sp-navbar {
+    margin: 0 -40px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* ── Tab bar with labels (iOS) ── */
+@media (max-width: 899px) {
+  .sp-nav {
+    padding: 6px 6px;
+    border-radius: 32px;
+  }
+  .sp-nav a {
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+    padding: 4px 0 3px;
+    border-radius: 24px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .sp-nav a svg {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    background: none;
+  }
+  .sp-nav a.on {
+    background: color-mix(in srgb, var(--sp-accent) 8%, transparent);
+  }
+  .dark .sp-nav a.on {
+    background: var(--sp-accent-soft);
+  }
+  .sp-nav a.on svg {
+    background: none;
+  }
+  .sp-nav-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+    max-width: 100%;
+    text-overflow: ellipsis;
+  }
+}
+.sp-nav a.on svg {
+  stroke-width: 2.4;
+}
+@media (max-width: 360px) {
+  .sp-nav a {
+    font-size: 9px;
+  }
+  .sp-nav a svg {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+  }
+}
+
+/* ── Page transitions (UINavigationController push / pop) ── */
+.sp-view {
+  min-height: 60vh;
+}
+.sp-push {
+  animation: sp-push 0.42s var(--sp-ease);
+}
+.sp-pop {
+  animation: sp-pop-in 0.42s var(--sp-ease);
+}
+.sp-fade {
+  animation: sp-fade-in 0.25s ease-out;
+}
+@keyframes sp-push {
+  from {
+    transform: translateX(28%);
+    opacity: 0.4;
+  }
+}
+@keyframes sp-pop-in {
+  from {
+    transform: translateX(-18%);
+    opacity: 0.4;
+  }
+}
+@keyframes sp-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ── Activity indicator ── */
+.sp-spin {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 0;
+  animation: sp-spokes 0.9s steps(8) infinite;
+  vertical-align: middle;
+}
+.sp-spin svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.sp-spin-lg {
+  width: 34px;
+  height: 34px;
+  color: var(--sp-mute);
+}
+@keyframes sp-spokes {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Search field ── */
+.sp-search {
+  min-height: 40px;
+  padding: 0 10px;
+  gap: 6px;
+  border-radius: 12px;
+}
+.sp-search-ic {
+  width: 18px;
+  height: 18px;
+  color: var(--sp-mute);
+  flex-shrink: 0;
+}
+.sp-search input {
+  -webkit-appearance: none;
+  appearance: none;
+  padding: 8px 0;
+}
+.sp-search input::-webkit-search-cancel-button {
+  display: none;
+}
+.sp-search-clear {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--sp-mute);
+  cursor: pointer;
+}
+.sp-search-clear svg {
+  width: 18px;
+  height: 18px;
+  fill: var(--sp-mute);
+  stroke: var(--sp-card);
+}
+
+/* ── Empty state (ContentUnavailableView) ── */
+.sp-empty {
+  font-size: 15px;
+}
+.sp-empty-ic {
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+  color: var(--sp-mute);
+  opacity: 1;
+}
+.sp-empty > .sp-empty-ic {
+  font-size: 44px;
+  opacity: 1;
+}
+.sp-empty-ic svg {
+  width: 52px;
+  height: 52px;
+}
+.sp-empty b {
+  font-family: var(--sp-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* ── Buttons: iOS 26 capsule buttons ── */
+.sp-cta {
+  border-radius: 99px;
+  min-height: 44px;
+  padding: 10px 22px;
+  font-size: 17px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+}
+.sp-cta svg {
+  width: 18px;
+  height: 18px;
+}
+.sp-btn {
+  border-radius: 99px;
+}
+.sp-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ── Alerts & sheets ── */
+.sp-modal {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: sp-fade-in 0.2s ease-out;
+}
+.sp-mb {
+  border-radius: 28px;
+  padding: 24px 20px 20px;
+}
+.sp-mb h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.sp-mb p {
+  font-size: 15px;
+}
+.sp-mb > .sp-tile,
+.sp-mb > .sp-empty-ic {
+  margin: 0 auto 12px;
+}
+/* Buttons inside an alert stretch like UIAlertController actions. */
+.sp-mb > .sp-cta,
+.sp-mb > div > .sp-cta {
+  flex: 1 1 0;
+  min-width: 120px;
+}
+.sp-mb > .sp-cta {
+  width: 100%;
+}
+.sp-mb .flex.flex-wrap.justify-center.gap-2 {
+  flex-wrap: nowrap;
+}
+@media (max-width: 639px) {
+  .sp-modal-sheet {
+    place-items: end stretch;
+    padding: 0;
+  }
+  .sp-sheet {
+    max-width: none !important;
+    width: 100%;
+    border-radius: 28px 28px 0 0 !important;
+    padding: 30px 18px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    max-height: 92vh;
+    position: relative;
+    animation: sp-sheet-up 0.42s var(--sp-ease);
+  }
+  .sp-sheet::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 36px;
+    height: 5px;
+    margin-left: -18px;
+    border-radius: 3px;
+    background: var(--sp-track);
+  }
+}
+@keyframes sp-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+/* ── Inset grouped lists ──
+ * Consecutive rows/cards merge into one rounded group with inset hairline
+ * separators (UITableView .insetGrouped). Grids keep separate cards. */
+.sp-row,
+.sp-gc {
+  position: relative;
+}
+:where(:not(.sp-gl):not(.sp-profile-notes)) > .sp-row:has(+ .sp-row) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  margin-bottom: 0;
+  box-shadow: none;
+}
+:where(:not(.sp-gl):not(.sp-profile-notes)) > .sp-row + .sp-row {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+:where(:not(.sp-gl):not(.sp-profile-notes)) > .sp-row + .sp-row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 70px;
+  right: 0;
+  border-top: 0.5px solid var(--sp-line);
+}
+.sp-row.sp-ready + .sp-row::before,
+.sp-row + .sp-row.sp-ready::before {
+  display: none;
+}
+
+/* Press highlight (UITableViewCell selection) */
+.sp-row,
+.sp-gc,
+.sp-mi,
+.sp-pf-link,
+.sp-s {
+  transition: background-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+a.sp-row:active,
+button.sp-row:not([aria-disabled="true"]):active,
+.sp-gc:active,
+.sp-mi:active,
+a.sp-s:active {
+  background-color: color-mix(in srgb, var(--sp-card) 80%, var(--sp-ink) 8%);
+}
+
+/* Row typography (iOS list cell: 17pt title, 15pt subtitle) */
+.sp-row .sp-t {
+  font-size: 17px;
+}
+.sp-row .sp-t b {
+  font-weight: 600;
+}
+.sp-row .sp-t small,
+.sp-gc small,
+.sp-mem .sp-n small {
+  font-size: 14px;
+}
+.sp-row .sp-rw {
+  font-family: var(--sp-font);
+  font-weight: 600;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.sp-sec {
+  margin: 28px 4px 10px;
+}
+.sp-sec h2 {
+  font-size: 22px;
+  font-weight: 700;
+}
+.sp-sec small {
+  font-size: 15px;
+}
+
+/* Disclosure chevron used in rows/cards */
+.sp-chev {
+  width: 18px;
+  height: 18px;
+  color: var(--sp-mute);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* Checkmark of mission rows */
+.sp-ck {
+  border-width: 2px;
+}
+.sp-ck svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Reward burst glyph */
+.sp-fx {
+  width: 22px;
+  height: 22px;
+}
+.sp-fx svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-push,
+  .sp-pop,
+  .sp-fade,
+  .sp-sheet,
+  .sp-modal,
+  .sp-spin {
+    animation: none;
+  }
+  .sp-spin {
+    animation: sp-spokes 1.6s steps(8) infinite;
+  }
+}
+
+/* ── Inline symbols ── */
+.sp-ii {
+  display: inline-block;
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.16em;
+  flex-shrink: 0;
+}
+.sp-h-ic {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sp-tile-txt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
+.sp-tile-sm .sp-tile-txt {
+  font-size: 13px;
+}
+.sp-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+.sp-chips svg {
+  width: 16px;
+  height: 16px;
+  color: var(--sp-accent-ink);
+}
+
+/* Attendance status glyphs */
+.sp-st {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.sp-st-ok {
+  color: var(--sp-lime-ink);
+}
+.sp-st-no {
+  color: var(--sp-pink-ink);
+}
+
+/* Stat tiles: icon tile on top */
+.sp-s > .sp-tile {
+  margin: 0 auto 6px;
+}
+.sp-s.sp-sm > .sp-tile {
+  margin: 0 0 6px;
+}
+
+/* Alert / sheet header icon */
+.sp-mb-ic {
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+}
+
+/* Daily chest button & capsules */
+.sp-box-ic {
+  width: 22px;
+  height: 22px;
+  color: var(--sp-tint-purple);
+}
+.sp-cap-ic {
+  display: grid;
+  place-items: center;
+  height: 52px;
+}
+.sp-cap-ic svg {
+  width: 36px;
+  height: 36px;
+  color: var(--sp-tint-purple);
+}
+.sp-cap.sp-shown .sp-cap-ic svg {
+  color: #ffffff;
+}
+.sp-cap {
+  font-family: var(--sp-font);
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+/* ── Dashboard progress ring (Fitness style) ── */
+.sp {
+  --sp-ring-a: #34c759;
+  --sp-ring-b: #00c7be;
+}
+.sp-ring-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 16px;
+  padding: 18px;
+  background: var(--sp-card);
+  border-radius: var(--sp-r-lg);
+}
+.sp-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+}
+.sp-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.sp-ring circle {
+  fill: none;
+  stroke-width: 14;
+}
+.sp-ring-track {
+  stroke: var(--sp-track);
+}
+.sp-ring-bar {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.4s var(--sp-ease);
+}
+.sp-ring-val {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--sp-font-display);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.sp-ring-val small {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sp-mute);
+  margin-left: 1px;
+}
+.sp-ring-val {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding-top: 44px;
+}
+.sp-ring-turbo {
+  animation: sp-ring-pulse 0.6s var(--sp-ease);
+}
+.sp-ring-launch {
+  animation: sp-ring-pulse 1s var(--sp-ease) 2;
+}
+@keyframes sp-ring-pulse {
+  40% {
+    transform: scale(1.07);
+  }
+}
+.sp-ring-info {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+.sp-ring-info > small {
+  color: var(--sp-mute);
+  font-size: 15px;
+}
+.sp-ring-levels {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 17px;
+  line-height: 1.25;
+}
+.sp-ring-levels span {
+  color: var(--sp-mute);
+}
+.sp-ring-levels b {
+  font-family: var(--sp-font-display);
+  font-size: 22px;
+  font-weight: 700;
+}
+.sp-ring-levels svg {
+  width: 18px;
+  height: 18px;
+  color: var(--sp-mute);
+}
+.sp-skel.sp-ring-card {
+  height: 168px;
+}
+@media (min-width: 900px) {
+  .sp-ring-card {
+    padding: 28px;
+    gap: 28px;
+  }
+  .sp-ring {
+    width: 180px;
+    height: 180px;
+  }
+  .sp-ring-val {
+    font-size: 40px;
+    padding-top: 64px;
+  }
+}
+@media (max-width: 360px) {
+  .sp-ring {
+    width: 108px;
+    height: 108px;
+  }
+  .sp-ring-val {
+    font-size: 24px;
+    padding-top: 36px;
+  }
+}
+
+/* Leaderboard rank badges */
+.sp-mem .sp-k {
+  font-family: var(--sp-font);
+  font-weight: 600;
+  font-size: 14px;
+}
+.sp-mem .sp-n small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Notifications: iOS Notification Center cards + blue unread dot */
+.sp-profile-note.sp-profile-unread {
+  border-color: transparent;
+  box-shadow: var(--sp-shadow);
+}
+.sp-profile-note.sp-profile-unread .sp-t b {
+  font-weight: 700;
+}
+
+/* Shop */
+.sp-shop-ph {
+  width: 44%;
+  height: 44%;
+  color: var(--sp-mute);
+  opacity: 0.6;
+}
+.sp-heart svg {
+  width: 18px;
+  height: 18px;
+  color: var(--sp-mute);
+}
+.sp-heart svg.sp-heart-on {
+  color: var(--sp-pink);
+  fill: var(--sp-pink);
+}
+.sp-star {
+  color: var(--sp-sun);
+  fill: var(--sp-sun);
+}
+.sp-price,
+.sp-shop-sum,
+.sp-hr b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sp-hr b {
+  font-family: var(--sp-font);
+  font-weight: 600;
+  font-size: 16px;
+}
+.sp-hr {
+  font-size: 15px;
+}
+.sp-hr > .sp-tile {
+  flex-shrink: 0;
+}
+
+/* Headings: Tailwind preflight resets h1–h6 to normal weight */
+.sp h1,
+.sp h2,
+.sp h3 {
+  font-weight: 700;
+}
+.sp-panel h2 {
+  font-size: 20px;
+}
+.sp-panel h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+.sp-bal .sp-big {
+  color: var(--sp-ink);
+}
+.sp-cnav button {
+  display: grid;
+  place-items: center;
+}
+.sp-cnav button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Rows inside a card are plain list cells, not cards within cards */
+.sp-panel .sp-row,
+.sp-mb .sp-row {
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  border-radius: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-bottom: 0;
+}
+.sp-panel .sp-row + .sp-row {
+  border-top: 0.5px solid var(--sp-line);
+}
+.sp-panel .sp-row + .sp-row::before {
+  display: none;
 }

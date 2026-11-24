@@ -50,7 +50,7 @@
   color: var(--sp-pink-ink);
   border-radius: 99px;
   padding: 2px 8px;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 13px;
 }
 .sp-shop-out .sp-prod-img > img,
@@ -155,14 +155,14 @@
   padding-left: 68px;
 }
 .sp-shop-sum {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 17px;
   color: var(--sp-sun-ink);
   white-space: nowrap;
 }
 .sp-shop-sum small {
   display: block;
-  font-family: "Nunito", sans-serif;
+  font-family: var(--sp-font);
   font-size: 11px;
   color: var(--sp-mute);
   text-align: right;
@@ -188,7 +188,7 @@
   padding-top: 12px;
 }
 .sp-shop-total b {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 30px;
   color: var(--sp-sun-ink);
 }
@@ -298,4 +298,13 @@
 .sp-shop-rm:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.sp-shop-rm svg {
+  width: 17px;
+  height: 17px;
+}
+.sp-shop-float svg {
+  width: 18px;
+  height: 18px;
 }

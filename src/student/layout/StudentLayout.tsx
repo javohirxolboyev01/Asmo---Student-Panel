@@ -1,12 +1,15 @@
 // src/student/layout/StudentLayout.tsx
-// App shell of the student panel ("Kosmik maktab"): starry sky, HUD on top of
-// every page, and one nav that is a floating bottom bar on mobile and a left
-// rail on desktop (pure CSS, see space.css). The teacher panel keeps the
-// shared components/Layout.
+// App shell of the student panel (iOS style): top bar with avatar, coin /
+// streak capsules and the bell; one nav that is a floating glass tab bar on
+// mobile and a sidebar on desktop (pure CSS, see space.css); iOS push/pop
+// transitions between pages. The teacher panel keeps the shared
+// components/Layout.
 import "../theme/space.css";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { Rocket } from "lucide-react";
+import { Bell, Flame, GraduationCap, WifiOff } from "lucide-react";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { CoinGlyph } from "../components/icons";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
@@ -69,20 +72,22 @@ const Hud = () => {
         id="sp-coin-pill"
         aria-label={`${t("nav.coins")}: ${coins}`}
       >
-        💎 <span>{coins}</span>
+        <CoinGlyph />
+        <span>{coins}</span>
       </Link>
       <div
         className="sp-pill"
         aria-label={`${t("dashboardWidgets.streak")}: ${missions?.streak ?? 0}`}
       >
-        🔥 {missions?.streak ?? 0}
+        <Flame className="sp-flame-ic" aria-hidden="true" strokeWidth={2.2} />
+        <span>{missions?.streak ?? 0}</span>
       </div>
       <Link
         to="/notifications"
-        className="sp-pill"
+        className="sp-pill sp-pill-round"
         aria-label={t("nav.notifications")}
       >
-        🔔
+        <Bell aria-hidden="true" strokeWidth={2.2} />
         {unread > 0 && (
           <span className="sp-dot">{unread > 99 ? "99+" : unread}</span>
         )}
@@ -91,26 +96,85 @@ const Hud = () => {
   );
 };
 
+/**
+ * Navigation level of a page (how many pushes from a tab): tabs = 0; pages
+ * opened from a tab or the top bar = 1; pages opened from those = 2. URL
+ * depth isn't enough (/settings is opened from /profile).
+ */
+const LEVELS: [RegExp, number][] = [
+  [/^\/lessons\/[^/]+$/, 2],
+  [/^\/profile\/edit$/, 2],
+  [/^\/settings$/, 2],
+  [/^\/groups\/[^/]+$/, 1],
+  [/^\/quiz\/[^/]+$/, 1],
+  [/^\/(profile|notifications|wishlist)$/, 1],
+];
+const depthOf = (path: string) =>
+  isTab(path) ? 0 : (LEVELS.find(([re]) => re.test(path))?.[1] ?? path.split("/").filter(Boolean).length);
+const isTab = (path: string) => studentNavigation.some((n) => n.path === path);
+
+/**
+ * iOS navigation transition for the page that just mounted: going deeper
+ * pushes (slides in from the right), going back up pops (slides in from the
+ * left); switching tabs has no animation, like UITabBarController.
+ */
+const usePageTransition = (pathname: string) => {
+  // Decided during render (not in an effect) so the new page mounts with the
+  // right class straight away instead of animating once with a stale one.
+  const prev = useRef(pathname);
+  const cls = useRef("");
+  if (prev.current !== pathname) {
+    const from = prev.current;
+    const a = depthOf(from);
+    const b = depthOf(pathname);
+    cls.current =
+      isTab(pathname) && isTab(from) ? "" : b > a ? "sp-push" : b < a ? "sp-pop" : "sp-fade";
+    prev.current = pathname;
+  }
+  return cls.current;
+};
+
+/** Browser chrome / status bar colour follows the iOS background of the theme. */
+const useThemeColor = () => {
+  const theme = useSettingsStore((s) => s.theme);
+  useEffect(() => {
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    const before = meta.content;
+    meta.content = theme === "dark" ? "#000000" : "#f2f2f7";
+    return () => {
+      if (created) meta?.remove();
+      else if (meta) meta.content = before;
+    };
+  }, [theme]);
+};
+
 export const StudentLayout = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   useTrackNavigationHistory();
+  useThemeColor();
+  const transition = usePageTransition(pathname);
 
-  // New page → start at the top (the mock does window.scrollTo(0,0) on nav).
+  // New page → start at the top.
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
   return (
     <div className="sp">
-      <div className="sp-stars" aria-hidden="true" />
       <div className="sp-app">
         <Hud />
         <SpaceErrorBoundary
           key={pathname}
           fallback={() => (
             <EmptyState
-              emoji="🛰"
+              icon={WifiOff}
               title={t("common.error")}
               text={t("space.errorHint")}
               className="mt-6"
@@ -126,15 +190,17 @@ export const StudentLayout = () => {
           )}
         >
           {/* A page-shaped skeleton, so a chunk load doesn't flash a loader and then the page's own skeleton. */}
-          <Suspense fallback={<PageSkeleton />}>
-            <Outlet />
-          </Suspense>
+          <div key={pathname} className={transition ? `sp-view ${transition}` : "sp-view"}>
+            <Suspense fallback={<PageSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </div>
         </SpaceErrorBoundary>
       </div>
 
       <nav className="sp-nav" aria-label={t("space.navLabel")}>
         <div className="sp-logo">
-          <Rocket aria-hidden="true" strokeWidth={2.25} />
+          <GraduationCap aria-hidden="true" strokeWidth={2.25} />
           ASMO
         </div>
         {studentNavigation.map((item) => (
@@ -144,7 +210,7 @@ export const StudentLayout = () => {
             end={item.path === "/"}
             className={({ isActive }) => (isActive ? "on" : undefined)}
           >
-            <item.icon aria-hidden="true" strokeWidth={2} />
+            <item.icon aria-hidden="true" strokeWidth={2.1} />
             <span className="sp-nav-label">{t(item.labelKey)}</span>
           </NavLink>
         ))}

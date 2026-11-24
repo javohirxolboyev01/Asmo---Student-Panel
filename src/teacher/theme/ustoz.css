@@ -5,9 +5,13 @@
  * tokens (--u-*, channel triplets) live in css/index.css; pages may also use
  * Tailwind's `u-*` colours (text-u-mu, bg-u-sf2, …).
  */
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600;700;800&display=swap");
+/* System font (SF Pro on Apple devices); Inter is loaded globally in css/index.css. */
 
 .us {
+  --u-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --u-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
   --bg: rgb(var(--u-bg));
   --sf: rgb(var(--u-sf));
   --sf2: rgb(var(--u-sf2));
@@ -37,7 +41,7 @@
   min-height: 100vh;
   background: var(--bg);
   color: var(--tx);
-  font: 500 15.5px/1.5 Figtree, system-ui, sans-serif;
+  font: 400 17px/1.35 var(--u-font);
   -webkit-font-smoothing: antialiased;
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -73,7 +77,7 @@
 :where(.us) h2,
 :where(.us) h3,
 .u-fd {
-  font-family: Fredoka, Figtree, sans-serif;
+  font-family: var(--u-font-display);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -135,7 +139,7 @@
   gap: 10px;
   flex: 1;
   min-width: 0;
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   font-weight: 600;
   font-size: 18px;
   color: inherit;
@@ -406,7 +410,7 @@
   font-weight: 800;
   font-size: 15px;
   flex: none;
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   overflow: hidden;
 }
 .u-av img {
@@ -579,7 +583,7 @@
   display: block;
 }
 .u-nl b {
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   font-size: 20px;
   font-weight: 600;
 }
@@ -610,7 +614,7 @@
   place-items: center;
 }
 .u-tile b {
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   font-size: 17px;
   font-weight: 600;
   line-height: 1.2;
@@ -769,7 +773,7 @@
   line-height: 1.1;
 }
 .u-db b {
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   font-size: 24px;
   font-weight: 600;
 }
@@ -825,7 +829,7 @@
 .u-ring b {
   position: relative;
   font-size: 13px;
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
 }
 .u-stats3 {
   display: grid;
@@ -840,7 +844,7 @@
 }
 .u-stats3 b {
   display: block;
-  font-family: Fredoka, sans-serif;
+  font-family: var(--u-font-display);
   font-size: 26px;
   font-weight: 600;
   line-height: 1.1;
@@ -1152,7 +1156,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font: 600 21px Fredoka, sans-serif;
+    font: 700 21px var(--u-font-display);
     padding: 4px 10px 22px;
     color: inherit;
     text-decoration: none;
@@ -1226,21 +1230,565 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .u-tile,
-  .u-gcard,
-  .u-les,
-  .u-btn {
-    transition:
-      transform 0.15s,
-      box-shadow 0.15s;
+/* ══════════════════════════════════════════════════════════════════════
+ * iOS layer — restyles the mock pieces above to iOS conventions (system
+ * font, iOS colours from css/index.css, capsule buttons, segmented control,
+ * switches, frosted bars, inset lists). Kept last so it wins at equal
+ * specificity.
+ * ══════════════════════════════════════════════════════════════════════ */
+.us {
+  --u-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --nav-glass: rgba(249, 249, 249, 0.78);
+  letter-spacing: -0.01em;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip;
+}
+.dark .us {
+  --nav-glass: rgba(30, 30, 30, 0.72);
+}
+.us :focus-visible {
+  outline: 2px solid var(--pr);
+}
+:where(.us) h1,
+:where(.us) h2,
+:where(.us) h3,
+.u-fd {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+:where(.us) h1 {
+  font-size: 32px;
+  line-height: 1.12;
+}
+:where(.us) h2 {
+  font-size: 22px;
+}
+:where(.us) h3 {
+  font-weight: 600;
+}
+.u-sub {
+  font-size: 15px;
+}
+.us button,
+.us a,
+.u-bn,
+.u-seg {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Surfaces */
+.u-card,
+.u-tile,
+.u-gcard,
+.u-les,
+.u-nt {
+  border-radius: 20px;
+}
+.u-les,
+.u-nt {
+  border-radius: 16px;
+}
+.u-row {
+  border-radius: 12px;
+}
+.u-stats3 > div {
+  border-radius: 14px;
+}
+.u-tile .c,
+.u-mi {
+  border-radius: 12px;
+}
+
+/* Press highlight instead of hover lift (UITableViewCell selection) */
+.u-tile,
+.u-gcard,
+.u-les,
+.u-row,
+.u-mn,
+.u-nt {
+  transition: background-color 0.15s;
+}
+a.u-tile:active,
+button.u-tile:active,
+.u-gcard:active,
+.u-les:active,
+a.u-row:active,
+button.u-row:active,
+.u-mn:active,
+.u-nt:active {
+  background-color: color-mix(in srgb, var(--sf) 82%, var(--tx) 8%);
+}
+
+/* Buttons: iOS 26 capsules, flat fills */
+.u-btn {
+  border-radius: 99px;
+  background: var(--prf);
+  box-shadow: none;
+  font-weight: 600;
+  font-size: 17px;
+  padding: 11px 22px;
+  min-height: 44px;
+  transition: opacity 0.15s;
+}
+.u-btn:hover:not(:disabled) {
+  filter: none;
+}
+.u-btn:active:not(:disabled) {
+  opacity: 0.7;
+}
+.u-btn.line {
+  background: var(--sf2);
+  color: var(--pr);
+  box-shadow: none;
+}
+.u-btn.line:hover:not(:disabled) {
+  box-shadow: none;
+}
+.u-btn.wh {
+  color: #0066cc;
+}
+.u-btn.sm {
+  border-radius: 99px;
+  font-size: 15px;
+  padding: 7px 14px;
+  min-height: 34px;
+}
+.u-btn.block {
+  font-size: 17px;
+  padding: 14px;
+}
+.u-ib {
+  border-radius: 50%;
+}
+.u-ib:active:not(:disabled) {
+  opacity: 0.7;
+}
+.u-chip,
+.u-tag,
+.u-seg button,
+.u-tg button,
+.u-pk,
+.u-row b,
+.u-mn,
+.u-label {
+  font-weight: 600;
+}
+.u-mn {
+  font-size: 17px;
+  font-weight: 500;
+}
+.u-coin {
+  font-weight: 700;
+}
+.u-av {
+  font-family: var(--u-font);
+  font-weight: 600;
+}
+
+/* Text fields */
+.u-input {
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--field);
+  font-size: 17px;
+  padding: 11px 14px;
+}
+.u-input:focus {
+  border-color: var(--pr);
+  box-shadow: 0 0 0 3px rgb(var(--u-pr) / 0.16);
+}
+.u-sr input {
+  padding-left: 42px;
+}
+.u-sr .u-i {
+  left: 13px;
+  width: 19px;
+  height: 19px;
+}
+.u-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Segmented control (UISegmentedControl) */
+.u-seg {
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 9px;
+  padding: 2px;
+}
+.dark .u-seg {
+  background: rgba(118, 118, 128, 0.24);
+}
+.u-seg button {
+  border-radius: 7px;
+  color: var(--tx);
+  font-weight: 500;
+  padding: 7px 14px;
+  font-size: 15px;
+}
+.u-seg .on {
+  background: var(--sf);
+  font-weight: 600;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.12),
+    0 3px 1px rgba(0, 0, 0, 0.04);
+}
+.dark .u-seg .on {
+  background: #636366;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Switch (UISwitch) */
+.u-tgl {
+  width: 51px;
+  height: 31px;
+  background: rgba(120, 120, 128, 0.16);
+}
+.dark .u-tgl {
+  background: rgba(120, 120, 128, 0.32);
+}
+.u-tgl::after {
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.15),
+    0 3px 1px rgba(0, 0, 0, 0.06);
+}
+.u-tgl.on {
+  background: #34c759;
+}
+.dark .u-tgl.on {
+  background: #30d158;
+}
+
+/* Back button: tinted "‹ Orqaga" */
+.u-back {
+  color: var(--pr);
+  font-weight: 400;
+  font-size: 17px;
+  gap: 0;
+  padding: 10px 8px 10px 0;
+}
+.u-back .u-i {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2.4;
+}
+
+/* Hero cards: iOS blue instead of the mock purple */
+.u-hero {
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0066cc, #003f9e);
+  box-shadow: none;
+}
+.u-hero h1 {
+  font-size: 28px;
+}
+.u-nl {
+  border-radius: 16px;
+}
+.u-ghero {
+  border-radius: 24px;
+  box-shadow: none;
+}
+
+/* Group cards: colour lives in the week dots / bar, not a side stripe */
+.u-gcard {
+  border-left: 0;
+}
+
+/* Date box as an iOS Calendar icon: red month over a big day number */
+.u-db {
+  background: var(--sf2);
+  color: var(--tx);
+  border-radius: 12px;
+  gap: 0;
+}
+.u-db small {
+  order: -1;
+  color: var(--er);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.u-db b {
+  font-size: 24px;
+  font-weight: 500;
+}
+.u-week .now {
+  background: var(--prf);
+}
+
+/* Empty state (ContentUnavailableView): big plain symbol */
+.u-empty .em,
+.u-empty .em.mu,
+.u-empty .em.er {
+  width: auto;
+  height: auto;
+  background: none;
+}
+.u-empty .em .u-i.l {
+  width: 52px;
+  height: 52px;
+  stroke-width: 1.6;
+}
+.u-empty .em.mu {
+  color: var(--mu);
+}
+.u-empty h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* ── Top bar = iOS navigation bar (frosted, hairline) ── */
+.u-top {
+  top: 0;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 16px 6px;
+  min-height: 52px;
+  background: var(--nav-glass);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid transparent;
+  transition: border-color 0.2s;
+  z-index: 20;
+}
+.u-top.on {
+  border-bottom-color: rgb(var(--u-ln));
+}
+.u-brand {
+  font-size: 17px;
+  font-weight: 700;
+}
+.u-bm {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--prf);
+}
+.u-bm .u-i {
+  width: 18px;
+  height: 18px;
+}
+.u-bell {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--sf2);
+  box-shadow: none;
+}
+.u-bell .u-i {
+  width: 20px;
+  height: 20px;
+}
+.u-bell i {
+  top: 7px;
+  right: 8px;
+  border-color: var(--sf2);
+}
+/* Compact page title in the middle of the bar once the large title scrolls away */
+.u-top-title {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + env(safe-area-inset-top, 0px) / 2);
+  transform: translate(-50%, calc(-50% + 4px));
+  max-width: 52%;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.u-top.on .u-top-title {
+  opacity: 1;
+  transform: translate(-50%, -50%);
+}
+.u-top .u-back {
+  padding: 6px 8px 6px 0;
+  margin-left: -6px;
+}
+
+/* ── Tab bar (iOS 26 floating glass, icons + labels) ── */
+.u-bn {
+  left: 12px;
+  right: 12px;
+  border-radius: 32px;
+  padding: 6px;
+  background: var(--nav-glass);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid rgb(var(--u-ln));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.u-bn a {
+  gap: 2px;
+  padding: 4px 0 3px;
+  border-radius: 24px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.u-bn span.p {
+  width: auto;
+  height: 26px;
+  background: none;
+}
+.u-bn .on {
+  color: var(--pr);
+  background: color-mix(in srgb, var(--prf) 9%, transparent);
+}
+.dark .u-bn .on {
+  background: rgb(var(--u-prf) / 0.22);
+}
+.u-bn .on span.p {
+  background: none;
+}
+.u-bn .on .u-i {
+  stroke-width: 2.4;
+}
+.u-bdg {
+  font-weight: 600;
+  left: 58%;
+  top: -2px;
+}
+
+/* ── Page transitions (push / pop) ── */
+.u-view {
+  min-height: 50vh;
+}
+.u-push {
+  animation: u-push 0.42s var(--u-ease);
+}
+.u-pop-in {
+  animation: u-pop-in 0.42s var(--u-ease);
+}
+.u-fade {
+  animation: u-fade 0.25s ease-out;
+}
+@keyframes u-push {
+  from {
+    transform: translateX(28%);
+    opacity: 0.4;
   }
-  .u-tile:hover,
-  .u-gcard:hover,
-  .u-les:hover {
-    transform: translateY(-3px);
+}
+@keyframes u-pop-in {
+  from {
+    transform: translateX(-18%);
+    opacity: 0.4;
   }
-  .u-btn:active {
-    transform: scale(0.97);
+}
+@keyframes u-fade {
+  from {
+    opacity: 0;
   }
+}
+
+@media (min-width: 960px) {
+  /* iPad-style sidebar */
+  .u-side {
+    background: var(--sf);
+    border-right: 0.5px solid rgb(var(--u-ln));
+    gap: 2px;
+  }
+  .u-side a.u-nav {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-weight: 500;
+    color: var(--tx);
+  }
+  .u-side a.u-nav .u-i {
+    color: var(--pr);
+  }
+  .u-side a.u-nav.on {
+    background: var(--prf);
+    color: #fff;
+  }
+  .u-side a.u-nav.on .u-i {
+    color: #fff;
+  }
+  .u-side a.u-nav.on .u-bdg {
+    background: #fff;
+    color: var(--prf);
+  }
+  .u-side a.u-nav:hover:not(.on) {
+    background: var(--sf2);
+    color: var(--tx);
+  }
+  .u-side .u-me {
+    border-radius: 14px;
+  }
+  .u-top .u-brand {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-push,
+  .u-pop-in,
+  .u-fade {
+    animation: none;
+  }
+}
+
+/* Back button in the bar: keep the brand slot, show it on desktop too */
+.u-top .u-top-back {
+  visibility: visible !important;
+}
+.u-top {
+  position: sticky;
+}
+
+/* "Ko'proq" profile card: Settings-style account card */
+.u-me-card .u-av.xl {
+  border: 0;
+}
+/* Settings-style 30pt icon tiles in menu rows only (other pages size .u-mi themselves) */
+.u-mn .u-mi {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+.u-mn .u-mi .u-i {
+  width: 18px;
+  height: 18px;
+}
+
+/* Group hero: darken towards the end so white text stays readable on any group colour */
+.u-ghero {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--g) 88%, #000), color-mix(in srgb, var(--g) 62%, #000));
+}
+.u-ghero .u-wk i.on {
+  color: color-mix(in srgb, var(--g) 75%, #000);
+}
+/* Week dots of a group card: day letters on the group colour, darkened for contrast */
+.u-wk i.on {
+  background: color-mix(in srgb, var(--g, var(--prf)) 82%, #000);
+}
+
+/* Bar collapsed on a tab root: brand fades out so the centred title has room */
+.u-top .u-brand {
+  transition: opacity 0.2s;
+}
+.u-top.on .u-brand:not(.u-top-back) {
+  opacity: 0;
+}
+
+/* Rows straight on the page background are white cells; inside cards/sheets they stay grey */
+.u-row {
+  background: var(--sf);
+}
+.u-card .u-row,
+.u-sheet .u-row,
+.u-ghero .u-row,
+.u-hero .u-row {
+  background: var(--sf2);
 }

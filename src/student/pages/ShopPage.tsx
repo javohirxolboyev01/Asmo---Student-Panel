@@ -6,7 +6,9 @@ import { Link } from "react-router-dom";
 import { useWishlistCart } from "@/hooks/queries/useWishlist";
 import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ChevronRight, ShoppingCart } from "lucide-react";
 import { PageHeader } from "../components/ui";
+import { CoinGlyph } from "../components/icons";
 import { ProductCatalog, type CartControls } from "../components/shop/ProductCatalog";
 
 export const ShopPage = () => {
@@ -31,14 +33,14 @@ export const ShopPage = () => {
       right={
         <div className="sp-shop-acts">
           <Link to="/coins" className="sp-pill" aria-label={t("space.shop.balanceAria", { n: balance })}>
-            💎 <span>{coinsLoading ? "…" : balance}</span>
+            <CoinGlyph /> <span>{coinsLoading ? "…" : balance}</span>
           </Link>
           <Link
             to="/wishlist"
-            className="sp-pill"
+            className="sp-pill sp-pill-round"
             aria-label={t("space.shop.cartAria", { count: totalItems })}
           >
-            🛒
+            <ShoppingCart aria-hidden="true" strokeWidth={2.2} />
             {totalItems > 0 && <span className="sp-dot">{totalItems > 99 ? "99+" : totalItems}</span>}
           </Link>
         </div>
@@ -50,7 +52,8 @@ export const ShopPage = () => {
     <ProductCatalog header={header} cart={cart}>
       {totalItems > 0 && (
         <Link to="/wishlist" className="sp-cta sp-shop-float">
-          🛒 {t("shop.cartItems", { count: totalItems })} ›
+          <ShoppingCart aria-hidden="true" /> {t("shop.cartItems", { count: totalItems })}
+          <ChevronRight aria-hidden="true" />
         </Link>
       )}
     </ProductCatalog>

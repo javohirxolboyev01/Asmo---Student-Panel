@@ -9,6 +9,22 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useAvatarItemsQuery, usePurchaseAvatarItemMutation } from "@/hooks/queries/useAvatarItems";
 import { getErrorMessage } from "@/lib/toast";
 import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Dices,
+  Eye,
+  Glasses,
+  GraduationCap,
+  Lock,
+  Palette,
+  Scissors,
+  Shirt,
+  Smile,
+  type LucideIcon,
+} from "lucide-react";
+import { CoinGlyph } from "../icons";
+import {
   BACKGROUNDS,
   DEFAULT_CHARACTER,
   characterFromAvatar,
@@ -36,14 +52,16 @@ import { Spinner } from "../ui";
 
 const host = () => document.querySelector(".sp") ?? document.body;
 
-/** Emoji confetti from the middle of the screen (mock's `confetti()`). */
+/** Confetti from the middle of the screen: small pieces in iOS system colours. */
+const CONFETTI = ["#ff9500", "#34c759", "#007aff", "#ff2d55", "#af52de", "#ffcc00"];
 export const confetti = () => {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const root = host();
   for (let i = 0; i < 22; i++) {
     const s = document.createElement("span");
     s.className = "sp-ce-cf";
-    s.textContent = ["⭐", "✨", "🎉", "💎"][i % 4];
+    s.style.background = CONFETTI[i % CONFETTI.length];
+    if (i % 3 === 0) s.style.borderRadius = "50%";
     root.appendChild(s);
     s.animate(
       [
@@ -118,15 +136,15 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
 
   // ── Tabs ──
   const tabs = useMemo(() => {
-    const list: [Tab, string, boolean][] = [
+    const list: [Tab, string | LucideIcon, boolean][] = [
       ["skin", faceIcon(d.skin), true],
-      ["hair", "💇", false],
-      ["eyes", "👀", false],
-      ...(d.g === "m" ? ([["beard", "🧔", false]] as [Tab, string, boolean][]) : []),
-      ["outfit", "👕", false],
-      ["hat", "🎩", false],
-      ["glasses", "👓", false],
-      ["bg", "🌈", false],
+      ["hair", Scissors, false],
+      ["eyes", Eye, false],
+      ...(d.g === "m" ? ([["beard", Smile, false]] as [Tab, LucideIcon, boolean][]) : []),
+      ["outfit", Shirt, false],
+      ["hat", GraduationCap, false],
+      ["glasses", Glasses, false],
+      ["bg", Palette, false],
     ];
     return list;
   }, [d.g, d.skin]);
@@ -305,14 +323,18 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
             type="button"
             className={cls}
             onClick={() => pick(cat, v)}
-            aria-label={locked ? `${nameFor(cat, v)} — 💎 ${price}` : nameFor(cat, v)}
+            aria-label={locked ? `${nameFor(cat, v)} — ${price} coin` : nameFor(cat, v)}
             aria-pressed={sel}
           >
             {cat === "bg" ? <BgSwatch v={v} /> : <Svg html={renderCharacter({ ...d, [cat]: v }, cat === "outfit" ? OUTFIT_VB : FACE_VB)} />}
             <span className="sp-ce-ck" aria-hidden="true">
-              ✓
+              <Check strokeWidth={3} />
             </span>
-            {locked && <span className="sp-ce-pr">🔒 💎{price}</span>}
+            {locked && (
+              <span className="sp-ce-pr">
+                <Lock className="sp-ii" aria-hidden="true" /> {price}
+              </span>
+            )}
           </button>
         );
       })}
@@ -340,7 +362,9 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
         <div className="sp-ce-sheet" role="dialog" aria-modal="true" aria-labelledby="sp-ce-title" ref={sheetRef} tabIndex={-1}>
           <div className="sp-ce-eh">
             <h2 id="sp-ce-title">{t("space.ce.title")}</h2>
-            <div className="sp-ce-chip">💎 {items.isLoading ? "…" : coins}</div>
+            <div className="sp-ce-chip">
+              <CoinGlyph /> {items.isLoading ? "…" : coins}
+            </div>
           </div>
 
           <div className="sp-ce-stage" style={{ background: `linear-gradient(${bg[0]},${bg[1]})` }}>
@@ -356,7 +380,7 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
               aria-label={t("space.ce.randomLabel")}
               onClick={() => update(randomCharacter(d, owned), t("space.ce.random"))}
             >
-              🎲
+              <Dices aria-hidden="true" />
             </button>
           </div>
 
@@ -377,7 +401,7 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
               disabled={!arrows.left}
               onClick={() => tabsRef.current?.scrollBy({ left: -180, behavior: "smooth" })}
             >
-              ‹
+              <ChevronLeft aria-hidden="true" />
             </button>
             <div className="sp-ce-tabs" ref={tabsRef} onScroll={updateArrows}>
               {tabs.map(([key, ico, isSvg]) => (
@@ -388,7 +412,16 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
                   onClick={() => !dragged.current && setTab(key)}
                   aria-pressed={key === tab}
                 >
-                  {isSvg ? <Svg html={ico} className="sp-ce-tabico" /> : <span className="sp-ce-tabico">{ico}</span>}
+                  {isSvg ? (
+                    <Svg html={ico as string} className="sp-ce-tabico" />
+                  ) : (
+                    <span className="sp-ce-tabico">
+                      {(() => {
+                        const Icon = ico as LucideIcon;
+                        return <Icon aria-hidden="true" strokeWidth={2} />;
+                      })()}
+                    </span>
+                  )}
                   {t(`space.ce.tab.${key}`)}
                 </button>
               ))}
@@ -400,7 +433,7 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
               disabled={!arrows.right}
               onClick={() => tabsRef.current?.scrollBy({ left: 180, behavior: "smooth" })}
             >
-              ›
+              <ChevronRight aria-hidden="true" />
             </button>
           </div>
 
@@ -437,7 +470,9 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
               )}
             </div>
             <h3 id="sp-ce-mname">{nameFor(pending.cat, pending.v)}</h3>
-            <div className="sp-ce-mprice">💎 {pendingPrice}</div>
+            <div className="sp-ce-mprice">
+              <CoinGlyph /> {pendingPrice}
+            </div>
             <p className="sp-ce-mbal">{t("space.ce.balance", { n: coins })}</p>
             {buyError && (
               <p className="sp-ce-err" role="alert">

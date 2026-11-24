@@ -6,7 +6,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useOpenChestMutation } from "@/hooks/queries/useMissions";
 import { getErrorMessage } from "@/lib/toast";
 import type { OpenChestResult } from "@/types/mission";
+import { Gift, MoonStar, PackageOpen, Wind } from "lucide-react";
 import { Modal, Spinner, burst } from "./ui";
+import { CoinGlyph, IconTile } from "./icons";
 
 export const DailyChest = ({ opened, reward }: { opened: boolean; reward: number | null }) => {
   const { t } = useTranslation();
@@ -40,16 +42,14 @@ export const DailyChest = ({ opened, reward }: { opened: boolean; reward: number
   return (
     <>
       <button className={opened ? "sp-box sp-off" : "sp-box"} onClick={() => setIsOpen(true)}>
-        <span aria-hidden="true">🛸</span>
+        <Gift className="sp-box-ic" aria-hidden="true" strokeWidth={2.1} />
         {t("space.chest")}
       </button>
 
-      <Modal open={isOpen} onClose={close} labelledBy="sp-chest-title">
+      <Modal open={isOpen} onClose={close} labelledBy="sp-chest-title" sheet>
         {showTomorrow ? (
           <>
-            <div className="text-5xl" aria-hidden="true">
-              🌙
-            </div>
+            <IconTile icon={MoonStar} tint="indigo" size="lg" />
             <h2 id="sp-chest-title">{t("space.chestTomorrowTitle")}</h2>
             <p>{t("space.chestTomorrowText", { reward: reward ?? 0 })}</p>
             <button className="sp-cta" onClick={close}>
@@ -58,7 +58,15 @@ export const DailyChest = ({ opened, reward }: { opened: boolean; reward: number
           </>
         ) : (
           <>
-            <h2 id="sp-chest-title">{result ? `+${result.reward} 💎` : t("space.chestPickTitle")}</h2>
+            <h2 id="sp-chest-title">
+              {result ? (
+                <>
+                  +{result.reward} <CoinGlyph />
+                </>
+              ) : (
+                t("space.chestPickTitle")
+              )}
+            </h2>
             <p>{result ? t("space.chestAdded") : t("space.chestPickText")}</p>
             <div className="sp-three">
               {[0, 1, 2].map((i) => {
@@ -72,7 +80,9 @@ export const DailyChest = ({ opened, reward }: { opened: boolean; reward: number
                     onClick={(e) => pick(i, e.currentTarget)}
                     aria-label={t("space.capsule", { n: i + 1 })}
                   >
-                    <span aria-hidden="true">{result ? (isPicked ? "🎁" : "💨") : "🛸"}</span>
+                    <span className="sp-cap-ic" aria-hidden="true">
+                      {result ? isPicked ? <PackageOpen /> : <Wind /> : <Gift />}
+                    </span>
                     {result ? `+${result.rewards[i]}` : open.isPending && open.variables === i ? <Spinner /> : "?"}
                   </button>
                 );

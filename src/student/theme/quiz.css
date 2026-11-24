@@ -42,7 +42,7 @@
   padding: 10px 24px;
 }
 .sp-quiz-percent {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 48px;
   line-height: 1.1;
   color: var(--sp-lime-ink);
@@ -57,7 +57,7 @@
   color: var(--sp-mute);
 }
 .sp-quiz-clock {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 16px;
   color: var(--sp-ink);
   font-variant-numeric: tabular-nums;
@@ -115,7 +115,7 @@
 }
 .sp-quiz-opt.on {
   border-color: var(--sp-lime-ink);
-  box-shadow: 0 0 0 3px rgba(182, 242, 60, 0.2);
+  box-shadow: 0 0 0 3px var(--sp-lime-soft);
 }
 .sp-quiz-letter {
   width: 32px;
@@ -124,7 +124,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   border: 2px solid var(--sp-line);
 }
 .sp-quiz-opt.on .sp-quiz-letter {
@@ -169,4 +169,14 @@
 .sp-quiz-nav .sp-cta {
   min-width: 120px;
   padding: 9px 18px;
+}
+
+/* Icon tile instead of the emoji badge */
+.sp-quiz-big.sp-tile {
+  margin: 0 auto 8px;
+  font-size: inherit;
+}
+.sp-quiz-nav .sp-cta svg {
+  width: 18px;
+  height: 18px;
 }

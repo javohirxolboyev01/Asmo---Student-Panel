@@ -26,7 +26,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            "w-full px-4 py-3 rounded-[14px] border-2 outline-none transition-[border-color,box-shadow] text-base font-medium min-h-[100px]",
+            "w-full px-4 py-3 rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal min-h-[100px]",
             "u-field",
             error && "is-error",
             className,

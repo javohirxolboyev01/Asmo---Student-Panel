@@ -2,7 +2,7 @@
 // "Guruhlarim": search + Faol/Tugagan tabs + group cards (mock: #p-guruh).
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap } from "lucide-react";
+import { ChevronRight, GraduationCap, Search, Archive, Users } from "lucide-react";
 import { useGroupsQuery } from "@/hooks/queries/useGroups";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
@@ -15,7 +15,8 @@ import {
   Segmented,
   Skel,
 } from "../components/ui";
-import { groupEmoji } from "../components/groups/groupEmoji";
+import { GroupIcon } from "../components/groups/GroupIcon";
+import { InlineIcon } from "../components/icons";
 import "../theme/groups.css";
 
 type Tab = "active" | "completed";
@@ -76,21 +77,21 @@ export const GroupsPage = () => {
 
   const empty = search.trim() ? (
     <EmptyState
-      emoji="🔭"
+      icon={Search}
       title={t("space.groups.searchEmpty")}
       text={t("groups.noSearchResults", { query: search.trim() })}
       className="col-span-full"
     />
   ) : tab === "active" ? (
     <EmptyState
-      emoji="🛸"
+      icon={Users}
       title={t("space.groups.emptyActive")}
       text={t("space.groups.emptyActiveHint")}
       className="col-span-full"
     />
   ) : (
     <EmptyState
-      emoji="🌌"
+      icon={Archive}
       title={t("space.groups.emptyCompleted")}
       text={t("space.groups.emptyCompletedHint")}
       className="col-span-full"
@@ -121,7 +122,7 @@ export const GroupsPage = () => {
           : shown.map((g) => (
               <Link key={g.id} to={`/groups/${g.id}`} className="sp-gc">
                 <div className="sp-a" aria-hidden="true">
-                  {groupEmoji(g.id)}
+                  <GroupIcon id={g.id} />
                 </div>
                 <div className="sp-t">
                   <b>{g.name}</b>
@@ -146,13 +147,15 @@ export const GroupsPage = () => {
                     {g.teacher?.fullName &&
                       g.studentCount !== undefined &&
                       " · "}
-                    {g.studentCount !== undefined &&
-                      `👥 ${t("groups.studentsSuffix", { count: g.studentCount })}`}
+                    {g.studentCount !== undefined && (
+                      <>
+                        <InlineIcon icon={Users} />{" "}
+                        {t("groups.studentsSuffix", { count: g.studentCount })}
+                      </>
+                    )}
                   </small>
                 </div>
-                <span className="sp-groups-chev" aria-hidden="true">
-                  ›
-                </span>
+                <ChevronRight className="sp-chev" aria-hidden="true" />
               </Link>
             ))}
       </div>

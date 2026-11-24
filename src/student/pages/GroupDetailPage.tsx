@@ -1,6 +1,15 @@
 // src/student/pages/GroupDetailPage.tsx
 // Group details: group info chips and the full lesson list.
-import { GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  ChevronRight,
+  Clock,
+  GraduationCap,
+  PencilLine,
+  Search,
+  BookX,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useGroupDetailQuery } from "@/hooks/queries/useGroups";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -9,7 +18,7 @@ import { isOverdue } from "@/utilist/calculateDeadline";
 import { formatDate } from "@/utilist/formatData";
 import type { LessonListItem } from "@/types/lesson";
 import { EmptyState, ErrorState, PageHeader, Skel } from "../components/ui";
-import { groupEmoji } from "../components/groups/groupEmoji";
+import { IconTile, InlineIcon } from "../components/icons";
 import "../theme/groups.css";
 
 const hwState = (l: LessonListItem) =>
@@ -29,17 +38,23 @@ const LessonRow = ({ lesson }: { lesson: LessonListItem }) => {
       className={`sp-row sp-groups-lesson${cls}`}
     >
       <div className="sp-ic" aria-hidden="true">
-        {state === "open" ? "📝" : `#${lesson.lessonOrder}`}
+        {state === "open" ? (
+          <IconTile icon={PencilLine} tint="orange" />
+        ) : (
+          <IconTile tint={state === "late" ? "red" : "gray"} soft>
+            {lesson.lessonOrder}
+          </IconTile>
+        )}
       </div>
       <div className="sp-t">
         <b>{lesson.topic}</b>
         <small>
-          📅 {formatDate(lesson.lessonDate)}
+          <InlineIcon icon={CalendarDays} /> {formatDate(lesson.lessonDate)}
           {lesson.homework?.deadline && (
             <>
               {" · "}
               <span className={state === "late" ? "sp-groups-late" : undefined}>
-                ⏰{" "}
+                <InlineIcon icon={Clock} />{" "}
                 {t("space.groups.deadline", {
                   date: formatDate(lesson.homework.deadline),
                 })}
@@ -63,9 +78,7 @@ const LessonRow = ({ lesson }: { lesson: LessonListItem }) => {
             ? t("space.groups.hwOverdue")
             : t("space.groups.hwNone")}
       </span>
-      <span className="sp-groups-chev" aria-hidden="true">
-        ›
-      </span>
+      <ChevronRight className="sp-chev" aria-hidden="true" />
     </Link>
   );
 };
@@ -122,7 +135,7 @@ export const GroupDetailPage = () => {
       <div className="sp-page">
         <PageHeader back={back} title={t("groupDetail.notFound")} />
         <EmptyState
-          emoji="🔭"
+          icon={Search}
           title={t("groupDetail.notFound")}
           action={
             <Link to="/groups" className="sp-cta inline-block no-underline">
@@ -146,14 +159,13 @@ export const GroupDetailPage = () => {
     <div className="sp-page">
       <PageHeader
         back={back}
-        title={
-          <>
-            <span aria-hidden="true">{groupEmoji(group.id ?? id ?? "")} </span>
-            {group.name}
-          </>
-        }
+        title={group.name}
         subtitle={subtitle || undefined}
-        right={<div className="sp-pill">📚 {lessons.length}</div>}
+        right={
+          <div className="sp-pill">
+            <BookOpen aria-hidden="true" strokeWidth={2.2} /> <span>{lessons.length}</span>
+          </div>
+        }
       />
 
       <div className="sp-groups-info">
@@ -166,8 +178,14 @@ export const GroupDetailPage = () => {
             <span className="sp-groups-teacher-name">{group.teacherName}</span>
           </span>
         )}
-        {schedule && <span>🗓 {schedule}</span>}
-        <span>📚 {t("space.groups.lessonsCount", { n: lessons.length })}</span>
+        {schedule && (
+          <span>
+            <InlineIcon icon={CalendarDays} /> {schedule}
+          </span>
+        )}
+        <span>
+          <InlineIcon icon={BookOpen} /> {t("space.groups.lessonsCount", { n: lessons.length })}
+        </span>
       </div>
 
       <div className="sp-sec">
@@ -179,7 +197,7 @@ export const GroupDetailPage = () => {
       </div>
       {lessons.length === 0 ? (
         <EmptyState
-          emoji="📡"
+          icon={BookX}
           title={t("groupDetail.noLessons")}
           text={t("space.groups.noLessonsHint")}
         />

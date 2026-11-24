@@ -1,9 +1,12 @@
 // src/teacher/layout/TeacherLayout.tsx
-// App shell of the teacher panel, 1:1 with the "Ustoz paneli" mock: sticky
-// top bar (brand, bell, avatar), a white left rail on desktop and a floating
-// six-tab bar on phones. Styles: theme/ustoz.css.
+// App shell of the teacher panel (iOS style): a frosted navigation bar
+// (brand or the page's back button, compact page title, bell, avatar), an
+// iPad-style sidebar on desktop and a floating glass tab bar on phones;
+// iOS push/pop transitions between pages. Styles: theme/ustoz.css.
 import "../theme/ustoz.css";
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { TopBarContext, type TopBarState } from "../components/topBar";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Bell, GraduationCap } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
@@ -13,7 +16,7 @@ import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 import { usePendingSubmissionsQuery } from "@/hooks/queries/useSubmissions";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { cn } from "@/lib/utils";
-import { Avatar, PageSkeleton } from "../components/ui";
+import { Avatar, BackLink, PageSkeleton } from "../components/ui";
 import {
   isMoreActiveOnMobile,
   isNavActive,
@@ -26,6 +29,59 @@ import {
 const Badge = ({ count }: { count: number }) =>
   count > 0 ? <span className="u-bdg">{count > 99 ? "99+" : count}</span> : null;
 
+/** Tab roots (phone tab bar + desktop sidebar): switching between them doesn't animate. */
+const isRoot = (path: string) =>
+  [...teacherMainNav, ...teacherExtraNav, teacherMoreNav].some((n) => n.path === path);
+
+/**
+ * Navigation level of a page (pushes from a tab root); URL depth alone isn't
+ * enough (/settings is opened from /more).
+ */
+const LEVELS: [RegExp, number][] = [
+  [/^\/lessons\/[^/]+$/, 2],
+  [/^\/profile\/edit$/, 2],
+  [/^\/tests\/[^/]+\/(edit|results)$/, 2],
+  [/^\/(groups|students|submissions)\/[^/]+$/, 1],
+  [/^\/tests\/new$/, 1],
+  [/^\/(attendance|shop|teachers|notifications|settings)$/, 1],
+];
+const levelOf = (path: string) =>
+  isRoot(path) ? 0 : (LEVELS.find(([re]) => re.test(path))?.[1] ?? path.split("/").filter(Boolean).length);
+
+/** iOS push (deeper) / pop (back up) for the page that just mounted; decided during render. */
+const usePageTransition = (pathname: string) => {
+  const prev = useRef(pathname);
+  const cls = useRef("");
+  if (prev.current !== pathname) {
+    const from = prev.current;
+    const a = levelOf(from);
+    const b = levelOf(pathname);
+    cls.current = isRoot(pathname) && isRoot(from) ? "" : b > a ? "u-push" : b < a ? "u-pop-in" : "u-fade";
+    prev.current = pathname;
+  }
+  return cls.current;
+};
+
+/** Browser chrome / status bar colour follows the iOS background of the theme. */
+const useThemeColor = () => {
+  const theme = useSettingsStore((s) => s.theme);
+  useEffect(() => {
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    const before = meta.content;
+    meta.content = theme === "dark" ? "#000000" : "#f2f2f7";
+    return () => {
+      if (created) meta?.remove();
+      else if (meta) meta.content = before;
+    };
+  }, [theme]);
+};
+
 export const TeacherLayout = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
@@ -33,6 +89,10 @@ export const TeacherLayout = () => {
   const { data: notifications } = useNotificationsQuery();
   const { data: pending } = usePendingSubmissionsQuery();
   useTrackNavigationHistory();
+  useThemeColor();
+  const transition = usePageTransition(pathname);
+  const [bar, setBar] = useState<TopBarState | null>(null);
+  const barApi = useMemo(() => ({ set: setBar }), []);
 
   // New page → start at the top (the mock does scrollTo(0,0) on navigation).
   useEffect(() => {
@@ -86,13 +146,24 @@ export const TeacherLayout = () => {
         </aside>
 
         <div className="min-w-0">
-          <header className="u-top">
-            <Link to="/" className="u-brand">
-              <span className="u-bm">
-                <GraduationCap className="u-i" strokeWidth={2} aria-hidden="true" />
-              </span>
-              {t("us.brand")}
-            </Link>
+          <header className={bar?.collapsed ? "u-top on" : "u-top"}>
+            {bar?.back ? (
+              <div className="u-brand u-top-back">
+                <BackLink to={bar.back.to} />
+              </div>
+            ) : (
+              <Link to="/" className="u-brand">
+                <span className="u-bm">
+                  <GraduationCap className="u-i" strokeWidth={2} aria-hidden="true" />
+                </span>
+                {t("us.brand")}
+              </Link>
+            )}
+            {bar?.title ? (
+              <div className="u-top-title" aria-hidden={!bar.collapsed}>
+                {bar.title}
+              </div>
+            ) : null}
             <Link to="/notifications" className="u-bell" aria-label={t("nav.notifications")}>
               <Bell className="u-i" strokeWidth={2} aria-hidden="true" />
               {hasUnread && <i />}
@@ -105,12 +176,16 @@ export const TeacherLayout = () => {
           </header>
 
           <main className="u-main">
-            <ErrorBoundary key={pathname}>
-              {/* Page-shaped placeholder while a page's chunk loads. */}
-              <Suspense fallback={<PageSkeleton />}>
-                <Outlet />
-              </Suspense>
-            </ErrorBoundary>
+            <TopBarContext.Provider value={barApi}>
+              <ErrorBoundary key={pathname}>
+                <div key={pathname} className={transition ? `u-view ${transition}` : "u-view"}>
+                  {/* Page-shaped placeholder while a page's chunk loads. */}
+                  <Suspense fallback={<PageSkeleton />}>
+                    <Outlet />
+                  </Suspense>
+                </div>
+              </ErrorBoundary>
+            </TopBarContext.Provider>
           </main>
         </div>
       </div>

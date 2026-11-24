@@ -1,8 +1,9 @@
 // src/teacher/components/ui.tsx
-// Building blocks of the teacher panel, 1:1 with the "Ustoz paneli" mock
-// (classes in theme/ustoz.css, `u-` = mock class). Pages compose these so
-// headers, tags, avatars and empty states look the same everywhere.
-import type { CSSProperties, ReactNode } from "react";
+// Building blocks of the teacher panel (iOS style; classes in
+// theme/ustoz.css, `u-` prefix). Pages compose these so headers, tags,
+// avatars and empty states look the same everywhere.
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useTopBar } from "./topBar";
 import { Link } from "react-router-dom";
 import { Check, ChevronLeft, Coins } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -11,17 +12,17 @@ import { cn } from "@/lib/utils";
 
 // ── Colours ──
 
-/** Avatar palette (bg, text) from the mock; picked by a stable hash of the seed. */
+/** Avatar monograms (bg, text): soft iOS system tints; picked by a stable hash of the seed. */
 const AV_COLORS: [string, string][] = [
-  ["#dcd7ff", "#3b2fb0"],
-  ["#ffe1c2", "#9a4a00"],
-  ["#cdf3e6", "#0b6b52"],
-  ["#ffd9e2", "#a3213f"],
-  ["#d6ecff", "#0d5a9e"],
-  ["#fff0b8", "#7a5a00"],
+  ["#dbe9f9", "#0058b0"],
+  ["#ffe8cc", "#a14a00"],
+  ["#d9f2df", "#1b6e31"],
+  ["#ffdfe2", "#b0001a"],
+  ["#ecdcf5", "#7a3a99"],
+  ["#d5eef2", "#0b6a7a"],
 ];
-/** Group accent colours from the mock (used when a direction has no colour). */
-export const GROUP_COLORS = ["#5848e0", "#e8590c", "#0b8f6e", "#c2255c", "#1971c2"];
+/** Group accent colours: iOS system tints (used when a direction has no colour). */
+export const GROUP_COLORS = ["#0066cc", "#e07800", "#1e8e3e", "#c41c5f", "#8944ab"];
 
 export const hashOf = (seed: string) => {
   let h = 0;
@@ -60,21 +61,24 @@ export const Avatar = ({
   className?: string;
 }) => {
   const [bg, fg] = AV_COLORS[hashOf(seed ?? name) % AV_COLORS.length];
+  // A broken picture link falls back to the initials instead of a broken-image icon.
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
   return (
     <span
       className={cn("u-av", size, className)}
       style={{ "--c": bg, "--t": fg } as CSSProperties}
       aria-hidden="true"
     >
-      {src ? <img src={src} alt="" loading="lazy" /> : initials(name)}
+      {src && !failed ? <img src={src} alt="" loading="lazy" onError={() => setFailed(true)} /> : initials(name)}
     </span>
   );
 };
 
 // ── Page header ──
 
-/** "‹ Orqaga": goes to the page the user came from, else to `to`. */
-export const BackButton = ({ to, label }: { to: string; label?: ReactNode }) => {
+/** "‹ Orqaga" link: goes to the page the user came from, else to `to`. */
+export const BackLink = ({ to, label }: { to: string; label?: ReactNode }) => {
   const { t } = useTranslation();
   const goBack = useGoBack(to);
   return (
@@ -94,7 +98,26 @@ export const BackButton = ({ to, label }: { to: string; label?: ReactNode }) => 
   );
 };
 
-/** Mock `.hd`: h1 + subtitle on the left, actions on the right. */
+/**
+ * Back button of a page without a PageHeader (hero pages): inside the
+ * teacher layout it moves into the top bar, otherwise it renders inline.
+ */
+export const BackButton = ({ to, label }: { to: string; label?: ReactNode }) => {
+  const bar = useTopBar();
+  useEffect(() => {
+    if (!bar) return;
+    bar.set({ title: null, back: { to, label }, collapsed: false });
+    return () => bar.set(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bar, to]);
+  return bar ? null : <BackLink to={to} label={label} />;
+};
+
+/**
+ * Large title + subtitle on the left, actions on the right. The back button
+ * and the compact title live in the shared top bar (UINavigationBar style,
+ * see topBar.tsx); without the layout it falls back to an inline back link.
+ */
 export const PageHeader = ({
   title,
   subtitle,
@@ -105,18 +128,52 @@ export const PageHeader = ({
   subtitle?: ReactNode;
   right?: ReactNode;
   back?: { to: string; label?: ReactNode };
-}) => (
-  <>
-    {back && <BackButton to={back.to} label={back.label} />}
-    <div className="u-hd">
-      <div>
-        <h1 className="break-words">{title}</h1>
-        {subtitle && <p className="u-sub">{subtitle}</p>}
+}) => {
+  const bar = useTopBar();
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const titleKey = typeof title === "string" || typeof title === "number" ? title : null;
+
+  useEffect(() => {
+    if (!bar) return;
+    const el = titleRef.current;
+    let collapsed = false;
+    const push = () => bar.set({ title, back, collapsed });
+    push();
+    let io: IntersectionObserver | undefined;
+    if (el && typeof IntersectionObserver !== "undefined") {
+      // The bar is ~52px tall; the title counts as gone once it slides under it.
+      io = new IntersectionObserver(
+        ([entry]) => {
+          collapsed = !entry.isIntersecting;
+          push();
+        },
+        { rootMargin: "-56px 0px 0px 0px" },
+      );
+      io.observe(el);
+    }
+    return () => {
+      io?.disconnect();
+      bar.set(null);
+    };
+    // title/back are re-read when their identity-stable parts change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bar, titleKey, back?.to]);
+
+  return (
+    <>
+      {back && !bar && <BackLink to={back.to} label={back.label} />}
+      <div className="u-hd">
+        <div>
+          <h1 className="break-words" ref={titleRef}>
+            {title}
+          </h1>
+          {subtitle && <p className="u-sub">{subtitle}</p>}
+        </div>
+        {right && <div className="u-hd-r">{right}</div>}
       </div>
-      {right && <div className="u-hd-r">{right}</div>}
-    </div>
-  </>
-);
+    </>
+  );
+};
 
 /** Mock `.sech`: section title + action on the right. */
 export const SectionHead = ({

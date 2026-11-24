@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full rounded-[14px] border-2 outline-none transition-[border-color,box-shadow] text-base font-medium",
+              "w-full rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal",
               "u-field",
               error && "is-error",
               uiSize === "lg" ? "py-3.5" : "py-[11px]",

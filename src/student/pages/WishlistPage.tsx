@@ -24,6 +24,8 @@ import {
   burst,
 } from "../components/ui";
 import { ProductImage, productStock } from "../components/shop/ProductCatalog";
+import { CircleCheck, Gem, ShoppingBag, ShoppingCart, Trash2, Truck, Wallet } from "lucide-react";
+import { CoinGlyph, IconTile } from "../components/icons";
 
 const CartSkeleton = () => (
   <div className="sp-shop-cart" aria-busy="true">
@@ -128,7 +130,7 @@ export const WishlistPage = () => {
           className="sp-pill"
           aria-label={t("space.shop.balanceAria", { n: balance })}
         >
-          💎 <span>{balanceKnown ? balance : "…"}</span>
+          <CoinGlyph /> <span>{balanceKnown ? balance : "…"}</span>
         </Link>
       }
     />
@@ -147,7 +149,7 @@ export const WishlistPage = () => {
   } else if (items.length === 0) {
     body = (
       <EmptyState
-        emoji="🪐"
+        icon={ShoppingCart}
         title={t("wishlist.empty")}
         text={t("wishlist.emptyDesc")}
         action={
@@ -174,7 +176,7 @@ export const WishlistPage = () => {
                   <b>{item.name}</b>
                   {item.description && <small>{item.description}</small>}
                   <div className="sp-price">
-                    💎 {item.price}
+                    <CoinGlyph /> {item.price}
                     {item.originalPrice ? <s>{item.originalPrice}</s> : null}
                   </div>
                 </div>
@@ -186,7 +188,7 @@ export const WishlistPage = () => {
                   aria-label={`${t("space.shop.removeFromCart")}: ${item.name}`}
                   title={t("space.shop.removeFromCart")}
                 >
-                  🗑
+                  <Trash2 aria-hidden="true" />
                 </button>
                 <div className="sp-shop-ctl">
                   <div className="sp-qty" role="group" aria-label={item.name}>
@@ -212,8 +214,8 @@ export const WishlistPage = () => {
                     </button>
                   </div>
                   <div className="sp-shop-sum">
-                    <small>{t("wishlist.itemTotal")}</small>💎{" "}
-                    {item.price * item.quantity}
+                    <small>{t("wishlist.itemTotal")}</small>
+                    <CoinGlyph /> {item.price * item.quantity}
                   </div>
                 </div>
               </div>
@@ -224,23 +226,25 @@ export const WishlistPage = () => {
         <aside className="sp-panel sp-shop-summary">
           <h2>{t("wishlist.cartTotal")}</h2>
           <div className="sp-hr">
-            <span aria-hidden="true">🛍</span>
+            <IconTile icon={ShoppingBag} tint="orange" size="sm" />
             <span>{t("wishlist.productsCount", { count: totalItems })}</span>
-            <b>💎 {totalCoins}</b>
+            <b>
+              <CoinGlyph /> {totalCoins}
+            </b>
           </div>
           <div className="sp-hr">
-            <span aria-hidden="true">🚀</span>
+            <IconTile icon={Truck} tint="green" size="sm" />
             <span>{t("wishlist.delivery")}</span>
             <b style={{ color: "var(--sp-lime-ink)" }}>{t("wishlist.free")}</b>
           </div>
           <div className="sp-hr">
-            <span aria-hidden="true">💎</span>
+            <IconTile icon={Gem} tint="teal" size="sm" />
             <span>{t("space.shop.balance")}</span>
             <b>{balanceKnown ? balance : "…"}</b>
           </div>
           {balanceKnown && (
             <div className="sp-hr">
-              <span aria-hidden="true">🪙</span>
+              <IconTile icon={Wallet} tint="indigo" size="sm" />
               <span>{t("space.shop.after")}</span>
               <b
                 style={{
@@ -254,7 +258,9 @@ export const WishlistPage = () => {
           )}
           <div className="sp-shop-total">
             <span>{t("wishlist.grandTotal")}</span>
-            <b>💎 {totalCoins}</b>
+            <b>
+              <CoinGlyph /> {totalCoins}
+            </b>
           </div>
 
           {!balanceKnown && coins.isLoading && (
@@ -291,7 +297,7 @@ export const WishlistPage = () => {
             disabled={!canCheckout}
             onClick={() => setConfirmOpen(true)}
           >
-            ✓ {t("shop.buy")}
+            <CircleCheck aria-hidden="true" /> {t("shop.buy")}
           </button>
           <Link to="/shop" className="sp-cta sp-ghost">
             {t("wishlist.continueShop")}
@@ -310,10 +316,9 @@ export const WishlistPage = () => {
         open={confirmOpen}
         onClose={() => !checkout.isPending && setConfirmOpen(false)}
         labelledBy="sp-shop-confirm"
+        sheet
       >
-        <div className="text-5xl" aria-hidden="true">
-          🛍
-        </div>
+        <IconTile icon={ShoppingBag} tint="orange" size="lg" />
         <h2 id="sp-shop-confirm">{t("space.shop.confirmTitle")}</h2>
         <p>
           {t("space.shop.confirmText", {
@@ -327,14 +332,16 @@ export const WishlistPage = () => {
               <span aria-hidden="true">×{item.quantity}</span>
               <span>{item.name}</span>
               <b style={{ color: "var(--sp-sun-ink)" }}>
-                💎 {item.price * item.quantity}
+                <CoinGlyph /> {item.price * item.quantity}
               </b>
             </div>
           ))}
           <div className="sp-hr">
-            <span aria-hidden="true">🪙</span>
+            <IconTile icon={Wallet} tint="indigo" size="sm" />
             <span>{t("space.shop.after")}</span>
-            <b>💎 {balance - totalCoins}</b>
+            <b>
+              <CoinGlyph /> {balance - totalCoins}
+            </b>
           </div>
         </div>
         {checkoutError && (
@@ -367,8 +374,8 @@ export const WishlistPage = () => {
       >
         {success && (
           <>
-            <div className="text-5xl" aria-hidden="true" ref={successIcon}>
-              💎
+            <div className="sp-mb-ic" ref={successIcon}>
+              <IconTile icon={CircleCheck} tint="green" size="lg" />
             </div>
             <h2 id="sp-shop-success">{t("space.shop.successTitle")}</h2>
             <p>{t("wishlist.checkoutSuccess")}</p>

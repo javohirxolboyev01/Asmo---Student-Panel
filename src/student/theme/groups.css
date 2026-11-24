@@ -75,15 +75,15 @@
   gap: 0 12px;
 }
 .sp-groups-lesson .sp-ic {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 17px;
 }
 .sp-groups-lesson.sp-hw .sp-ic {
-  background: rgba(255, 201, 64, 0.22);
+  background: var(--sp-sun-soft);
   border-color: transparent;
 }
 .sp-groups-lesson.sp-late .sp-ic {
-  background: rgba(255, 95, 168, 0.18);
+  background: var(--sp-pink-soft);
   border-color: transparent;
 }
 .sp-groups-lesson .sp-badge {
@@ -103,7 +103,7 @@
 }
 .sp-groups-hw h3,
 .sp-groups-block h3 {
-  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 18px;
   line-height: 1.2;
   overflow-wrap: anywhere;
@@ -131,7 +131,7 @@
   font-size: 14px;
 }
 .sp-groups-score b {
-  font-family: "Baloo 2", sans-serif;
+  font-family: var(--sp-font-display);
   font-size: 52px;
   line-height: 1;
   color: var(--sp-mute);
@@ -143,8 +143,8 @@
 .sp-groups-score.sp-graded {
   background: linear-gradient(
     135deg,
-    rgba(255, 201, 64, 0.28),
-    rgba(255, 95, 168, 0.22)
+    var(--sp-sun-soft),
+    var(--sp-pink-soft)
   );
 }
 .sp-groups-score.sp-graded b {
@@ -161,11 +161,11 @@
   padding: 12px 14px;
   text-align: center;
   font-size: 15px;
-  background: rgba(255, 201, 64, 0.22);
+  background: var(--sp-sun-soft);
   color: var(--sp-sun-ink);
 }
 .sp-groups-alert.sp-pink {
-  background: rgba(255, 95, 168, 0.18);
+  background: var(--sp-pink-soft);
   color: var(--sp-pink-ink);
 }
 .sp-groups-alert.sp-mute {
@@ -224,7 +224,7 @@ a.sp-groups-file {
   height: 28px;
   border-radius: 50%;
   border: 0;
-  background: rgba(255, 95, 168, 0.18);
+  background: var(--sp-pink-soft);
   color: var(--sp-pink-ink);
   font: inherit;
   cursor: pointer;
@@ -271,4 +271,23 @@ a.sp-groups-file {
 
 .sp-groups-hw .sp-badge {
   margin-left: 0;
+}
+
+.sp-groups-score .sp-groups-big-ic svg {
+  width: 40px;
+  height: 40px;
+  color: var(--sp-cyan-ink);
+}
+.sp-groups-file button {
+  display: grid;
+  place-items: center;
+  color: var(--sp-mute);
+}
+.sp-groups-file button svg {
+  width: 18px;
+  height: 18px;
+}
+.sp-groups-actions .sp-cta svg {
+  width: 18px;
+  height: 18px;
 }

@@ -4,7 +4,7 @@
  */
 
 .sp-profile-note:focus-visible {
-  outline: 3px solid var(--sp-cyan-ink);
+  outline: 3px solid var(--sp-accent);
   outline-offset: 2px;
 }
 
@@ -50,14 +50,14 @@
   font-size: 11px;
 }
 .sp-profile-note.sp-profile-unread {
-  border-color: var(--sp-sun-ink);
-  box-shadow: 0 0 0 3px rgba(255, 201, 64, 0.18);
+  border-color: var(--sp-accent);
+  box-shadow: 0 0 0 3px var(--sp-accent-soft);
 }
 .sp-profile-ndot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--sp-pink);
+  background: var(--sp-accent);
   flex-shrink: 0;
   margin-top: 6px;
 }
@@ -71,21 +71,19 @@
 /* ───────────── Profile page (1:1 with the profile mock) ───────────── */
 .sp-pf {
   --pf-card: var(--sp-card);
-  --pf-line: var(--sp-line);
+  --pf-line: transparent;
   --pf-sep: var(--sp-line);
-  --pf-ring: #c9bcf3;
+  --pf-ring: var(--sp-fill);
   padding-top: 14px;
 }
 .dark .sp-pf {
-  --pf-card: #2e2a5c;
-  --pf-line: #4a4488;
-  --pf-sep: #433d7c55;
-  --pf-ring: #5b4f7d;
+  --pf-ring: var(--sp-elev);
 }
 .sp-pf-card {
   background: var(--pf-card);
   border: 2px solid var(--pf-line);
-  border-radius: 30px;
+  border-radius: 20px;
+  box-shadow: var(--sp-shadow);
   margin-bottom: 14px;
   overflow: hidden;
 }
@@ -133,8 +131,9 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #ffc83d;
-  border: 3px solid var(--sp-bg1);
+  background: var(--sp-accent);
+  color: #ffffff;
+  border: 3px solid var(--sp-card);
   display: grid;
   place-items: center;
   font-size: 15px;
@@ -147,14 +146,12 @@
 .sp-pf-hero h1 {
   font-size: 28px;
   line-height: 1.1;
-  font-weight: 800;
+  font-weight: 700;
   overflow-wrap: anywhere;
 }
 .sp-pf-hero p {
-  color: var(--sp-lime-ink);
-  font:
-    800 20px "Baloo 2",
-    sans-serif;
+  color: var(--sp-mute);
+  font: 500 17px var(--sp-font);
 }
 .sp-pf-row {
   display: flex;
@@ -162,7 +159,7 @@
   gap: 14px;
   padding: 12px 18px;
   border: 0;
-  border-bottom: 2px solid var(--pf-sep);
+  border-bottom: 1px solid var(--pf-sep);
   width: 100%;
   background: none;
   color: inherit;
@@ -176,7 +173,7 @@
 .sp-pf-ic {
   width: 46px;
   height: 46px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   flex: none;
@@ -192,15 +189,13 @@
 .sp-pf-row small {
   display: block;
   color: var(--sp-mute);
-  font-weight: 700;
+  font-weight: 400;
   font-size: 15px;
 }
 .sp-pf-row strong {
   display: block;
-  font:
-    800 22px "Baloo 2",
-    sans-serif;
-  line-height: 1.15;
+  font: 600 18px var(--sp-font);
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 .sp-pf-row strong.sp-pf-empty {
@@ -210,23 +205,23 @@
   cursor: pointer;
 }
 .sp-pf-link:active {
-  background: #ffffff14;
+  background: var(--sp-fill);
 }
 .sp-pf-link strong {
   flex: 1;
-  font-size: 21px;
+  font-size: 17px;
 }
 .sp-pf-chev {
   color: var(--sp-mute);
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp-pf-out strong {
   color: var(--sp-pink-ink);
 }
 .sp-pf-big:focus-visible,
 .sp-pf-link:focus-visible {
-  outline: 3px solid var(--sp-lime-ink);
+  outline: 3px solid var(--sp-accent);
   outline-offset: 2px;
 }
 @media (max-width: 460px) {
@@ -262,7 +257,7 @@
     font-size: 24px;
   }
   .sp-pf-hero p {
-    font-size: 18px;
+    font-size: 15px;
   }
   .sp-pf-row {
     gap: 12px;
@@ -276,7 +271,7 @@
     font-size: 13px;
   }
   .sp-pf-row strong {
-    font-size: 18px;
+    font-size: 16px;
   }
   .sp-profile-actions {
     flex-direction: column;
@@ -327,18 +322,18 @@
 
 /* ───────────── Character editor ("Qahramoningni yarat") ───────────── */
 .sp-ce-ov {
-  --ce-ov: rgba(20, 10, 60, 0.55);
-  --ce-sheet: #f6f2ff;
-  --ce-line: #cfc4f5;
-  --ce-btn: #e6defe;
-  --ce-btn-sh: #c9bcf3;
-  --ce-tab: #ede7ff;
-  --ce-tab-on: #ffffff;
-  --ce-tile: #ece6ff;
-  --ce-tile-line: #cfc4f5;
-  --ce-ink: #1a1240;
-  --ce-limeD: #7fb01c;
-  --ce-mod-sh: #c9bcf3;
+  --ce-ov: rgba(0, 0, 0, 0.4);
+  --ce-sheet: var(--sp-bg1);
+  --ce-line: transparent;
+  --ce-btn: var(--sp-card);
+  --ce-btn-sh: transparent;
+  --ce-tab: var(--sp-card);
+  --ce-tab-on: var(--sp-card);
+  --ce-tile: var(--sp-card);
+  --ce-tile-line: transparent;
+  --ce-ink: var(--sp-ink);
+  --ce-limeD: transparent;
+  --ce-mod-sh: transparent;
   position: fixed;
   inset: 0;
   z-index: 70;
@@ -349,16 +344,12 @@
   animation: sp-ce-fade 0.2s;
 }
 .dark .sp-ce-ov {
-  --ce-ov: #0a0620d9;
-  --ce-sheet: #2a1b66;
-  --ce-line: #4a4488;
-  --ce-btn: #3f3079;
-  --ce-btn-sh: #2a1f58;
-  --ce-tab: #33286f;
-  --ce-tab-on: #ffffff1c;
-  --ce-tile: #3a2f7a;
-  --ce-tile-line: #4a3f94;
-  --ce-mod-sh: #1a1048;
+  --ce-ov: rgba(0, 0, 0, 0.6);
+  --ce-sheet: var(--sp-card);
+  --ce-btn: var(--sp-elev);
+  --ce-tab: var(--sp-elev);
+  --ce-tab-on: #3a3a3c;
+  --ce-tile: var(--sp-elev);
 }
 .sp-ce-ov.sp-ce-buy {
   z-index: 80;
@@ -531,7 +522,7 @@
 }
 .sp-ce-eh h2 {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .sp-ce-chip {
   display: flex;
@@ -543,12 +534,8 @@
   background: var(--ce-btn);
   border: 2px solid var(--ce-line);
   font:
-    800 17px "Baloo 2",
-    sans-serif;
+    700 17px var(--sp-font-display);
   white-space: nowrap;
-}
-.dark .sp-ce-chip {
-  background: #241d55;
 }
 .sp-ce-stage {
   position: relative;
@@ -617,10 +604,9 @@
   top: 10px;
   max-width: 46%;
   background: #fff;
-  color: var(--ce-ink);
+  color: #1c1c1e;
   font:
-    800 14px "Baloo 2",
-    sans-serif;
+    700 14px var(--sp-font-display);
   padding: 7px 12px;
   border-radius: 16px 16px 16px 4px;
   line-height: 1.2;
@@ -657,16 +643,15 @@
   background: var(--ce-btn);
   color: var(--sp-ink);
   font:
-    800 17px "Baloo 2",
-    sans-serif;
+    700 17px var(--sp-font-display);
   cursor: pointer;
   box-shadow: 0 4px 0 var(--ce-btn-sh);
   transition: transform 0.08s;
 }
 .sp-ce-gb.on {
-  background: var(--sp-lime);
-  color: var(--ce-ink);
-  border-color: var(--sp-lime);
+  background: var(--sp-accent);
+  color: #ffffff;
+  border-color: var(--sp-accent);
   box-shadow: 0 4px 0 var(--ce-limeD);
 }
 .sp-ce-gb:active {
@@ -702,8 +687,7 @@
   background: var(--ce-btn);
   color: var(--sp-ink);
   font:
-    800 22px "Baloo 2",
-    sans-serif;
+    700 22px var(--sp-font-display);
   cursor: pointer;
   margin-bottom: 6px;
   line-height: 1;
@@ -729,8 +713,7 @@
   background: var(--ce-tab);
   color: var(--sp-mute);
   font:
-    800 12px "Nunito",
-    sans-serif;
+    600 12px var(--sp-font);
   cursor: pointer;
   white-space: nowrap;
 }
@@ -743,7 +726,7 @@
 }
 .sp-ce-tab.on {
   background: var(--ce-tab-on);
-  border-color: var(--sp-lime-ink);
+  border-color: var(--sp-accent);
   color: var(--sp-ink);
 }
 .sp-ce-area {
@@ -768,8 +751,8 @@
   transition: transform 0.1s;
 }
 .sp-ce-sw.sel {
-  border-color: var(--sp-lime-ink);
-  box-shadow: 0 0 0 3px #b8f23d44;
+  border-color: var(--sp-accent);
+  box-shadow: 0 0 0 3px var(--sp-accent-soft);
   transform: scale(1.1);
 }
 .sp-ce-grid {
@@ -803,8 +786,8 @@
   height: 100%;
 }
 .sp-ce-tile.sel {
-  border-color: var(--sp-lime-ink);
-  box-shadow: 0 0 0 3px #b8f23d44;
+  border-color: var(--sp-accent);
+  box-shadow: 0 0 0 3px var(--sp-accent-soft);
   animation: sp-ce-pop 0.3s;
 }
 @keyframes sp-ce-pop {
@@ -834,8 +817,7 @@
   border-radius: 99px;
   padding: 2px 8px;
   font:
-    800 12px "Baloo 2",
-    sans-serif;
+    700 12px var(--sp-font-display);
   white-space: nowrap;
 }
 .sp-ce-ck {
@@ -845,9 +827,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--sp-lime);
-  color: var(--ce-ink);
-  font-weight: 800;
+  background: var(--sp-accent);
+  color: #ffffff;
+  font-weight: 700;
   font-size: 12px;
   display: none;
   place-items: center;
@@ -867,8 +849,7 @@
   padding: 0 12px;
   border-radius: 99px;
   font:
-    800 18px "Baloo 2",
-    sans-serif;
+    700 18px var(--sp-font-display);
   line-height: 1.1;
   cursor: pointer;
   border: 2px solid var(--ce-line);
@@ -884,16 +865,17 @@
   box-shadow: 0 4px 0 var(--ce-btn-sh);
 }
 .sp-ce-btn.go {
-  background: var(--sp-lime);
-  color: var(--ce-ink);
-  border-color: var(--sp-lime);
+  background: var(--sp-accent);
+  color: #ffffff;
+  border-color: var(--sp-accent);
   box-shadow: 0 5px 0 var(--ce-limeD);
   flex: 1.3;
 }
 .sp-ce-btn.go:disabled {
-  background: #636f58;
-  border-color: #636f58;
-  box-shadow: 0 5px 0 #4a533f;
+  background: var(--sp-fill);
+  border-color: transparent;
+  color: var(--sp-mute);
+  box-shadow: none;
   cursor: not-allowed;
 }
 .sp-ce-btn.ghost:disabled {
@@ -915,10 +897,10 @@
   max-width: 340px;
   background: var(--ce-sheet);
   border: 2px solid var(--ce-line);
-  border-radius: 30px;
+  border-radius: 22px;
   padding: 24px 20px 20px;
   text-align: center;
-  box-shadow: 0 8px 0 var(--ce-mod-sh);
+  box-shadow: var(--sp-shadow-lg);
   animation: sp-ce-modin 0.25s cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 @keyframes sp-ce-modin {
@@ -932,7 +914,7 @@
   border-radius: 50%;
   overflow: hidden;
   margin: 0 auto 12px;
-  border: 4px solid var(--sp-lime);
+  border: 4px solid var(--sp-accent);
   background: #fff;
 }
 .sp-ce-mprev > span,
@@ -943,23 +925,20 @@
 }
 .sp-ce-mod h3 {
   font:
-    800 24px "Baloo 2",
-    sans-serif;
+    700 24px var(--sp-font-display);
 }
 .sp-ce-mprice {
   display: inline-block;
   margin: 8px 0 4px;
   padding: 4px 18px;
   border-radius: 99px;
-  background: #0c0829;
-  font:
-    800 26px "Baloo 2",
-    sans-serif;
-  color: #ffd93d;
+  background: var(--sp-sun-soft);
+  font: 700 26px var(--sp-font-display);
+  color: var(--sp-sun-ink);
 }
 .sp-ce-mbal {
   color: var(--sp-mute);
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 6px;
 }
 .sp-ce-toast {
@@ -967,14 +946,12 @@
   left: 50%;
   top: calc(18px + env(safe-area-inset-top, 0px));
   transform: translate(-50%, -100px);
-  background: var(--sp-lime);
-  color: #1a1240;
-  font:
-    800 17px "Baloo 2",
-    sans-serif;
-  padding: 10px 22px;
+  background: var(--sp-elev);
+  color: var(--sp-ink);
+  font: 600 15px var(--sp-font);
+  padding: 12px 20px;
   border-radius: 99px;
-  box-shadow: 0 4px 0 #7fb01c;
+  box-shadow: var(--sp-shadow-lg);
   transition: transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
   z-index: 90;
   white-space: nowrap;
@@ -992,7 +969,7 @@
   pointer-events: none;
 }
 .sp-ce-ov :focus-visible {
-  outline: 3px solid var(--sp-lime-ink);
+  outline: 3px solid var(--sp-accent);
   outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1002,4 +979,59 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* iOS icons in the profile and the character editor */
+.sp-pf-pen svg {
+  width: 15px;
+  height: 15px;
+}
+.sp-pf-ic {
+  border-radius: 12px;
+}
+.sp-pf-link .sp-chev {
+  margin-left: auto;
+}
+.sp-ce-tabico svg {
+  width: 22px;
+  height: 22px;
+}
+.sp-ce-dice {
+  display: grid;
+  place-items: center;
+  color: var(--sp-tint-blue);
+  box-shadow: var(--sp-shadow);
+}
+.sp-ce-dice svg {
+  width: 24px;
+  height: 24px;
+}
+.sp-ce-arr {
+  display: grid;
+  place-items: center;
+}
+.sp-ce-arr svg {
+  width: 18px;
+  height: 18px;
+}
+.sp-ce-ck svg {
+  width: 13px;
+  height: 13px;
+}
+.sp-ce-chip,
+.sp-ce-mprice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sp-ce-pr {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.sp-ce-cf {
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  font-size: 0;
 }

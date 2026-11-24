@@ -5,67 +5,68 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Teacher panel "Ustoz paneli" tokens (1:1 with the Ustoz paneli mock).
+/* Teacher panel tokens — iOS system colours (same names as the old
+ * "Ustoz paneli" mock tokens so every page and shared component follows).
  * Global (not scoped) so portals, toasts and the boot skeleton get them too.
- * Channel triplets so Tailwind's `u-*` colours support opacity (bg-u-pr/10). */
+ * Channel triplets so Tailwind's `u-*` colours support opacity (bg-u-pr/10).
+ * pr/ok/er/gdx = text colours, *f = solid fills (white text on them); all
+ * pairs are WCAG AA. */
 :root {
-  --u-bg: 245 246 251;
+  --u-bg: 242 242 247;
   --u-sf: 255 255 255;
-  --u-sf2: 238 240 248;
-  --u-ln: 228 231 242;
-  --u-tx: 27 29 58;
-  --u-mu: 106 111 143;
-  --u-pr: 88 72 224;
-  --u-pr2: 138 99 245;
-  --u-prt: 236 235 253;
+  --u-sf2: 239 239 240;
+  --u-ln: 226 226 230;
+  --u-tx: 0 0 0;
+  --u-mu: 103 103 108;
+  --u-pr: 0 102 204;
+  --u-pr2: 0 102 204;
+  --u-prt: 230 240 250;
   --u-on: 255 255 255;
-  --u-gd: 244 163 0;
-  --u-gdt: 255 243 214;
-  --u-gdx: 154 100 0;
-  --u-ok: 23 163 127;
-  --u-okt: 220 245 236;
-  --u-er: 232 69 106;
-  --u-ert: 255 230 235;
-  --u-sh: 0 12px 32px -16px rgba(60, 50, 160, 0.28);
-  /* Form fields and modal surfaces (separate from cards so they stand out). */
-  /* Solid fills for buttons/selected states; text on them is always white. */
-  --u-prf: 88 72 224;
-  --u-prf2: 138 99 245;
-  --u-okf: 23 163 127;
-  --u-erf: 228 64 102;
-  --u-field: 249 250 253;
-  --u-fieldln: 221 225 239;
-  --u-modal: 255 255 255;
-  --u-overlay: rgba(20, 16, 60, 0.5);
+  --u-gd: 255 149 0;
+  --u-gdt: 255 243 224;
+  --u-gdx: 201 52 0;
+  --u-ok: 25 122 53;
+  --u-okt: 227 247 232;
+  --u-er: 215 0 21;
+  --u-ert: 255 232 234;
+  --u-sh: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --u-prf: 0 102 204;
+  --u-prf2: 0 102 204;
+  --u-okf: 30 124 53;
+  --u-erf: 215 0 21;
+  --u-field: 239 239 240;
+  --u-fieldln: 226 226 230;
+  --u-modal: 242 242 247;
+  --u-overlay: rgba(0, 0, 0, 0.4);
 }
 
 .dark {
-  --u-bg: 15 16 36;
-  --u-sf: 24 26 56;
-  --u-sf2: 34 37 71;
-  --u-ln: 44 48 89;
-  --u-tx: 241 242 255;
-  --u-mu: 154 159 198;
-  --u-pr: 148 136 255;
-  --u-pr2: 176 139 255;
-  --u-prt: 50 49 116;
-  --u-on: 20 18 58;
-  --u-gd: 255 197 61;
-  --u-gdt: 58 47 16;
-  --u-gdx: 255 197 61;
-  --u-ok: 61 219 176;
-  --u-okt: 18 52 45;
-  --u-er: 255 122 147;
-  --u-ert: 58 24 48;
-  --u-sh: 0 12px 32px -16px rgba(0, 0, 0, 0.6);
-  --u-prf: 109 92 240;
-  --u-prf2: 150 112 255;
-  --u-okf: 20 160 122;
-  --u-erf: 222 70 104;
-  --u-field: 17 19 44;
-  --u-fieldln: 72 78 134;
-  --u-modal: 30 33 70;
-  --u-overlay: rgba(4, 4, 18, 0.72);
+  --u-bg: 0 0 0;
+  --u-sf: 28 28 30;
+  --u-sf2: 44 44 46;
+  --u-ln: 56 56 58;
+  --u-tx: 255 255 255;
+  --u-mu: 152 152 159;
+  --u-pr: 100 181 255;
+  --u-pr2: 100 181 255;
+  --u-prt: 10 46 82;
+  --u-on: 255 255 255;
+  --u-gd: 255 159 10;
+  --u-gdt: 58 42 10;
+  --u-gdx: 255 159 10;
+  --u-ok: 48 209 88;
+  --u-okt: 18 48 28;
+  --u-er: 255 105 97;
+  --u-ert: 58 20 20;
+  --u-sh: none;
+  --u-prf: 0 113 227;
+  --u-prf2: 0 113 227;
+  --u-okf: 30 124 53;
+  --u-erf: 215 0 21;
+  --u-field: 44 44 46;
+  --u-fieldln: 56 56 58;
+  --u-modal: 28 28 30;
+  --u-overlay: rgba(0, 0, 0, 0.6);
 }
 
 /* ── Teacher modals & form fields ──
@@ -73,87 +74,92 @@
  * before a dev server picks up tailwind.config changes. Solid surfaces only:
  * nothing behind a modal shows through it. */
 .u-overlay {
-  background: rgba(17, 14, 48, 0.62);
+  background: rgba(0, 0, 0, 0.4);
 }
 .dark .u-overlay {
-  background: rgba(4, 4, 14, 0.84);
+  background: rgba(0, 0, 0, 0.6);
 }
 
+/* iOS sheet: grouped-background surface, large top radius, no outline. */
 .u-sheet {
-  background: #ffffff;
-  color: #1b1d3a;
-  border: 1px solid #e4e7f2;
-  box-shadow: 0 24px 60px -18px rgba(30, 24, 90, 0.35);
+  background: #f2f2f7;
+  color: #000000;
+  border: 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
 }
 .u-sheet-head {
-  background: #ffffff;
-  border-bottom: 1px solid #eef0f8;
+  background: rgba(242, 242, 247, 0.86);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 0.5px solid rgba(60, 60, 67, 0.18);
 }
 .dark .u-sheet {
-  background: #1d2046;
-  color: #f4f5ff;
-  border-color: #353b72;
-  box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.75);
-  /* Brighter text and soft fills inside the dark sheet for legibility. */
-  --u-tx: 244 245 255;
-  --u-mu: 184 189 228;
-  --u-sf2: 46 51 99;
-  --u-ln: 62 68 120;
-  --tx: rgb(244 245 255);
-  --mu: rgb(184 189 228);
-  --sf2: rgb(46 51 99);
-  --ln: rgb(62 68 120);
+  background: #1c1c1e;
+  color: #ffffff;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  /* Cards inside a dark sheet sit one step up (iOS elevated surfaces). */
+  --u-sf: 44 44 46;
+  --u-sf2: 58 58 60;
+  --u-ln: 72 72 74;
+  --u-field: 44 44 46;
+  --sf: rgb(44 44 46);
+  --sf2: rgb(58 58 60);
+  --ln: rgb(72 72 74);
+  --field: rgb(44 44 46);
 }
 .dark .u-sheet-head {
-  background: #1d2046;
-  border-bottom-color: #2c3163;
+  background: rgba(28, 28, 30, 0.86);
+  border-bottom-color: rgba(84, 84, 88, 0.6);
 }
 
-/* Popover lists (Select options, Dropdown menus). */
+/* Popover lists (Select options, Dropdown menus): iOS context menu. */
 .u-pop {
-  background: #ffffff;
-  border: 1px solid #dde1ef;
-  box-shadow: 0 18px 40px -12px rgba(30, 24, 90, 0.35);
+  background: rgba(250, 250, 250, 0.92);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
 }
 .dark .u-pop {
-  background: #232752;
-  border-color: #3d437c;
-  box-shadow: 0 18px 40px -10px rgba(0, 0, 0, 0.7);
+  background: rgba(44, 44, 46, 0.92);
+  border-color: rgba(84, 84, 88, 0.6);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Inputs, textareas, selects, checkboxes. */
+/* Inputs, textareas, selects, checkboxes: iOS filled fields. */
 .u-field {
-  background: #f6f7fc;
-  border-color: #d6dbec;
-  color: #1b1d3a;
+  background: rgba(118, 118, 128, 0.12);
+  border-color: transparent;
+  color: #000000;
 }
 .u-field::placeholder {
-  color: #8d92b0;
+  color: #8a8a8e;
   opacity: 1;
 }
 .u-field:hover:not(:disabled):not(:focus) {
-  border-color: #bfc5de;
+  border-color: transparent;
 }
 .u-field:focus {
   background: #ffffff;
-  border-color: #5848e0;
-  box-shadow: 0 0 0 3px rgba(88, 72, 224, 0.18);
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.16);
 }
 .dark .u-field {
-  background: #131532;
-  border-color: #3f4579;
-  color: #f4f5ff;
+  background: rgba(118, 118, 128, 0.24);
+  border-color: transparent;
+  color: #ffffff;
 }
 .dark .u-field::placeholder {
-  color: #7f85b8;
+  color: #8d8d93;
 }
 .dark .u-field:hover:not(:disabled):not(:focus) {
-  border-color: #545b98;
+  border-color: transparent;
 }
 .dark .u-field:focus {
-  background: #151839;
-  border-color: #9488ff;
-  box-shadow: 0 0 0 3px rgba(148, 136, 255, 0.25);
+  background: #2c2c2e;
+  border-color: #64b5ff;
+  box-shadow: 0 0 0 3px rgba(100, 181, 255, 0.22);
 }
 .u-field.is-error,
 .dark .u-field.is-error {
@@ -169,15 +175,15 @@
 .u-field:-webkit-autofill,
 .u-field:-webkit-autofill:hover,
 .u-field:-webkit-autofill:focus {
-  -webkit-text-fill-color: #1b1d3a;
-  -webkit-box-shadow: 0 0 0 1000px #f6f7fc inset;
+  -webkit-text-fill-color: #000000;
+  -webkit-box-shadow: 0 0 0 1000px #e9e9eb inset;
   transition: background-color 9999s;
 }
 .dark .u-field:-webkit-autofill,
 .dark .u-field:-webkit-autofill:hover,
 .dark .u-field:-webkit-autofill:focus {
-  -webkit-text-fill-color: #f4f5ff;
-  -webkit-box-shadow: 0 0 0 1000px #131532 inset;
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #2c2c2e inset;
 }
 input[type="checkbox"].u-field:checked {
   background: rgb(var(--u-prf));
@@ -298,7 +304,7 @@ input[type="checkbox"].u-field:checked {
   @keyframes modal-in {
     from {
       opacity: 0;
-      transform: scale(0.97) translateY(4px);
+      transform: scale(1.06);
     }
     to {
       opacity: 1;
@@ -306,8 +312,35 @@ input[type="checkbox"].u-field:checked {
     }
   }
 
+  /* iOS: sheets slide up from the bottom on phones, alerts scale in on wide screens. */
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
   .animate-modal-in {
-    animation: modal-in 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: sheet-up 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  @media (min-width: 640px) {
+    .animate-modal-in {
+      animation: modal-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-modal-in {
+      animation: none;
+    }
+  }
+
+  /* Popover lists (Select, Dropdown): iOS context-menu scale-in. */
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+  }
+  .animate-pop-in {
+    animation: pop-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   @keyframes overlay-in {

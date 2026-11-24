@@ -9,7 +9,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { LANGUAGES, type Language } from "@/i18n/translations";
 import { ROUTES } from "@/constans/route";
 import { getErrorMessage } from "@/lib/toast";
+import { Globe, Lock, Mail, Moon, Sun, SunMoon } from "lucide-react";
 import { PageHeader, Segmented, Spinner, Switch } from "../components/ui";
+import { IconTile } from "../components/icons";
 
 // Mirrors the backend's /settings/* schemas.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -106,7 +108,9 @@ export const SettingsPage = () => {
 
       <div className="sp-sg">
         <form className="sp-panel" onSubmit={handleEmail} noValidate>
-          <h2>✉️ {t("settings.accountSection")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={Mail} tint="blue" size="sm" /> {t("settings.accountSection")}
+          </h2>
           <label className="sp-fl">
             {t("auth.email")}
             <input
@@ -129,7 +133,9 @@ export const SettingsPage = () => {
         </form>
 
         <form className="sp-panel" onSubmit={handlePassword} noValidate>
-          <h2>🔒 {t("settings.passwordSection")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={Lock} tint="gray" size="sm" /> {t("settings.passwordSection")}
+          </h2>
           <label className="sp-fl">
             {t("settings.currentPassword")}
             <input
@@ -168,7 +174,9 @@ export const SettingsPage = () => {
         </form>
 
         <div className="sp-panel">
-          <h2>🌐 {t("space.profile.language")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={Globe} tint="blue" size="sm" /> {t("space.profile.language")}
+          </h2>
           <div className="sp-profile-lang">
             <Segmented<Language>
               value={language}
@@ -179,10 +187,15 @@ export const SettingsPage = () => {
         </div>
 
         <div className="sp-panel">
-          <h2>🌗 {t("space.profile.theme")}</h2>
+          <h2 className="sp-h-ic">
+            <IconTile icon={SunMoon} tint="indigo" size="sm" /> {t("space.profile.theme")}
+          </h2>
           <div className="sp-tg">
             <span className="sp-profile-tgtext">
-              {theme === "dark" ? "🌙" : "☀️"} {t("space.profile.darkMode")}
+              <span className="sp-h-ic">
+                {theme === "dark" ? <Moon className="sp-ii" aria-hidden="true" /> : <Sun className="sp-ii" aria-hidden="true" />}{" "}
+                {t("space.profile.darkMode")}
+              </span>
               <small>{t("space.profile.darkModeHint")}</small>
             </span>
             <Switch

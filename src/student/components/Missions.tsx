@@ -7,7 +7,28 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useClaimMissionMutation } from "@/hooks/queries/useMissions";
 import { getErrorMessage } from "@/lib/toast";
 import type { MissionType, MissionsToday, StudentMission } from "@/types/mission";
+import {
+  CalendarCheck,
+  Check,
+  CircleAlert,
+  ListChecks,
+  PencilLine,
+  Sparkles,
+  Star,
+  Target,
+  type LucideIcon,
+} from "lucide-react";
 import { EmptyState, Modal, Skel, Spinner, burst } from "./ui";
+import { CoinGlyph, IconTile, type Tint } from "./icons";
+
+/** Symbol + tint per mission type (missions of retired types fall back to a target). */
+const MISSION_ICON: Record<string, { icon: LucideIcon; tint: Tint }> = {
+  SUBMIT_HOMEWORK: { icon: PencilLine, tint: "blue" },
+  ATTEND_LESSON: { icon: CalendarCheck, tint: "green" },
+  GOOD_GRADE: { icon: Star, tint: "orange" },
+  PASS_QUIZ: { icon: ListChecks, tint: "purple" },
+};
+const missionIcon = (m: StudentMission) => MISSION_ICON[m.type] ?? { icon: Target, tint: "indigo" as Tint };
 
 const GOAL: Record<MissionType, { path: string; hintKey: string; actionKey: string }> = {
   SUBMIT_HOMEWORK: { path: "/groups", hintKey: "space.missionHintHomework", actionKey: "space.missionGoHomework" },
@@ -67,7 +88,7 @@ export const Missions = ({
   };
 
   if (data.total === 0) {
-    return <EmptyState emoji="🛸" title={t("space.noMissions")} text={t("space.noMissionsHint")} />;
+    return <EmptyState icon={Target} title={t("space.noMissions")} text={t("space.noMissionsHint")} />;
   }
 
   return (
@@ -84,26 +105,26 @@ export const Missions = ({
             aria-label={`${m.title}. ${t(`space.missionStatus${m.status}`)}`}
           >
             <div className="sp-ic" aria-hidden="true">
-              {m.emoji}
+              <IconTile {...missionIcon(m)} />
             </div>
             <div className="sp-t">
               <b>{m.title}</b>
               <small>{m.status === "READY" ? t("space.missionReady") : describe(m)}</small>
             </div>
-            <span className="sp-rw">+{m.coinReward}💎</span>
+            <span className="sp-rw">
+              +{m.coinReward} <CoinGlyph />
+            </span>
             <span className="sp-ck" aria-hidden="true">
-              {busy ? <Spinner /> : "✓"}
+              {busy ? <Spinner /> : <Check strokeWidth={3} />}
             </span>
           </button>
         );
       })}
 
-      <Modal open={Boolean(pending)} onClose={() => setPending(null)} labelledBy="sp-mission-title">
+      <Modal open={Boolean(pending)} onClose={() => setPending(null)} labelledBy="sp-mission-title" sheet>
         {pending && (
           <>
-            <div className="text-5xl" aria-hidden="true">
-              {pending.emoji}
-            </div>
+            <IconTile {...missionIcon(pending)} size="lg" />
             <h2 id="sp-mission-title">{pending.title}</h2>
             <p>{describe(pending)}</p>
             <p>{t("space.missionNotYet", { coins: pending.coinReward })}</p>
@@ -127,9 +148,7 @@ export const Missions = ({
       </Modal>
 
       <Modal open={Boolean(error)} onClose={() => setError(null)}>
-        <div className="text-5xl" aria-hidden="true">
-          🛰
-        </div>
+        <IconTile icon={CircleAlert} tint="red" size="lg" />
         <h2>{t("common.error")}</h2>
         <p>{error}</p>
         <button className="sp-cta" onClick={() => setError(null)}>
@@ -138,9 +157,7 @@ export const Missions = ({
       </Modal>
 
       <Modal open={allDone} onClose={() => setAllDone(false)}>
-        <div className="text-5xl" aria-hidden="true">
-          🚀
-        </div>
+        <IconTile icon={Sparkles} tint="orange" size="lg" />
         <h2>{t("space.allDoneTitle")}</h2>
         <p>{t("space.allDoneText")}</p>
         <button className="sp-cta" onClick={() => setAllDone(false)}>

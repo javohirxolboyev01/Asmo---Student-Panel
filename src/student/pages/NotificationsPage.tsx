@@ -13,14 +13,16 @@ import type { Notification } from "@/types/notification";
 import type { Language } from "@/i18n/translations";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
+import { Bell, BellOff, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel, Spinner } from "../components/ui";
+import { IconTile, type Tint } from "../components/icons";
 
-const TYPE_EMOJI: Record<string, string> = {
-  homework: "📝",
-  lesson: "📅",
-  grade: "⭐",
-  submission: "📩",
-  system: "🛰",
+const TYPE_ICON: Record<string, { icon: LucideIcon; tint: Tint }> = {
+  homework: { icon: PencilLine, tint: "orange" },
+  lesson: { icon: CalendarDays, tint: "red" },
+  grade: { icon: Star, tint: "yellow" },
+  submission: { icon: Inbox, tint: "blue" },
+  system: { icon: Bell, tint: "gray" },
 };
 
 const DATE_LOCALE = { uz, ru, en: enUS } satisfies Record<Language, Locale>;
@@ -72,7 +74,7 @@ export const NotificationsPage = () => {
     <div className="sp-page">
       <PageHeader
         back={{ to: "/", label: t("nav.dashboard") }}
-        title={`🔔 ${t("notifications.title")}`}
+        title={t("notifications.title")}
         subtitle={
           unreadCount > 0 ? t("notifications.unreadCount", { count: unreadCount }) : t("notifications.allRead")
         }
@@ -91,7 +93,7 @@ export const NotificationsPage = () => {
             onClick={() => markAllAsRead.mutate()}
             disabled={markAllAsRead.isPending}
           >
-            {markAllAsRead.isPending ? <Spinner /> : "✓"} {t("notifications.markAllRead")}
+            {markAllAsRead.isPending ? <Spinner /> : <CheckCheck aria-hidden="true" />} {t("notifications.markAllRead")}
           </button>
         </div>
       )}
@@ -102,7 +104,7 @@ export const NotificationsPage = () => {
       )}
 
       {notifications.length === 0 ? (
-        <EmptyState emoji="📭" title={t("notifications.empty")} text={t("notifications.emptyDesc")} />
+        <EmptyState icon={BellOff} title={t("notifications.empty")} text={t("notifications.emptyDesc")} />
       ) : (
         <div className="sp-profile-notes">
           {notifications.map((n) => (
@@ -113,12 +115,12 @@ export const NotificationsPage = () => {
               onClick={() => open(n)}
             >
               <span className="sp-ic" aria-hidden="true">
-                {TYPE_EMOJI[n.type] ?? "🔔"}
+                <IconTile {...(TYPE_ICON[n.type] ?? TYPE_ICON.system)} />
               </span>
               <span className="sp-t">
                 <b>{n.title}</b>
                 {n.message && <small>{n.message}</small>}
-                <small className="sp-profile-time">🕒 {relativeTime(n.createdAt, language)}</small>
+                <small className="sp-profile-time">{relativeTime(n.createdAt, language)}</small>
               </span>
               {!n.isRead && <span className="sp-profile-ndot" aria-hidden="true" />}
             </button>

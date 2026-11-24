@@ -6,13 +6,26 @@ import "../theme/profile.css";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { Bell, CalendarDays, DoorOpen, Mail, Phone, Settings, ShoppingCart, UserRound } from "lucide-react";
+import {
+  Bell,
+  CalendarDays,
+  ChevronRight,
+  LogOut,
+  Mail,
+  Pencil,
+  Phone,
+  Settings,
+  ShoppingCart,
+  UserRound,
+  UserRoundX,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 import { ROUTES } from "@/constans/route";
 import { SpaceAvatar } from "../components/SpaceAvatar";
 import { EmptyState, Modal } from "../components/ui";
+import { IconTile } from "../components/icons";
 
 // The editor + item catalog only load when the student opens it.
 const CharacterEditor = lazy(() =>
@@ -20,11 +33,11 @@ const CharacterEditor = lazy(() =>
 );
 
 const MENU = [
-  { to: ROUTES.PROFILE_EDIT, icon: UserRound, bg: "#1a7cff", label: "profile.editInfo" },
-  { to: ROUTES.SETTINGS, icon: Settings, bg: "#8a8a98", label: "profile.settings" },
-  { to: "/attendance", icon: CalendarDays, bg: "#ff9a1f", label: "nav.attendance" },
-  { to: "/shop", icon: ShoppingCart, bg: "#a74fe0", label: "nav.shop" },
-  { to: ROUTES.NOTIFICATIONS, icon: Bell, bg: "#e8a01c", label: "notifications.title" },
+  { to: ROUTES.PROFILE_EDIT, icon: UserRound, bg: "var(--sp-tint-blue)", label: "profile.editInfo" },
+  { to: ROUTES.SETTINGS, icon: Settings, bg: "var(--sp-tint-gray)", label: "profile.settings" },
+  { to: "/attendance", icon: CalendarDays, bg: "var(--sp-tint-orange)", label: "nav.attendance" },
+  { to: "/shop", icon: ShoppingCart, bg: "var(--sp-tint-purple)", label: "nav.shop" },
+  { to: ROUTES.NOTIFICATIONS, icon: Bell, bg: "var(--sp-tint-red)", label: "notifications.title" },
 ] as const;
 
 /** Lime toast sliding in from the top (mock's `toast()`). */
@@ -54,7 +67,7 @@ export const ProfilePage = () => {
   if (!user) {
     return (
       <div className="sp-page">
-        <EmptyState emoji="🛸" title={t("profile.notFound")} className="mt-6" />
+        <EmptyState icon={UserRoundX} title={t("profile.notFound")} className="mt-6" />
       </div>
     );
   }
@@ -63,8 +76,8 @@ export const ProfilePage = () => {
   const isTeacher = user.role === "teacher" || user.role === "admin";
 
   const contacts = [
-    { icon: Phone, bg: "#25c26a", label: t("profile.phoneLabel"), value: user.phone },
-    { icon: Mail, bg: "#0aa0ef", label: t("profile.emailLabel"), value: user.email },
+    { icon: Phone, bg: "var(--sp-tint-green)", label: t("profile.phoneLabel"), value: user.phone },
+    { icon: Mail, bg: "var(--sp-tint-blue)", label: t("profile.emailLabel"), value: user.email },
   ];
 
   return (
@@ -75,7 +88,7 @@ export const ProfilePage = () => {
             <SpaceAvatar avatar={user.avatar} name={fullName} />
           </span>
           <span className="sp-pf-pen" aria-hidden="true">
-            ✏️
+            <Pencil strokeWidth={2.4} />
           </span>
         </button>
         <div className="sp-pf-who">
@@ -108,19 +121,14 @@ export const ProfilePage = () => {
             {m.to === ROUTES.NOTIFICATIONS && unread > 0 && (
               <span className="sp-badge sp-pink">{unread > 99 ? "99+" : unread}</span>
             )}
-            <span className="sp-pf-chev" aria-hidden="true">
-              ›
-            </span>
+            <ChevronRight className="sp-chev" aria-hidden="true" />
           </Link>
         ))}
         <button type="button" className="sp-pf-row sp-pf-link sp-pf-out" onClick={() => setLogoutOpen(true)}>
-          <span className="sp-pf-ic" style={{ background: "#f03b3b" }} aria-hidden="true">
-            <DoorOpen />
+          <span className="sp-pf-ic" style={{ background: "var(--sp-tint-red)" }} aria-hidden="true">
+            <LogOut />
           </span>
           <strong>{t("profile.logout")}</strong>
-          <span className="sp-pf-chev" aria-hidden="true">
-            ›
-          </span>
         </button>
       </div>
 
@@ -139,9 +147,7 @@ export const ProfilePage = () => {
       )}
 
       <Modal open={logoutOpen} onClose={() => setLogoutOpen(false)} labelledBy="sp-logout-title">
-        <div className="text-5xl" aria-hidden="true">
-          🚪
-        </div>
+        <IconTile icon={LogOut} tint="red" size="lg" />
         <h2 id="sp-logout-title">{t("space.profile.logoutTitle")}</h2>
         <p>{t("space.profile.logoutText")}</p>
         <div className="sp-profile-actions">

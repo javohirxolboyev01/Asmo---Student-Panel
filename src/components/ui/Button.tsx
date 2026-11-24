@@ -16,20 +16,20 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   // Solid fills (--u-*f) keep white text readable in light and dark.
-  primary:
-    "bg-[linear-gradient(135deg,rgb(var(--u-prf)),rgb(var(--u-prf2)))] text-white shadow-[0_8px_18px_-8px_rgb(var(--u-prf))] hover:brightness-[1.06]",
-  outline:
-    "bg-transparent text-u-tx shadow-[inset_0_0_0_2px_rgb(var(--u-fieldln))] hover:shadow-[inset_0_0_0_2px_rgb(var(--u-pr))]",
-  danger: "bg-[rgb(var(--u-erf))] text-white shadow-[0_8px_18px_-8px_rgb(var(--u-erf))] hover:brightness-[1.06]",
-  ghost: "bg-u-prt text-u-pr hover:brightness-[1.08]",
+  // iOS button styles: filled (tint), gray (bordered), destructive, tinted.
+  primary: "bg-[rgb(var(--u-prf))] text-white",
+  outline: "bg-[rgba(120,120,128,0.12)] dark:bg-[rgba(120,120,128,0.24)] text-u-pr",
+  danger: "bg-[rgb(var(--u-erf))] text-white",
+  ghost: "bg-u-prt text-u-pr",
 };
 
 // Mobile-first: compact and thumb-friendly on small screens, growing at each
 // breakpoint so buttons don't look undersized on larger screens.
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: "text-sm px-3.5 py-2 gap-1.5 rounded-xl",
-  md: "text-[15px] px-5 py-3 gap-2 rounded-[14px]",
-  lg: "text-base px-5 py-[15px] gap-2 rounded-[14px]",
+  // iOS 26 capsule buttons.
+  sm: "text-[15px] px-3.5 py-[7px] gap-1.5 rounded-full",
+  md: "text-[17px] px-5 py-[11px] gap-2 rounded-full min-h-[44px]",
+  lg: "text-[17px] px-5 py-[14px] gap-2 rounded-full min-h-[50px]",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -52,7 +52,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       disabled={disabled || isLoading}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap font-bold transition-[transform,box-shadow] active:scale-[0.97] disabled:opacity-55 disabled:cursor-not-allowed disabled:active:scale-100",
+        "inline-flex items-center justify-center whitespace-nowrap font-semibold transition-opacity active:opacity-70 disabled:opacity-55 disabled:cursor-not-allowed disabled:active:opacity-55",
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         fullWidth && "w-full",
