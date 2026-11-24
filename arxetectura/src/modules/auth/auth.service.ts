@@ -26,6 +26,11 @@ export async function issueRefreshToken(userId: string) {
   return raw;
 }
 
+// Hash compared against when the email doesn't exist, so a login for an
+// unknown email takes as long as one for a known email (no user enumeration
+// by timing).
+const DUMMY_HASH = bcrypt.hashSync("timing-equaliser-not-a-password", 12);
+
 /**
  * Normalises the email (trim + lowercase) before both writing and looking it
  * up, so a differently-cased or padded email on a later login always still
@@ -34,8 +39,8 @@ export async function issueRefreshToken(userId: string) {
 export async function authenticate(email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
   const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-  if (!user || user.status !== "ACTIVE" || !(await bcrypt.compare(password, user.passwordHash)))
-    return null;
+  const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !passwordOk || user.status !== "ACTIVE") return null;
   return {
     user: await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: publicUser }),
     accessToken: issueAccessToken(user),

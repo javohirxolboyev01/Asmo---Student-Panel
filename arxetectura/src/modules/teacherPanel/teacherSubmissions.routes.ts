@@ -19,11 +19,14 @@ teacherSubmissionsRouter.get(
           Homework: { Lesson: { Group: await groupScope(req) } },
           ...(req.query.status ? { status: String(req.query.status) } : {}),
         },
+        // Attachments (base64, up to ~3 MB each) only come with the detail route.
+        omit: { attachmentUrl: true },
         include: {
           User: { select: publicUser },
           Homework: { include: { Lesson: { include: { Group: true } } } },
         },
         orderBy: { submittedAt: "desc" },
+        take: 500,
       }),
     ),
   ),

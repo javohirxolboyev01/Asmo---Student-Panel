@@ -16,13 +16,17 @@ checkoutRouter.post(
       // `{ items }` checkout (what the app sends) was rejected with a 400.
       body: z
         .object({
-          productIds: z.array(z.string()).min(1).optional(),
+          productIds: z.array(z.string()).min(1).max(100).optional(),
           items: z
             .array(z.object({ productId: z.string(), quantity: z.number().int().positive().max(100) }))
             .min(1)
+            .max(50)
             .optional(),
         })
-        .refine((b) => b.items || b.productIds, { message: "Cart is empty" }),
+        .refine((b) => b.items || b.productIds, { message: "Cart is empty" })
+        .refine((b) => (b.items ?? []).reduce((n, i) => n + i.quantity, 0) <= 200, {
+          message: "Too many items in one order",
+        }),
       params: z.object({}),
       query: z.object({}),
     }),

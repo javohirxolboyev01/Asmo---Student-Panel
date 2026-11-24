@@ -28,11 +28,15 @@ teacherCoinsRouter.post(
     // Ledger entry and balance change together, same as POST /students/:id/coins
     // (the balance never goes below zero).
     const transaction = await prisma.$transaction(async (tx) => {
-      const created = await tx.coinTransaction.create({ data: { id: newId(), ...req.body } });
       // Relative update in SQL, so a mission claim or purchase landing at the
-      // same moment isn't overwritten by a stale balance.
-      await tx.$executeRaw`UPDATE "User" SET "coinBalance" = GREATEST(0, "coinBalance" + ${req.body.amount}) WHERE id = ${student.id}`;
-      return created;
+      // same moment isn't overwritten by a stale balance. The ledger records the
+      // amount actually applied (a penalty is clipped at 0).
+      const [row] = await tx.$queryRaw<{ applied: number }[]>`
+        UPDATE "User" u SET "coinBalance" = GREATEST(0, old."coinBalance" + ${req.body.amount})
+        FROM (SELECT id, "coinBalance" FROM "User" WHERE id = ${student.id} FOR UPDATE) old
+        WHERE u.id = old.id
+        RETURNING (u."coinBalance" - old."coinBalance") AS applied`;
+      return tx.coinTransaction.create({ data: { id: newId(), ...req.body, amount: Number(row!.applied) } });
     });
     res.status(201).json(transaction);
   }),

@@ -71,6 +71,10 @@ export const authService = {
   },
 
   logout: () => {
+    // Revoke the refresh token on the server (best effort; never blocks logout).
+    const refreshToken = tokenStorage.getRefreshToken();
+    if (refreshToken)
+      apiPost("/auth/logout", { refreshToken }, { skipAuth: true, skipRefresh: true }).catch(() => undefined);
     tokenStorage.clear();
   },
 };

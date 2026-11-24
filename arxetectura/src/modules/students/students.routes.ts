@@ -160,7 +160,10 @@ studentsRouter.post(
   requireRole(...staff),
   validate(
     z.object({
-      body: z.object({ amount: z.number().int().refine((x) => x !== 0), reason: z.string().min(1) }),
+      body: z.object({
+        amount: z.number().int().min(-100_000).max(100_000).refine((x) => x !== 0),
+        reason: z.string().trim().min(1).max(200),
+      }),
       params: z.object({ id: z.string() }),
       query: z.object({}),
     }),
@@ -170,15 +173,19 @@ studentsRouter.post(
     if (!student) return res.status(404).json({ error: "Student not found" });
     const result = await prisma.$transaction(async (tx) => {
       // Relative update in SQL (see teacherCoins.routes.ts): never writes a stale balance.
-      const [row] = await tx.$queryRaw<{ coinBalance: number }[]>`
-        UPDATE "User" SET "coinBalance" = GREATEST(0, "coinBalance" + ${req.body.amount})
-        WHERE id = ${student.id} RETURNING "coinBalance"`;
+      // The ledger records what was actually applied (a penalty is clipped at 0),
+      // so the sum of transactions always matches the balance.
+      const [row] = await tx.$queryRaw<{ coinBalance: number; applied: number }[]>`
+        UPDATE "User" u SET "coinBalance" = GREATEST(0, old."coinBalance" + ${req.body.amount})
+        FROM (SELECT id, "coinBalance" FROM "User" WHERE id = ${student.id} FOR UPDATE) old
+        WHERE u.id = old.id
+        RETURNING u."coinBalance", (u."coinBalance" - old."coinBalance") AS applied`;
       const balance = row!.coinBalance;
       await tx.coinTransaction.create({
         data: {
           id: newId(),
           studentId: student.id,
-          amount: req.body.amount,
+          amount: Number(row!.applied),
           reason: req.body.reason,
           sourceType: req.body.amount > 0 ? "BONUS" : "PENALTY",
         },

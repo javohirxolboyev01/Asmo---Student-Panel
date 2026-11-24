@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import crypto from "node:crypto";
 import { prisma } from "../../lib/prisma.js";
-import { asyncRoute, requireAuth, validate } from "../../middleware/index.js";
+import { asyncRoute, loginLimit, refreshLimit, registerLimit, requireAuth, validate } from "../../middleware/index.js";
 import { publicUser, userSummary } from "../../utils/serializers.js";
 import { uid } from "../../utils/teacherScope.js";
 import { authenticate, issueAccessToken, issueRefreshToken, register } from "./auth.service.js";
@@ -11,11 +11,12 @@ export const authRouter = Router();
 
 export const authSchema = z.object({
   body: z.object({
-    email: z.string().trim().toLowerCase().email(),
-    password: z.string().min(6),
-    firstName: z.string().min(2).optional(),
-    lastName: z.string().min(2).optional(),
-    phone: z.string().optional(),
+    email: z.string().trim().toLowerCase().email().max(254),
+    // bcrypt only uses the first 72 bytes; the cap also stops huge-input CPU abuse.
+    password: z.string().min(6).max(128),
+    firstName: z.string().trim().min(2).max(60).optional(),
+    lastName: z.string().trim().min(2).max(60).optional(),
+    phone: z.string().trim().max(32).optional(),
     role: z.enum(["student", "teacher"]).optional(),
   }),
   params: z.object({}),
@@ -24,6 +25,7 @@ export const authSchema = z.object({
 
 authRouter.post(
   "/auth/register",
+  registerLimit,
   validate(authSchema),
   asyncRoute(async (req: any, res: any) =>
     res.status(201).json(
@@ -41,6 +43,7 @@ authRouter.post(
 
 authRouter.post(
   "/auth/login",
+  ...loginLimit,
   validate(authSchema),
   asyncRoute(async (req: any, res: any) => {
     const result = await authenticate(req.body.email, req.body.password);
@@ -51,13 +54,19 @@ authRouter.post(
 
 authRouter.post(
   "/auth/refresh",
+  refreshLimit,
   asyncRoute(async (req: any, res: any) => {
     try {
       const hash = crypto.createHash("sha256").update(req.body.refreshToken ?? "").digest("hex");
       const token = await prisma.refreshToken.findUnique({ where: { tokenHash: hash }, include: { User: true } });
-      if (!token || token.revokedAt || token.expiresAt < new Date())
+      if (!token || token.revokedAt || token.expiresAt < new Date() || token.User.status !== "ACTIVE")
         return res.status(401).json({ error: "Invalid refresh token" });
-      await prisma.refreshToken.update({ where: { id: token.id }, data: { revokedAt: new Date() } });
+      // Revoke atomically: of two parallel requests with the same token only one wins.
+      const { count } = await prisma.refreshToken.updateMany({
+        where: { id: token.id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      if (count === 0) return res.status(401).json({ error: "Invalid refresh token" });
       res.json({
         user: await prisma.user.findUniqueOrThrow({ where: { id: token.userId }, select: publicUser }),
         accessToken: issueAccessToken(token.User),
@@ -66,6 +75,23 @@ authRouter.post(
     } catch {
       res.status(401).json({ error: "Invalid refresh token" });
     }
+  }),
+);
+
+// Logout: revokes the given refresh token so it can't be reused (idempotent;
+// the access token simply expires on its own).
+authRouter.post(
+  "/auth/logout",
+  asyncRoute(async (req: any, res: any) => {
+    const raw = typeof req.body?.refreshToken === "string" ? req.body.refreshToken : "";
+    if (raw) {
+      const hash = crypto.createHash("sha256").update(raw).digest("hex");
+      await prisma.refreshToken.updateMany({
+        where: { tokenHash: hash, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
+    res.status(204).end();
   }),
 );
 

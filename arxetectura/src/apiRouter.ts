@@ -1,6 +1,7 @@
 // src/apiRouter.ts — mounts every domain module's router under /api.
 import { Router } from "express";
 import { errorHandler } from "./middleware/index.js";
+import { prisma } from "./lib/prisma.js";
 
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { profileRouter } from "./modules/profile/profile.routes.js";
@@ -36,7 +37,17 @@ import {
 
 const router = Router();
 
+// Liveness: the process is up.
 router.get("/health", (_req, res) => res.json({ status: "ok", service: "asmo-student-backend" }));
+// Readiness: the process can reach the database (for load balancers / uptime checks).
+router.get("/health/ready", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "ok", db: "ok" });
+  } catch {
+    res.status(503).json({ status: "error", db: "unreachable" });
+  }
+});
 
 router.use(authRouter);
 router.use(profileRouter);

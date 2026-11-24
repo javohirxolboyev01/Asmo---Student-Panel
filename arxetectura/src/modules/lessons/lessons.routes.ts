@@ -170,17 +170,29 @@ lessonsRouter.post(
   validate(
     z.object({
       body: z.object({
-        records: z.array(
-          z.object({ userId: z.string(), status: z.enum(["PRESENT", "ABSENT"]) }),
-        ),
+        records: z
+          .array(z.object({ userId: z.string(), status: z.enum(["PRESENT", "ABSENT"]) }))
+          .max(500),
       }),
       params: z.object({ id: z.string() }),
       query: z.object({}),
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
+    const lesson = await prisma.lesson.findUnique({ where: { id: req.params.id }, select: { groupId: true } });
+    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    // Only students enrolled in this lesson's group can get an attendance mark.
+    const enrolled = new Set(
+      (
+        await prisma.enrollment.findMany({
+          where: { groupId: lesson.groupId, studentId: { in: req.body.records.map((r: any) => r.userId) } },
+          select: { studentId: true },
+        })
+      ).map((e) => e.studentId),
+    );
+    const records = req.body.records.filter((r: any) => enrolled.has(r.userId));
     await prisma.$transaction(
-      req.body.records.map((record: any) =>
+      records.map((record: any) =>
         prisma.attendanceRecord.upsert({
           where: { lessonId_studentId: { lessonId: req.params.id, studentId: record.userId } },
           update: { status: record.status, markedAt: new Date() },

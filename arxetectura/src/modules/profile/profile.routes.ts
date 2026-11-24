@@ -23,7 +23,8 @@ const profileSchema = z.object({
 });
 
 const emailSchema = z.object({
-  body: z.object({ email: z.string().email() }),
+  // Same normalisation as register/login, otherwise a mixed-case email can't log in.
+  body: z.object({ email: z.string().trim().toLowerCase().email().max(254) }),
   params: z.object({}),
   query: z.object({}),
 });

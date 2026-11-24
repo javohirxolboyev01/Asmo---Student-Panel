@@ -95,7 +95,17 @@ teachersRouter.delete(
   asyncRoute(async (req: any, res: any) => {
     if (await prisma.group.count({ where: { teacherId: req.params.id } }))
       return res.status(400).json({ error: "Teacher still has groups" });
-    await prisma.teacher.delete({ where: { id: req.params.id } });
+    // Removing the profile alone left the login working with full staff rights,
+    // so the account is deactivated and its sessions revoked in the same step.
+    await prisma.$transaction(async (tx) => {
+      const teacher = await tx.teacher.delete({ where: { id: req.params.id } });
+      if (!teacher.userId) return;
+      await tx.user.update({ where: { id: teacher.userId }, data: { status: "INACTIVE", updatedAt: new Date() } });
+      await tx.refreshToken.updateMany({
+        where: { userId: teacher.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    });
     res.status(204).send();
   }),
 );

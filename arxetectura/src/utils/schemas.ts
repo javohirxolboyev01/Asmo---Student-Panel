@@ -5,7 +5,9 @@ export const avatarSchema = z.preprocess(
   (value) => (value === "" ? null : value),
   z
     .string()
-    .max(2_000_000)
+    // Avatars are sent in every list (leaderboard, rosters), so keep them small.
+    // The in-app character SVG is a few KB; 300 KB leaves room for a photo URL/data.
+    .max(300_000, "Avatar is too large")
     .nullable()
     .refine(
       (value) =>
@@ -16,12 +18,12 @@ export const avatarSchema = z.preprocess(
 );
 
 export const gradeBody = z.object({
-  score: z.coerce.number().int().min(0),
+  score: z.coerce.number().int().min(0).max(1_000_000),
   feedback: z.string().max(5000).optional(),
 });
 
 export const paymentData = z.object({
-  amount: z.number().int().positive(),
+  amount: z.number().int().positive().max(1_000_000_000),
   status: z.enum(["PAID", "PENDING", "OVERDUE", "CANCELLED"]).optional(),
   paymentType: z.enum(["CASH", "CLICK", "PAYME", "BANK", "UZUM"]),
   description: z.string().max(500).nullable().optional(),
@@ -31,11 +33,11 @@ export const paymentData = z.object({
 
 export const studentCreate = z.object({
   body: z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
-    firstName: z.string().min(2),
-    lastName: z.string().min(2),
-    phone: z.string().optional(),
+    email: z.string().trim().toLowerCase().email().max(254),
+    password: z.string().min(6).max(128),
+    firstName: z.string().trim().min(2).max(60),
+    lastName: z.string().trim().min(2).max(60),
+    phone: z.string().trim().max(32).optional(),
   }),
   params: z.object({}),
   query: z.object({}),
