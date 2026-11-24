@@ -1,6 +1,7 @@
 // src/student/pages/SettingsPage.tsx
-// "Kosmik maktab" settings: email, password, language, theme — same
-// authStore / settingsStore calls as src/pages/SettingsPage.tsx.
+// Student settings: everyday preferences first (theme, language), then
+// account (email, password) — same authStore / settingsStore calls as
+// src/pages/SettingsPage.tsx.
 import "../theme/profile.css";
 import { useState, type FormEvent } from "react";
 import { useAuthStore } from "@/stores/authStore";
@@ -107,6 +108,38 @@ export const SettingsPage = () => {
       />
 
       <div className="sp-sg">
+        <div className="sp-panel">
+          <h2 className="sp-h-ic">
+            <IconTile icon={Globe} tint="teal" size="sm" /> {t("space.profile.language")}
+          </h2>
+          <div className="sp-profile-lang">
+            <Segmented<Language>
+              value={language}
+              options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
+              onChange={setLanguage}
+            />
+          </div>
+        </div>
+
+        <div className="sp-panel">
+          <h2 className="sp-h-ic">
+            <IconTile icon={SunMoon} tint="indigo" size="sm" /> {t("space.profile.theme")}
+          </h2>
+          <div className="sp-tg">
+            <span className="sp-profile-tgtext">
+              <span className="sp-h-ic">
+                {theme === "dark" ? <Moon className="sp-ii" aria-hidden="true" /> : <Sun className="sp-ii" aria-hidden="true" />}{" "}
+                {t("space.profile.darkMode")}
+              </span>
+              <small>{t("space.profile.darkModeHint")}</small>
+            </span>
+            <Switch
+              checked={theme === "dark"}
+              onChange={(on) => setTheme(on ? "dark" : "light")}
+              label={t("space.profile.darkMode")}
+            />
+          </div>
+        </div>
         <form className="sp-panel" onSubmit={handleEmail} noValidate>
           <h2 className="sp-h-ic">
             <IconTile icon={Mail} tint="blue" size="sm" /> {t("settings.accountSection")}
@@ -173,38 +206,6 @@ export const SettingsPage = () => {
           <Message msg={passwordMsg} />
         </form>
 
-        <div className="sp-panel">
-          <h2 className="sp-h-ic">
-            <IconTile icon={Globe} tint="blue" size="sm" /> {t("space.profile.language")}
-          </h2>
-          <div className="sp-profile-lang">
-            <Segmented<Language>
-              value={language}
-              options={LANGUAGES.map((l) => ({ value: l.code, label: l.label }))}
-              onChange={setLanguage}
-            />
-          </div>
-        </div>
-
-        <div className="sp-panel">
-          <h2 className="sp-h-ic">
-            <IconTile icon={SunMoon} tint="indigo" size="sm" /> {t("space.profile.theme")}
-          </h2>
-          <div className="sp-tg">
-            <span className="sp-profile-tgtext">
-              <span className="sp-h-ic">
-                {theme === "dark" ? <Moon className="sp-ii" aria-hidden="true" /> : <Sun className="sp-ii" aria-hidden="true" />}{" "}
-                {t("space.profile.darkMode")}
-              </span>
-              <small>{t("space.profile.darkModeHint")}</small>
-            </span>
-            <Switch
-              checked={theme === "dark"}
-              onChange={(on) => setTheme(on ? "dark" : "light")}
-              label={t("space.profile.darkMode")}
-            />
-          </div>
-        </div>
       </div>
     </div>
   );

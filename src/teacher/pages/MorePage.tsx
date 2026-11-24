@@ -82,25 +82,28 @@ export const MorePage = () => {
 
   const fullName = `${user.firstName} ${user.lastName}`.trim();
 
-  const items: MenuItem[] = [
-    { to: ROUTES.PROFILE_EDIT, icon: User, color: "#0066cc", label: t("profile.editInfo") },
-    { to: ROUTES.SETTINGS, icon: Settings, color: "#636366", label: t("nav.settings") },
-    { to: "/tests", icon: ListChecks, color: "#8944ab", label: t("nav.tests") },
-    { to: "/missions", icon: Target, color: "#c41c5f", label: t("nav.missions") },
-    { to: "/payments", icon: CreditCard, color: "#1e8e3e", label: t("nav.payments") },
-    { to: "/attendance", icon: BarChart3, color: "#e07800", label: t("nav.attendance") },
-    { to: "/shop", icon: ShoppingBag, color: "#0e7c8f", label: t("nav.shop") },
+  // Warm icon tiles (white glyph on them), grouped as "Boshqaruv" / "Hisob".
+  const manage: MenuItem[] = [
+    { to: "/tests", icon: ListChecks, color: "#8a58a6", label: t("nav.tests") },
+    { to: "/missions", icon: Target, color: "#c45379", label: t("nav.missions") },
+    { to: "/payments", icon: CreditCard, color: "#3f8a5c", label: t("nav.payments") },
+    { to: "/attendance", icon: BarChart3, color: "#d0602f", label: t("nav.attendance") },
+    { to: "/shop", icon: ShoppingBag, color: "#2b8783", label: t("nav.shop") },
     ...(isTeacher
-      ? [{ to: "/teachers", icon: GraduationCap, color: "#3634a3", label: t("nav.teachers") }]
+      ? [{ to: "/teachers", icon: GraduationCap, color: "#5a60b2", label: t("nav.teachers") }]
       : []),
-    { to: "/notifications", icon: Bell, color: "#d70015", label: t("nav.notifications"), badge: unread },
+  ];
+  const account: MenuItem[] = [
+    { to: ROUTES.PROFILE_EDIT, icon: User, color: "#3f78b0", label: t("profile.editInfo") },
+    { to: ROUTES.SETTINGS, icon: Settings, color: "#8a7d71", label: t("nav.settings") },
+    { to: "/notifications", icon: Bell, color: "#c8463b", label: t("nav.notifications"), badge: unread },
   ];
 
   return (
     <>
       <PageHeader title={t("nav.more")} subtitle={t("us.more.subtitle")} />
       <div className="u-two e">
-        <div className="u-card u-me-card grid justify-items-center gap-1.5 text-center" style={{ padding: "28px 20px" }}>
+        <div className="u-card u-me-card grid content-start justify-items-center gap-1.5 text-center" style={{ padding: "28px 20px" }}>
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
@@ -110,29 +113,42 @@ export const MorePage = () => {
           >
             <Avatar name={fullName} src={user.avatar} seed={user.id} size="xl" />
             <span
-              className="absolute bottom-0 right-0 grid h-8 w-8 place-items-center rounded-full"
+              className="absolute bottom-0 right-0 grid h-9 w-9 place-items-center rounded-full"
               style={{ background: "var(--prf)", color: "#fff", border: "3px solid var(--sf)" }}
               aria-hidden="true"
             >
               <Pencil className="u-i s" strokeWidth={2} />
             </span>
           </button>
-          <h1 className="max-w-full break-words">{fullName}</h1>
-          <span className="u-chip">{isTeacher ? t("profile.teacher") : t("profile.student")}</span>
+          <h2 className="mt-2 max-w-full break-words text-[24px]">{fullName}</h2>
+          <span className="u-tag pr">{isTeacher ? t("profile.teacher") : t("profile.student")}</span>
           {user.email && <p className="u-sub max-w-full break-all">{user.email}</p>}
           {user.phone && <p className="u-sub">{user.phone}</p>}
         </div>
 
-        <div className="u-card" style={{ padding: 8 }}>
-          {items.map((item) => (
-            <MenuRow key={item.to} item={item} />
-          ))}
-          <button type="button" className="u-mn" style={{ color: "var(--er)" }} onClick={handleLogout}>
-            <span className="u-mi" style={{ background: "var(--erf)", color: "#fff" }}>
-              <LogOut className="u-i" strokeWidth={2} aria-hidden="true" />
-            </span>
-            <span className="g">{t("profile.logout")}</span>
-          </button>
+        <div className="u-stack !gap-5">
+          <section>
+            <h2 className="u-day !mt-0">{t("us.more.manage")}</h2>
+            <div className="u-card" style={{ padding: 8 }}>
+              {manage.map((item) => (
+                <MenuRow key={item.to} item={item} />
+              ))}
+            </div>
+          </section>
+          <section>
+            <h2 className="u-day !mt-0">{t("us.more.account")}</h2>
+            <div className="u-card" style={{ padding: 8 }}>
+              {account.map((item) => (
+                <MenuRow key={item.to} item={item} />
+              ))}
+              <button type="button" className="u-mn" style={{ color: "var(--er)" }} onClick={handleLogout}>
+                <span className="u-mi" style={{ background: "var(--ert)", color: "var(--er)" }}>
+                  <LogOut className="u-i" strokeWidth={2} aria-hidden="true" />
+                </span>
+                <span className="g">{t("profile.logout")}</span>
+              </button>
+            </div>
+          </section>
         </div>
       </div>
 

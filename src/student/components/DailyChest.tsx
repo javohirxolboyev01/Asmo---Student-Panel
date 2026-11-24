@@ -1,6 +1,6 @@
 // src/student/components/DailyChest.tsx
-// Floating "Kunlik sandiq" button + capsule picker. The server decides what
-// is inside each capsule; we only send which one was picked.
+// "Kunlik sovg'a" row (top of the dashboard missions) + box picker. The server decides what
+// is inside each box; we only send which one was picked.
 import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useOpenChestMutation } from "@/hooks/queries/useMissions";
@@ -41,9 +41,21 @@ export const DailyChest = ({ opened, reward }: { opened: boolean; reward: number
 
   return (
     <>
-      <button className={opened ? "sp-box sp-off" : "sp-box"} onClick={() => setIsOpen(true)}>
-        <Gift className="sp-box-ic" aria-hidden="true" strokeWidth={2.1} />
-        {t("space.chest")}
+      <button
+        type="button"
+        className={opened ? "sp-row sp-chest sp-off" : "sp-row sp-chest"}
+        onClick={() => setIsOpen(true)}
+      >
+        <div className="sp-ic sp-chest-ic" aria-hidden="true">
+          <IconTile icon={opened ? MoonStar : Gift} tint={opened ? "gray" : "yellow"} />
+        </div>
+        <div className="sp-t">
+          <b>{t("space.chest")}</b>
+          <small>{opened ? t("home.chestDone") : t("home.chestReady")}</small>
+        </div>
+        <span className="sp-chest-go" aria-hidden="true">
+          {opened ? t("home.chestView") : t("home.chestOpen")}
+        </span>
       </button>
 
       <Modal open={isOpen} onClose={close} labelledBy="sp-chest-title" sheet>

@@ -315,7 +315,7 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
                             disabled={locked}
                             onClick={() => updateQuestion(q.key, { correctIndex: i })}
                             className={cn(
-                              "w-10 h-10 rounded-full flex-none grid place-items-center font-fd text-base font-semibold transition-colors disabled:cursor-not-allowed",
+                              "w-10 h-10 rounded-full flex-none grid place-items-center font-fd text-base font-extrabold transition-colors disabled:cursor-not-allowed",
                               correct ? "bg-[rgb(var(--u-okf))] text-white" : "bg-u-sf2 text-u-mu hover:text-u-tx",
                             )}
                           >
@@ -430,7 +430,7 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
 
       {/* Floating save bar: above the phone tab bar (76px + 10px gap), bottom-right on desktop. */}
       <div className="fixed z-[7] left-2.5 right-2.5 mx-auto max-w-[520px] bottom-[calc(96px+env(safe-area-inset-bottom,0px))] min-[960px]:left-auto min-[960px]:right-7 min-[960px]:mx-0 min-[960px]:bottom-6 min-[960px]:w-[400px]">
-        <div className="flex items-center gap-3 rounded-[22px] bg-u-sf p-2 pl-4 shadow-[0_14px_40px_-10px_rgba(40,30,120,0.4)]">
+        <div className="flex items-center gap-3 rounded-[22px] bg-u-sf p-2 pl-4 shadow-u-lg border border-u-ln">
           <span className="flex-1 min-w-0 truncate text-sm font-bold text-u-mu">
             {t("quizzes.questionCount", { count: questions.length })}
           </span>

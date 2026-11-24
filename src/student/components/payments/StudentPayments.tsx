@@ -1,6 +1,6 @@
 // src/student/components/payments/StudentPayments.tsx
-// Student-only "Kosmik maktab" version of the shared PaymentsView: stats,
-// search, status/type filters, list with "show more", per-payment details.
+// Student payments: debt status first (the one thing to act on), totals,
+// search + status/type filters, list with "show more", per-payment details.
 import { useMemo, useState } from "react";
 import {
   Banknote,
@@ -204,27 +204,10 @@ export const StudentPayments = () => {
       <PageHeader
         title={t("payments.title")}
         subtitle={t("payments.subtitle")}
-        right={
-          <div className="sp-pill">
-            <ReceiptText aria-hidden="true" strokeWidth={2.2} />{" "}
-            <span>{t("payments.countSuffix", { count: payments.length })}</span>
-          </div>
-        }
       />
 
-      <div className="sp-sums">
-        <div className="sp-s sp-sm">
-          <small>{t("payments.totalPaid")}</small>
-          <b>{money(stats.totalPaid)}</b>
-          {stats.lastPaidAt && (
-            <small>
-              {t("payments.lastPayment", {
-                date: formatDate(stats.lastPaidAt),
-              })}
-            </small>
-          )}
-        </div>
-        <div className="sp-s sp-sm">
+      <div className="sp-sums sp-pay-sums">
+        <div className={stats.debt > 0 ? "sp-s sp-sm sp-pay-status sp-pay-debt" : "sp-s sp-sm sp-pay-status"}>
           <small>{t("payments.status")}</small>
           {stats.debt > 0 ? (
             <>
@@ -240,6 +223,17 @@ export const StudentPayments = () => {
               </b>
               <small>{t("payments.allPaidDesc")}</small>
             </>
+          )}
+        </div>
+        <div className="sp-s sp-sm">
+          <small>{t("payments.totalPaid")}</small>
+          <b>{money(stats.totalPaid)}</b>
+          {stats.lastPaidAt && (
+            <small>
+              {t("payments.lastPayment", {
+                date: formatDate(stats.lastPaidAt),
+              })}
+            </small>
           )}
         </div>
         <div className="sp-s sp-sm">

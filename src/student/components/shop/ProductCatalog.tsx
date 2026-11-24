@@ -1,5 +1,5 @@
 // src/student/components/shop/ProductCatalog.tsx
-// Student-only "Do'kon" catalog (space theme): search, category chips and the
+// Student-only "Do'kon" catalog: search, category chips and the
 // product grid. Same data + filtering as the shared components/Shop catalog
 // (which the teacher panel keeps using); cart controls are plugged in by the page.
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -8,7 +8,7 @@ import { getErrorMessage } from "@/lib/toast";
 import { useProductsQuery } from "@/hooks/queries/useProducts";
 import type { Product } from "@/services/productService";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Gift, Heart, PackageSearch, Search, Sparkles, Star, Tag, Zap } from "lucide-react";
+import { Gift, Heart, PackageSearch, Search, ShoppingCart, Sparkles, Star, Tag, Zap } from "lucide-react";
 import { EmptyState, ErrorState, SearchBox, Skel } from "../ui";
 import { CoinGlyph } from "../icons";
 
@@ -186,7 +186,7 @@ const ProductCard = ({
           </div>
         ) : (
           <button className="sp-cta" onClick={() => cart.add(product)}>
-            {t("shop.buy")}
+            <ShoppingCart aria-hidden="true" /> {t("space.shop.toCart")}
           </button>
         )}
       </div>

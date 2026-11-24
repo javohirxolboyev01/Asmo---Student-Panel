@@ -43,7 +43,7 @@ export const Dropdown = ({ trigger, items, align = "right", className }: Dropdow
                 setOpen(false);
               }}
               className={cn(
-                "w-full flex items-center gap-2 px-3 py-2 sm:py-2.5 rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:bg-u-sf2",
+                "w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl text-sm font-semibold text-left transition-colors focus-visible:outline-none focus-visible:bg-u-sf2",
                 item.danger
                   ? "text-u-er hover:bg-u-ert"
                   : "text-u-tx hover:bg-u-sf2",

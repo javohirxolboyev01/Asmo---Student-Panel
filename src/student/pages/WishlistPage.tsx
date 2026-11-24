@@ -1,5 +1,5 @@
 // src/student/pages/WishlistPage.tsx
-// Cart (backend wishlist) in the space theme: quantity stepper, totals vs the
+// Cart (backend wishlist) in the warm theme: quantity stepper, totals vs the
 // coin balance, confirm → POST /shop/checkout → success modal.
 import "../theme/shop.css";
 import { useEffect, useRef, useState, type ReactNode } from "react";

@@ -1,5 +1,5 @@
 // src/student/pages/EditProfilePage.tsx
-// "Kosmik maktab" edit profile (first / last name, phone) — same
+// Student edit profile (first / last name, phone) — same
 // authStore.updateProfile call as src/pages/EditProfilePage.tsx.
 import "../theme/profile.css";
 import { UserRoundX } from "lucide-react";

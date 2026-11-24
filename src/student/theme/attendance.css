@@ -68,3 +68,32 @@ a.sp-attendance-row:hover > span:nth-child(2) {
   padding: 7px 14px;
   font-size: 13px;
 }
+
+/* Calendar card header: title + week/month switch on one row, period nav below. */
+.sp-attendance-cnav .sp-attendance-nav {
+  flex-basis: 100%;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.sp-attendance-cnav > h2 {
+  min-width: 0;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg {
+  display: inline-flex;
+  width: auto;
+  margin: 0;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button {
+  min-width: max-content;
+  min-height: 36px;
+}
+@media (max-width: 380px) {
+  .sp-attendance-cell small {
+    font-size: 8.5px;
+    letter-spacing: 0;
+  }
+}

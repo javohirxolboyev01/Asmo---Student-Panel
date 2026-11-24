@@ -25,7 +25,7 @@ export const GradingPage = () => {
   if (error) {
     return (
       <>
-        <PageHeader title={t("grading.title")} />
+        <PageHeader title={t("grading.title")} subtitle={t("us.gq.hint")} />
         <EmptyBox
           tone="er"
           icon={AlertTriangle}
@@ -40,7 +40,7 @@ export const GradingPage = () => {
     <div>
       <PageHeader
         title={t("grading.title")}
-        subtitle={submissions.length ? t("us.gq.subtitle", { n: submissions.length }) : undefined}
+        subtitle={submissions.length ? t("us.gq.subtitle", { n: submissions.length }) : t("us.gq.hint")}
       />
 
       {submissions.length === 0 ? (

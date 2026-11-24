@@ -1,5 +1,5 @@
 // src/student/navigation.ts
-// Student panel menu ("Kosmik maktab" theme). The same list drives the
+// Student panel menu. The same list drives the
 // floating bottom bar on mobile and the left rail on desktop; profile and
 // notifications are reached from the HUD (avatar / bell) instead.
 import {

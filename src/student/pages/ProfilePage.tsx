@@ -1,6 +1,6 @@
 // src/student/pages/ProfilePage.tsx
-// "Kosmik maktab" profile, 1:1 with the profile mock: hero card with the
-// character avatar (opens the character editor), contacts and the menu.
+// Student profile: hero card with the character avatar (tap it or the
+// button to open the character editor), contacts and the menu.
 // The teacher panel keeps src/pages/ProfilePage.tsx.
 import "../theme/profile.css";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
@@ -94,6 +94,9 @@ export const ProfilePage = () => {
         <div className="sp-pf-who">
           <h1>{fullName}</h1>
           <p>{isTeacher ? t("profile.teacher") : t("profile.student")}</p>
+          <button type="button" className="sp-btn sp-pf-edit" onClick={() => setEditorOpen(true)}>
+            <Pencil aria-hidden="true" /> {t("space.ce.edit")}
+          </button>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 // src/student/pages/ShopPage.tsx
-// "Do'kon" (space theme): catalog + cart controls. The cart is the backend
+// "Do'kon": catalog + cart controls. The cart is the backend
 // wishlist (quantities are client-side, see useWishlistCart).
 import "../theme/shop.css";
 import { Link } from "react-router-dom";

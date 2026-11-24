@@ -87,7 +87,7 @@ export const SettingsPage = () => {
 
   return (
     <>
-      <PageHeader title={t("settings.title")} back={{ to: "/more" }} />
+      <PageHeader title={t("settings.title")} subtitle={t("settings.subtitle")} back={{ to: "/more" }} />
 
       <div className="u-stack" style={{ maxWidth: 680 }}>
         {/* Appearance */}

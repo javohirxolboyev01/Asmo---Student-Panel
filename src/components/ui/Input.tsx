@@ -23,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-[13.5px] font-bold text-u-mu mb-1.5"
+            className="block text-[14px] font-bold text-u-tx mb-1.5"
           >
             {label}
           </label>
@@ -38,10 +38,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal",
+              "w-full rounded-[16px] outline-none text-[16px] font-medium",
               "u-field",
               error && "is-error",
-              uiSize === "lg" ? "py-3.5" : "py-[11px]",
+              uiSize === "lg" ? "py-3.5 min-h-[52px]" : "py-3 min-h-[48px]",
               leftIcon ? "pl-[46px] pr-4" : "px-4",
               rightSlot && "pr-10",
               className,

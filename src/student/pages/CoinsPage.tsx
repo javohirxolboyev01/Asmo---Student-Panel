@@ -1,11 +1,13 @@
 // src/student/pages/CoinsPage.tsx
-// "Kosmik maktab" coin balance: hero, earned/spent tiles and full history.
+// Coin balance: big balance with the two next steps (spend in the shop /
+// earn with missions), earned/spent/operations tiles and the full history.
 import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { formatDate } from "@/utilist/formatData";
 import type { CoinRecord } from "@/types/coin";
-import { ArrowDownRight, ArrowUpRight, Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel } from "../components/ui";
 import { CoinGlyph, IconTile, type Tint } from "../components/icons";
 import type { LucideIcon } from "lucide-react";
@@ -68,13 +70,13 @@ export const CoinsPage = () => {
         <IconTile icon={Gem} tint="teal" size="lg" />
         <div className="sp-big">{data.balance}</div>
         <div>{t("coins.totalBalance")}</div>
-        <div className="sp-bs">
-          <span style={{ color: "var(--sp-lime-ink)" }}>
-            <ArrowUpRight className="sp-ii" aria-hidden="true" /> +{totalEarned}
-          </span>
-          <span style={{ color: "var(--sp-pink-ink)" }}>
-            <ArrowDownRight className="sp-ii" aria-hidden="true" /> -{totalSpent}
-          </span>
+        <div className="sp-coins-acts">
+          <Link to="/shop" className="sp-cta">
+            <ShoppingBag aria-hidden="true" /> {t("space.coins.toShop")}
+          </Link>
+          <Link to="/" className="sp-cta sp-ghost">
+            <Target aria-hidden="true" /> {t("space.coins.earn")}
+          </Link>
         </div>
       </div>
 

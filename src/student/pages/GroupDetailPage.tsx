@@ -1,5 +1,6 @@
 // src/student/pages/GroupDetailPage.tsx
-// Group details: group info chips and the full lesson list.
+// Group details: info chips, homework still open (the next step), then
+// every lesson of the group.
 import {
   BookOpen,
   CalendarDays,
@@ -50,34 +51,31 @@ const LessonRow = ({ lesson }: { lesson: LessonListItem }) => {
         <b>{lesson.topic}</b>
         <small>
           <InlineIcon icon={CalendarDays} /> {formatDate(lesson.lessonDate)}
-          {lesson.homework?.deadline && (
-            <>
-              {" · "}
-              <span className={state === "late" ? "sp-groups-late" : undefined}>
-                <InlineIcon icon={Clock} />{" "}
-                {t("space.groups.deadline", {
-                  date: formatDate(lesson.homework.deadline),
-                })}
-              </span>
-            </>
-          )}
         </small>
-      </div>
-      <span
-        className={
-          state === "open"
-            ? "sp-badge sp-sun"
+        {lesson.homework?.deadline && (
+          <small className={state === "late" ? "sp-groups-late" : undefined}>
+            <InlineIcon icon={Clock} />{" "}
+            {t("space.groups.deadline", {
+              date: formatDate(lesson.homework.deadline),
+            })}
+          </small>
+        )}
+        <span
+          className={
+            state === "open"
+              ? "sp-badge sp-sun"
+              : state === "late"
+                ? "sp-badge sp-pink"
+                : "sp-badge sp-mute"
+          }
+        >
+          {state === "open"
+            ? t("space.groups.hwOpen")
             : state === "late"
-              ? "sp-badge sp-pink"
-              : "sp-badge sp-mute"
-        }
-      >
-        {state === "open"
-          ? t("space.groups.hwOpen")
-          : state === "late"
-            ? t("space.groups.hwOverdue")
-            : t("space.groups.hwNone")}
-      </span>
+              ? t("space.groups.hwOverdue")
+              : t("space.groups.hwNone")}
+        </span>
+      </div>
       <ChevronRight className="sp-chev" aria-hidden="true" />
     </Link>
   );
@@ -148,6 +146,8 @@ export const GroupDetailPage = () => {
   }
 
   const lessons = data.lessons;
+  // Homework still waiting for an answer goes first, so the next step is obvious.
+  const openHomework = lessons.filter((l) => hwState(l) === "open");
   const schedule = [group.schedule?.days?.join(", "), group.schedule?.time]
     .filter(Boolean)
     .join(" · ");
@@ -161,11 +161,6 @@ export const GroupDetailPage = () => {
         back={back}
         title={group.name}
         subtitle={subtitle || undefined}
-        right={
-          <div className="sp-pill">
-            <BookOpen aria-hidden="true" strokeWidth={2.2} /> <span>{lessons.length}</span>
-          </div>
-        }
       />
 
       <div className="sp-groups-info">
@@ -187,6 +182,23 @@ export const GroupDetailPage = () => {
           <InlineIcon icon={BookOpen} /> {t("space.groups.lessonsCount", { n: lessons.length })}
         </span>
       </div>
+
+      {openHomework.length > 0 && (
+        <section aria-labelledby="sp-groups-open">
+          <div className="sp-sec sp-sec-wrap">
+            <div>
+              <h2 id="sp-groups-open">{t("space.groups.openHomework")}</h2>
+              <small>{t("space.groups.openHomeworkHint")}</small>
+            </div>
+            <small>{openHomework.length}</small>
+          </div>
+          <div className="sp-groups-lessons">
+            {openHomework.map((l) => (
+              <LessonRow key={l.id} lesson={l} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="sp-sec">
         <h2>{t("space.groups.allLessons")}</h2>

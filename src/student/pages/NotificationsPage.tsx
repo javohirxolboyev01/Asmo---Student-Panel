@@ -1,5 +1,5 @@
 // src/student/pages/NotificationsPage.tsx
-// "Kosmik maktab" notifications — same queries/mutations as
+// Student notifications — same queries/mutations as
 // src/pages/NotificationsPage.tsx (the teacher keeps that one).
 import "../theme/profile.css";
 import { formatDistanceToNow, parseISO, type Locale } from "date-fns";

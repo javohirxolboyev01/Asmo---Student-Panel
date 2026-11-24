@@ -87,9 +87,15 @@
   border-color: transparent;
 }
 .sp-groups-lesson .sp-badge {
-  margin-left: 0;
-  flex-shrink: 0;
+  justify-self: start;
+  width: fit-content;
+  margin: 4px 0 0;
   font-size: 12px;
+}
+.sp-groups-lesson .sp-t > small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .sp-groups-late {
   color: var(--sp-pink-ink);

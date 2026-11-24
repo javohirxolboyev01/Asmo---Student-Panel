@@ -60,7 +60,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="block text-[13.5px] font-bold text-u-mu mb-1.5"
+            className="block text-[14px] font-bold text-u-tx mb-1.5"
           >
             {label}
           </label>
@@ -75,7 +75,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             aria-haspopup="listbox"
             aria-expanded={isOpen}
             className={cn(
-              "w-full flex items-center justify-between appearance-none rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal text-left px-4 py-[11px] pr-10",
+              "w-full flex items-center justify-between appearance-none rounded-[16px] outline-none text-[16px] font-medium text-left px-4 py-3 min-h-[48px] pr-10",
               "u-field",
               disabled && "opacity-50 cursor-not-allowed",
               error && "is-error",
@@ -86,7 +86,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           </button>
           <ChevronDown
             className={cn(
-              "w-4 h-4 text-u-mu absolute right-3 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-200",
+              "w-4 h-4 text-u-mu absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-200",
               isOpen && "rotate-180",
             )}
           />
@@ -105,7 +105,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(opt.value)}
-                    className={cn("w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[15px] font-semibold text-left transition-colors hover:bg-u-sf2", isSelected && "bg-u-prt text-u-pr hover:bg-u-prt")}
+                    className={cn("w-full flex items-center gap-2 px-3 py-2.5 min-h-[44px] rounded-xl text-[15px] font-semibold text-left transition-colors hover:bg-u-sf2", isSelected && "bg-u-prt text-u-pr hover:bg-u-prt")}
                   >
                     <Check className={cn("w-4 h-4 flex-shrink-0", isSelected ? "opacity-100" : "opacity-0")} />
                     <span className="truncate">{opt.label}</span>

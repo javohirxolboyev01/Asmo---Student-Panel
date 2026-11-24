@@ -12,14 +12,14 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const generatedId = useId();
     const checkboxId = id ?? generatedId;
     return (
-      <label htmlFor={checkboxId} className="inline-flex items-center gap-2 cursor-pointer select-none">
-        <span className="relative inline-flex items-center justify-center w-5 h-5 flex-shrink-0">
+      <label htmlFor={checkboxId} className="inline-flex min-h-[44px] items-center gap-2.5 cursor-pointer select-none">
+        <span className="relative inline-flex items-center justify-center w-[22px] h-[22px] flex-shrink-0">
           <input
             ref={ref}
             id={checkboxId}
             type="checkbox"
             className={cn(
-              "u-field peer appearance-none w-5 h-5 rounded-md border-2 transition-colors cursor-pointer",
+              "u-field peer appearance-none w-[22px] h-[22px] rounded-[7px] transition-colors cursor-pointer",
               className,
             )}
             {...props}

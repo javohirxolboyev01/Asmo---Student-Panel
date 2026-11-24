@@ -1,5 +1,5 @@
 // src/teacher/components/ui.tsx
-// Building blocks of the teacher panel (iOS style; classes in
+// Building blocks of the teacher panel (warm "Iliq" style; classes in
 // theme/ustoz.css, `u-` prefix). Pages compose these so headers, tags,
 // avatars and empty states look the same everywhere.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
@@ -12,17 +12,17 @@ import { cn } from "@/lib/utils";
 
 // ── Colours ──
 
-/** Avatar monograms (bg, text): soft iOS system tints; picked by a stable hash of the seed. */
+/** Avatar monograms (bg, text): warm pastel tints; picked by a stable hash of the seed. */
 const AV_COLORS: [string, string][] = [
-  ["#dbe9f9", "#0058b0"],
-  ["#ffe8cc", "#a14a00"],
-  ["#d9f2df", "#1b6e31"],
-  ["#ffdfe2", "#b0001a"],
-  ["#ecdcf5", "#7a3a99"],
-  ["#d5eef2", "#0b6a7a"],
+  ["#fbe3d6", "#9c3f1b"],
+  ["#fcecd2", "#80500a"],
+  ["#dff0e4", "#2c6b43"],
+  ["#f7dfe5", "#9c3556"],
+  ["#ebe1f3", "#6a4390"],
+  ["#d9eeec", "#1f6c68"],
 ];
-/** Group accent colours: iOS system tints (used when a direction has no colour). */
-export const GROUP_COLORS = ["#0066cc", "#e07800", "#1e8e3e", "#c41c5f", "#8944ab"];
+/** Group accent colours: warm, muted tints (used when a direction has no colour). */
+export const GROUP_COLORS = ["#c0582f", "#2e8f8a", "#3f8a5c", "#8a58a6", "#b9801a"];
 
 export const hashOf = (seed: string) => {
   let h = 0;
@@ -368,9 +368,9 @@ export const WeekDots = ({ days, color }: { days: number[]; color?: string }) =>
 
 // ── Loading ──
 
-/** Pulsing placeholder; size with Tailwind (h-*, w-*). */
+/** Shimmering placeholder; size with Tailwind (h-*, w-*). */
 export const Skel = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-[22px] bg-u-sf2", className)} aria-hidden="true" />
+  <div className={cn("u-skel rounded-[22px]", className)} aria-hidden="true" />
 );
 
 /** Header + rows skeleton, the default for list pages. */

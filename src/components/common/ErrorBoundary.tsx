@@ -29,15 +29,15 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="flex flex-col items-center justify-center py-12 px-4" role="alert">
           <div className="text-center">
             <div className="w-[84px] h-[84px] rounded-full bg-u-ert flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-7 h-7 text-u-er" />
+              <AlertTriangle className="w-9 h-9 text-u-er" aria-hidden="true" />
             </div>
-            <h2 className="font-fd text-xl font-semibold text-u-tx mb-2">
+            <h2 className="font-fd text-[21px] font-extrabold text-u-tx mb-2">
               Xatolik yuz berdi
             </h2>
-            <p className="text-u-mu mb-6">
+            <p className="text-u-mu mb-6 max-w-sm mx-auto">
               Kechirasiz, kutilmagan xatolik yuz berdi. Iltimos, sahifani qayta
               yuklang.
             </p>

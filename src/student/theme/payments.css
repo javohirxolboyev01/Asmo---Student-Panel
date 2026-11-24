@@ -181,3 +181,35 @@
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* Summary: payment status on top across the full width, totals below in two columns. */
+.sp-pay-sums {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.sp-pay-sums > .sp-pay-status {
+  grid-column: 1 / -1;
+  background:
+    linear-gradient(120deg, var(--sp-lime-soft), transparent 70%),
+    var(--sp-card);
+}
+.sp-pay-sums > .sp-pay-status.sp-pay-debt {
+  background:
+    linear-gradient(120deg, var(--sp-pink-soft), transparent 70%),
+    var(--sp-card);
+}
+.sp-pay-sums .sp-s.sp-sm b {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 420px) {
+  .sp-pay-sums .sp-s.sp-sm:not(.sp-pay-status) b {
+    font-size: 19px;
+  }
+}
+@media (min-width: 900px) {
+  .sp-pay-sums {
+    grid-template-columns: 1.3fr 1fr 1fr;
+  }
+  .sp-pay-sums > .sp-pay-status {
+    grid-column: auto;
+  }
+}

@@ -5,15 +5,15 @@
 import { cn } from "@/lib/utils";
 
 export const Skeleton = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-xl bg-u-sf2", className)} />
+  <div className={cn("u-skel rounded-2xl", className)} />
 );
 
 export const SkeletonAvatar = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-full bg-u-sf2", className)} />
+  <div className={cn("u-skel rounded-full", className)} />
 );
 
 export const SkeletonText = ({ className }: { className?: string }) => (
-  <div className={cn("animate-pulse rounded-md bg-u-sf2 h-3.5", className)} />
+  <div className={cn("u-skel rounded-full h-3.5", className)} />
 );
 
 export const SkeletonHeader = () => (
@@ -36,7 +36,7 @@ export const SkeletonStatGrid = ({ count = 4 }: { count?: number }) => (
 );
 
 export const SkeletonListRow = ({ withAvatar = true }: { withAvatar?: boolean }) => (
-  <div className="flex items-center gap-3 p-4 bg-u-sf shadow-u rounded-[20px]">
+  <div className="flex items-center gap-3 p-4 bg-u-sf shadow-u rounded-[20px] border border-u-ln/60">
     {withAvatar && <SkeletonAvatar className="w-10 h-10 flex-shrink-0" />}
     <div className="flex-1 space-y-2 min-w-0">
       <SkeletonText className="w-1/2" />
@@ -92,8 +92,8 @@ export const SkeletonTable = ({ rows = 5, cols = 3 }: { rows?: number; cols?: nu
 // to'liq sahifa skeleti — Header/Sidebar/kontent shaklini taxminan takrorlaydi,
 // shu bilan ekranga birdaniga tarkib "sakrab tushmaydi" (layout shift kamayadi).
 export const AppShellSkeleton = () => (
-  <div className="min-h-screen bg-u-bg min-[960px]:pl-[272px]">
-    <aside className="hidden min-[960px]:flex flex-col fixed inset-y-0 left-0 w-[272px] bg-u-sf px-4 py-[22px] space-y-2">
+  <div className="min-h-screen bg-u-bg min-[960px]:pl-[284px]">
+    <aside className="hidden min-[960px]:flex flex-col fixed top-3.5 bottom-3.5 left-3.5 w-[252px] bg-u-sf rounded-[28px] shadow-u px-4 py-[22px] space-y-2">
       <Skeleton className="w-28 h-7 mb-4" />
       {Array.from({ length: 8 }).map((_, i) => (
         <Skeleton key={i} className="w-full h-9 rounded-2xl" />

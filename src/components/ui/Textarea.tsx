@@ -17,7 +17,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={textareaId}
-            className="block text-[13.5px] font-bold text-u-mu mb-1.5"
+            className="block text-[14px] font-bold text-u-tx mb-1.5"
           >
             {label}
           </label>
@@ -26,7 +26,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={textareaId}
           className={cn(
-            "w-full px-4 py-3 rounded-[12px] border outline-none transition-[border-color,box-shadow] text-[17px] font-normal min-h-[100px]",
+            "w-full px-4 py-3 rounded-[16px] outline-none text-[16px] font-medium min-h-[100px]",
             "u-field",
             error && "is-error",
             className,

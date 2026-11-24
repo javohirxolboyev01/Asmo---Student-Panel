@@ -166,9 +166,9 @@ export const StudentsPage = () => {
               <div key={s.id} className="u-les min-w-0">
                 <Link to={`/students/${s.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                   <Avatar name={name} src={s.avatar} seed={s.id} />
-                  <span className="min-w-0">
+                  <span className="min-w-0 flex-1">
                     <b className="block truncate text-[17px]">{name}</b>
-                    <span className="mt-0.5 flex flex-wrap gap-1">
+                    <span className="mt-1 flex flex-wrap items-center gap-1.5">
                       {s.groups.length ? (
                         s.groups.map((g) => (
                           <Tag key={g.id} tone="pr" className="max-w-full truncate">
@@ -180,14 +180,14 @@ export const StudentsPage = () => {
                       )}
                       {s.status === "inactive" && <Tag tone="mu">{t("students.inactive")}</Tag>}
                     </span>
+                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                      <CoinTag n={s.coinBalance} />
+                      <small className="text-[13.5px] font-semibold text-u-mu whitespace-nowrap">
+                        {s.groups.length ? t("us.people.attPct", { n: s.attendancePercentage }) : "—"}
+                      </small>
+                    </span>
                   </span>
                 </Link>
-                <div className="grid flex-none justify-items-end gap-1">
-                  <CoinTag n={s.coinBalance} />
-                  <small className="u-sub m-0 whitespace-nowrap text-[13px]">
-                    {s.groups.length ? t("us.people.attPct", { n: s.attendancePercentage }) : "—"}
-                  </small>
-                </div>
                 <button
                   type="button"
                   className="u-ib"

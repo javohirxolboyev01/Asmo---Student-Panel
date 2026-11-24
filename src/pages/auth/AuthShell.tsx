@@ -1,6 +1,6 @@
 // src/pages/auth/AuthShell.tsx
-// Shared chrome for Login/Register: space background, theme toggle, logo,
-// role switch and the password-visibility field.
+// Shared chrome for Login/Register: warm background, language + theme
+// controls, logo, role switch and the password-visibility field.
 import { useEffect, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Check, ChevronDown, Eye, EyeOff, Globe, GraduationCap, Moon, Sun, User, Users } from "lucide-react";
 import type { Language } from "@/i18n/translations";
@@ -25,14 +25,18 @@ export const AuthShell = ({ subtitle, children }: { subtitle: string; children: 
     <div className="au">
       <div className="au-top">
         <LanguageMenu />
-        <button type="button" className="au-tt" onClick={toggleTheme} aria-label={t("auth.toggleTheme")}>
+        <button
+          type="button"
+          className="au-tt"
+          onClick={toggleTheme}
+          aria-label={t("auth.toggleTheme")}
+          title={t("auth.toggleTheme")}
+        >
           {theme === "dark" ? <Sun className="ic" /> : <Moon className="ic" />}
         </button>
       </div>
-      <div className="au-stars" />
-      <span className="au-dc au-d1" aria-hidden="true">🪐</span>
-      <span className="au-dc au-d2" aria-hidden="true">🚀</span>
-      <span className="au-dc au-d3" aria-hidden="true">☄️</span>
+      <span className="au-blob au-b1" aria-hidden="true" />
+      <span className="au-blob au-b2" aria-hidden="true" />
 
       <div className="au-ab">
         <div className="au-ac">
@@ -123,12 +127,24 @@ const LanguageMenu = () => {
 export const RoleSwitch = ({ role, onChange }: { role: AuthRole; onChange: (r: AuthRole) => void }) => {
   const { t } = useTranslation();
   return (
-    <div className="au-roles">
-      <button type="button" className={role === "student" ? "on" : ""} onClick={() => onChange("student")}>
-        <User className="ic" /> {t("auth.roleStudent")}
+    <div className="au-roles" role="radiogroup">
+      <button
+        type="button"
+        role="radio"
+        aria-checked={role === "student"}
+        className={role === "student" ? "on" : ""}
+        onClick={() => onChange("student")}
+      >
+        <User className="ic" aria-hidden="true" /> {t("auth.roleStudent")}
       </button>
-      <button type="button" className={role === "teacher" ? "on" : ""} onClick={() => onChange("teacher")}>
-        <Users className="ic" /> {t("auth.roleTeacher")}
+      <button
+        type="button"
+        role="radio"
+        aria-checked={role === "teacher"}
+        className={role === "teacher" ? "on" : ""}
+        onClick={() => onChange("teacher")}
+      >
+        <Users className="ic" aria-hidden="true" /> {t("auth.roleTeacher")}
       </button>
     </div>
   );

@@ -154,6 +154,16 @@ export const GroupsPage = () => {
                       </>
                     )}
                   </small>
+                  {(g.courseName || g.schedule?.time) && (
+                    <small>
+                      {[
+                        g.courseName,
+                        [g.schedule?.days?.join(", "), g.schedule?.time].filter(Boolean).join(" · "),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </small>
+                  )}
                 </div>
                 <ChevronRight className="sp-chev" aria-hidden="true" />
               </Link>

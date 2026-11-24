@@ -3,6 +3,7 @@ import type { StudentDict } from "./index";
 
 const dict: StudentDict = {
   uz: {
+    "space.shop.toCart": "Savatga",
     "space.shop.balanceAria": "Coin balansi: {{n}}",
     "space.shop.cartAria": "Savat: {{count}} ta mahsulot",
     "space.shop.noResults": "Hech narsa topilmadi",
@@ -31,6 +32,7 @@ const dict: StudentDict = {
     "space.shop.errQty": "Hozircha har bir mahsulotdan 1 tadan xarid qilish mumkin. Miqdorni 1 ga tushirib, qayta urinib ko'ring.",
   },
   ru: {
+    "space.shop.toCart": "В корзину",
     "space.shop.balanceAria": "Баланс коинов: {{n}}",
     "space.shop.cartAria": "Корзина: {{count}} товаров",
     "space.shop.noResults": "Ничего не найдено",
@@ -59,6 +61,7 @@ const dict: StudentDict = {
     "space.shop.errQty": "Пока можно купить только по 1 штуке каждого товара. Уменьшите количество до 1 и попробуйте снова.",
   },
   en: {
+    "space.shop.toCart": "To cart",
     "space.shop.balanceAria": "Coin balance: {{n}}",
     "space.shop.cartAria": "Cart: {{count}} items",
     "space.shop.noResults": "Nothing found",

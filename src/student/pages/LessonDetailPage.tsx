@@ -1,5 +1,6 @@
 // src/student/pages/LessonDetailPage.tsx
-// Lesson info + homework: status/score, your answer, and the submit form.
+// Homework first (status/score, your answer, the submit form) — it is what
+// the student came for — then what the lesson was about.
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
@@ -203,15 +204,6 @@ export const LessonDetailPage = () => {
         }
       />
 
-      {lesson.description && (
-        <div className="sp-panel mb-3.5">
-          <h2 className="sp-h-ic">
-            <IconTile icon={BookOpen} tint="blue" size="sm" /> {t("space.groups.lessonAbout")}
-          </h2>
-          <p className="sp-groups-text">{lesson.description}</p>
-        </div>
-      )}
-
       {!homework ? (
         <EmptyState icon={Moon} title={t("space.groups.noHomework")} text={t("space.groups.noHomeworkHint")} />
       ) : (
@@ -382,6 +374,15 @@ export const LessonDetailPage = () => {
               {t("lessonDetail.gradedFooter", { score: submission?.score, max: homework.maxScore })}
             </p>
           )}
+        </div>
+      )}
+
+      {lesson.description && (
+        <div className="sp-panel mt-3.5">
+          <h2 className="sp-h-ic">
+            <IconTile icon={BookOpen} tint="blue" size="sm" /> {t("space.groups.lessonAbout")}
+          </h2>
+          <p className="sp-groups-text">{lesson.description}</p>
         </div>
       )}
 

@@ -117,6 +117,7 @@ export const GroupsPage = () => {
       headerActions={
         <>
           <Button
+            variant="outline"
             title={t("groups.manageDirections")}
             leftIcon={<Tags className="u-i m" strokeWidth={2} />}
             onClick={() => setIsDirectionsModalOpen(true)}

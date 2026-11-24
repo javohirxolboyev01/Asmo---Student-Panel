@@ -1,6 +1,6 @@
 // src/student/pages/AttendancePage.tsx
-// "Kosmik maktab" attendance: % pill, weekly/monthly calendar with real marks
-// from the attendance API, and the full records list.
+// Attendance: summary numbers first, then the week/month calendar (view
+// switch lives in the calendar card) and the full records list.
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
@@ -170,21 +170,6 @@ export const AttendancePage = () => {
         right={<div className="sp-pill">{percentage}%</div>}
       />
 
-      <div className="sp-attendance-view-toggle">
-        <Segmented<ViewMode>
-          value={viewMode}
-          onChange={(m) => {
-            setViewMode(m);
-            // Re-anchor on today when the visible range no longer contains it.
-            if (!showsToday) setFocus(today);
-          }}
-          options={[
-            { value: "weekly", label: t("attendance.weekly") },
-            { value: "monthly", label: t("attendance.monthly") },
-          ]}
-        />
-      </div>
-
       <div className="sp-g3">
         <div className="sp-s">
           <b>{totalLessons}</b>
@@ -203,6 +188,20 @@ export const AttendancePage = () => {
       <div className="sp-panel mt-3.5">
         <div className="sp-cnav sp-attendance-cnav">
           <h2>{t("attendance.calendar")}</h2>
+          <div className="sp-attendance-view-toggle">
+            <Segmented<ViewMode>
+              value={viewMode}
+              onChange={(m) => {
+                setViewMode(m);
+                // Re-anchor on today when the visible range no longer contains it.
+                if (!showsToday) setFocus(today);
+              }}
+              options={[
+                { value: "weekly", label: t("attendance.weekly") },
+                { value: "monthly", label: t("attendance.monthly") },
+              ]}
+            />
+          </div>
           <span className="sp-attendance-nav">
             <button
               type="button"

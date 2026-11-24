@@ -212,7 +212,7 @@ export const PaymentsView = ({
           </span>
           <div className="flex-1 min-w-0">
             <p className="u-sub !mt-0 text-sm font-bold">{t("payments.totalPaid")}</p>
-            <p className="font-fd text-[28px] font-semibold leading-tight break-words">{formatAmount(totalPaid)}</p>
+            <p className="font-fd text-[28px] font-extrabold leading-tight break-words">{formatAmount(totalPaid)}</p>
             {lastPayment && <p className="u-sub text-sm">{t("payments.lastPayment", { date: lastPayment.date })}</p>}
           </div>
         </div>
@@ -242,7 +242,7 @@ export const PaymentsView = ({
             aria-pressed={filterStatus === key}
             onClick={() => setFilterStatus(filterStatus === key ? "all" : key)}
             className={cn(
-              "rounded-[18px] bg-u-sf2 px-2 py-3.5 text-center transition-shadow",
+              "min-h-[44px] px-2 py-3.5 text-center transition-shadow",
               filterStatus === key && "shadow-[inset_0_0_0_2px_rgb(var(--u-pr))]",
             )}
           >
@@ -331,7 +331,7 @@ export const PaymentsView = ({
                     </span>
                     <div className="flex-1 min-w-[170px]">
                       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                        <b className="font-fd text-[19px] font-semibold leading-tight">{payment.amount}</b>
+                        <b className="font-fd text-[19px] font-extrabold leading-tight">{payment.amount}</b>
                         <Tag tone={status.tone}>
                           <StatusIcon className="u-i s" strokeWidth={2} aria-hidden="true" />
                           {getLabel(status)}
