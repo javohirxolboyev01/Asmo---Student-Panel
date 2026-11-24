@@ -1,5 +1,8 @@
 import 'dotenv/config';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -25,7 +28,16 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        // Avatars and product images may be external URLs or data: URLs.
+        'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+      },
+    },
+  }),
+);
 app.use(cors({ origin: config.corsOrigins, exposedHeaders: ['X-Total-Count', 'X-Request-Id'] }));
 app.use(compression());
 app.use(express.json({ limit: '3mb' }));
@@ -38,6 +50,37 @@ app.use(
   ),
 );
 app.use('/api', apiRouter);
+app.use('/api', (_req, res) => res.status(404).json({ error: 'Route not found' }));
+
+// Single-service deploy: the built frontend (repo-root dist/, or FRONTEND_DIR)
+// is served by this same server, so one Railway service hosts both.
+const frontendDir =
+  process.env.FRONTEND_DIR ??
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../dist');
+if (fs.existsSync(path.join(frontendDir, 'index.html'))) {
+  app.use(
+    express.static(frontendDir, {
+      index: false,
+      setHeaders: (res, filePath) => {
+        // Hashed build assets never change; everything else must revalidate
+        // so a new deploy (index.html, service worker) is picked up at once.
+        res.setHeader(
+          'Cache-Control',
+          filePath.includes(`${path.sep}assets${path.sep}`)
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=0, must-revalidate',
+        );
+      },
+    }),
+  );
+  // SPA fallback: any other GET that wants HTML gets the app shell.
+  app.get(/.*/, (req, res, next) => {
+    if (!req.accepts('html')) return next();
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+    res.sendFile(path.join(frontendDir, 'index.html'));
+  });
+  logger.info('Serving frontend', { dir: frontendDir });
+}
 app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 // Errors thrown before the API router (e.g. malformed JSON) still get a JSON answer.
 app.use(errorHandler);

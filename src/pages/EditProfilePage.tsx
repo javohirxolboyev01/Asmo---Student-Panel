@@ -51,8 +51,9 @@ export const EditProfilePage = () => {
 
   const handleAvatarSave = async (avatarPath: string) => {
     try {
-      // The backend accepts only http(s) or data:image URLs, so send the full URL.
-      await updateProfile({ avatar: `${window.location.origin}${avatarPath}` });
+      // Saved as a site-relative path ("/avatars/boy-01.svg") so it keeps
+      // working when the app moves to another domain.
+      await updateProfile({ avatar: avatarPath });
       toast.success(t("profile.avatarSaved"));
       setPickerOpen(false);
     } catch (err) {

@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"
+    "build:railway": "VITE_API_URL=/api npm run build && npm --prefix arxetectura ci --include=dev && npm --prefix arxetectura run build",
+    "start:railway": "NODE_ENV=production npm --prefix arxetectura start"
   },
   "dependencies": {
     "@tanstack/query-sync-storage-persister": "^5.103.1",
@@ -20,7 +21,6 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "react-toastify": "^11.1.0",
-    "serve": "^14.2.8",
     "tailwind-merge": "^2.1.0",
     "zustand": "^4.4.7"
   },
