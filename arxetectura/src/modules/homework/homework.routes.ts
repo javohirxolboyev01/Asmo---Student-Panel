@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, assertHomework } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -28,7 +28,7 @@ homeworkRouter.post(
   ),
   asyncRoute(async (req: any, res: any) => {
     const homework = await prisma.homework.findFirst({
-      where: { id: req.params.id, Lesson: { Group: { Enrollment: { some: { studentId: uid(req) } } } } },
+      where: { id: req.params.id, Lesson: { Group: { Enrollment: { some: { studentId: uid(req), status: "ACTIVE" } } } } },
       include: { Lesson: { include: { Group: { include: { Teacher: true } } } } },
     });
     if (!homework) return res.status(404).json({ error: "Homework not found" });
@@ -88,9 +88,10 @@ homeworkRouter.patch(
       query: z.object({}),
     }),
   ),
-  asyncRoute(async (req: any, res: any) =>
-    res.json(await prisma.homework.update({ where: { id: req.params.id }, data: req.body })),
-  ),
+  asyncRoute(async (req: any, res: any) => {
+    const homework = await assertHomework(req, req.params.id);
+    res.json(await prisma.homework.update({ where: { id: homework.id }, data: req.body }));
+  }),
 );
 
 homeworkRouter.delete(
@@ -99,7 +100,8 @@ homeworkRouter.delete(
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    await prisma.homework.delete({ where: { id: req.params.id } });
+    const homework = await assertHomework(req, req.params.id);
+    await prisma.homework.delete({ where: { id: homework.id } });
     res.status(204).send();
   }),
 );

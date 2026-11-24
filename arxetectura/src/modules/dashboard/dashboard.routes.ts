@@ -2,7 +2,7 @@ import { Router } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth } from "../../middleware/index.js";
 import { userSummary } from "../../utils/serializers.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, groupScope } from "../../utils/teacherScope.js";
 
 export const dashboardRouter = Router();
 
@@ -18,7 +18,7 @@ dashboardRouter.get(
         prisma.user.findUniqueOrThrow({ where: { id: userId } }),
         prisma.lesson.findMany({
           where: {
-            Group: { Enrollment: { some: { studentId: userId } } },
+            Group: { Enrollment: { some: { studentId: userId, status: "ACTIVE" } } },
             lessonDate: { gte: new Date() },
             status: "PLANNED",
           },
@@ -26,7 +26,7 @@ dashboardRouter.get(
           take: 5,
           include: { Group: { select: { name: true } } },
         }),
-        prisma.enrollment.findMany({ where: { studentId: userId }, include: { Group: true } }),
+        prisma.enrollment.findMany({ where: { studentId: userId, status: "ACTIVE" }, include: { Group: true } }),
         prisma.coinTransaction.findMany({
           where: { studentId: userId },
           orderBy: { createdAt: "desc" },
@@ -87,14 +87,14 @@ dashboardRouter.get(
       });
     }
 
-    // TEACHER acts as a full admin here — there's no separate admin-only
-    // data set, so both roles see every group/lesson/submission.
+    // Staff: an ADMIN sees every group; a TEACHER only their own groups.
+    const scope = await groupScope(req);
     const [current, owned, pendingGradingCount, upcoming] = await Promise.all([
       prisma.user.findUniqueOrThrow({ where: { id: userId } }),
-      prisma.group.findMany({ select: { id: true } }),
-      prisma.submission.count({ where: { status: "SUBMITTED" } }),
+      prisma.group.findMany({ where: scope, select: { id: true } }),
+      prisma.submission.count({ where: { status: "SUBMITTED", Homework: { Lesson: { Group: scope } } } }),
       prisma.lesson.findMany({
-        where: { lessonDate: { gte: new Date() }, status: "PLANNED" },
+        where: { lessonDate: { gte: new Date() }, status: "PLANNED", Group: scope },
         orderBy: { lessonDate: "asc" },
         take: 5,
         include: { Group: { select: { name: true } } },

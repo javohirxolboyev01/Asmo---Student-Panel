@@ -7,7 +7,15 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
-import { uid } from "../../utils/teacherScope.js";
+import {
+  uid,
+  isAdmin,
+  assertGroup as assertScopedGroup,
+  assertQuiz as assertScopedQuiz,
+  assertMission,
+  missionReadScope,
+  missionWriteScope,
+} from "../../utils/teacherScope.js";
 import {
   CHEST_REWARDS,
   ACTIVE_MISSION_TYPES,
@@ -162,14 +170,18 @@ const missionData = ({ quizId, ...body }: any) => ({
 /** Relations every staff mission response includes. */
 const missionInclude = { Group: { select: { name: true } }, Quiz: { select: { title: true } } };
 
-const assertGroup = async (groupId?: string | null) => {
-  if (groupId && !(await prisma.group.findUnique({ where: { id: groupId }, select: { id: true } })))
-    throw httpError(404, "Group not found");
+/**
+ * A mission targets a group in the caller's scope. Missions for every student
+ * (groupId null) have no owner column, so only an ADMIN may create or change them.
+ */
+const assertGroup = async (req: any, groupId?: string | null) => {
+  if (groupId) await assertScopedGroup(req, groupId);
+  else if (!isAdmin(req)) throw httpError(403, "Only an admin can manage missions for all students; choose a group");
 };
 
-const assertQuiz = async (body: any) => {
-  if (body.type === "PASS_QUIZ" && !(await prisma.quiz.findUnique({ where: { id: body.quizId }, select: { id: true } })))
-    throw httpError(404, "Quiz not found");
+/** A PASS_QUIZ mission must point at a quiz the caller can see. */
+const assertQuiz = async (req: any, body: any) => {
+  if (body.type === "PASS_QUIZ") await assertScopedQuiz(req, body.quizId);
 };
 
 const serializeMission = (m: any, completedToday = 0) => ({
@@ -193,10 +205,12 @@ missionsRouter.get(
   "/missions",
   requireAuth,
   requireRole(...staff),
-  asyncRoute(async (_req: any, res: any) => {
+  asyncRoute(async (req: any, res: any) => {
+    // A teacher sees their groups' missions plus the all-student ones (read-only).
+    const scope = await missionReadScope(req);
     const [missions, counts] = await Promise.all([
       prisma.mission.findMany({
-        where: { type: { in: [...ACTIVE_MISSION_TYPES] } },
+        where: { type: { in: [...ACTIVE_MISSION_TYPES] }, ...scope },
         orderBy: { createdAt: "desc" },
         include: missionInclude,
       }),
@@ -213,8 +227,8 @@ missionsRouter.post(
   requireRole(...staff),
   validate(z.object({ body: missionBody, params: z.object({}), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) => {
-    await assertGroup(req.body.groupId);
-    await assertQuiz(req.body);
+    await assertGroup(req, req.body.groupId);
+    await assertQuiz(req, req.body);
     const mission = await prisma.mission.create({
       data: { id: newId(), ...missionData(req.body) },
       include: missionInclude,
@@ -229,10 +243,9 @@ missionsRouter.patch(
   requireRole(...staff),
   validate(z.object({ body: missionBody, params: z.object({ id: z.string().min(1) }), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) => {
-    if (!(await prisma.mission.findUnique({ where: { id: req.params.id }, select: { id: true } })))
-      throw httpError(404, "Mission not found");
-    await assertGroup(req.body.groupId);
-    await assertQuiz(req.body);
+    await assertMission(req, req.params.id);
+    await assertGroup(req, req.body.groupId);
+    await assertQuiz(req, req.body);
     const mission = await prisma.mission.update({
       where: { id: req.params.id },
       data: {
@@ -251,7 +264,7 @@ missionsRouter.delete(
   requireAuth,
   requireRole(...staff),
   asyncRoute(async (req: any, res: any) => {
-    const deleted = await prisma.mission.deleteMany({ where: { id: req.params.id } });
+    const deleted = await prisma.mission.deleteMany({ where: { id: req.params.id, ...(await missionWriteScope(req)) } });
     if (!deleted.count) throw httpError(404, "Mission not found");
     res.status(204).end();
   }),

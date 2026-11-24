@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower, publicUser, userSummary } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { uid, groupScope, teacherId, currentUser } from "../../utils/teacherScope.js";
+import { groupScope, teacherId, currentUser, isAdmin, assertStudent, httpError } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -17,7 +17,9 @@ groupsRouter.get(
     const current = currentUser(req);
     const isStudent = current.role === "STUDENT";
     const groups = await prisma.group.findMany({
-      where: isStudent ? { Enrollment: { some: { studentId: current.id } } } : await groupScope(req),
+      where: isStudent
+        ? { Enrollment: { some: { studentId: current.id, status: "ACTIVE" } } }
+        : await groupScope(req),
       include: {
         Direction: true,
         Teacher: true,
@@ -129,7 +131,7 @@ groupsRouter.get(
       where: {
         id: req.params.id,
         ...(current.role === "STUDENT"
-          ? { Enrollment: { some: { studentId: current.id } } }
+          ? { Enrollment: { some: { studentId: current.id, status: "ACTIVE" } } }
           : await groupScope(req)),
       },
       include: {
@@ -222,7 +224,10 @@ groupsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const ownTeacherId = req.user.role === "TEACHER" ? await teacherId(req) : req.body.teacherId;
+    // A teacher always owns the group they create; an ADMIN names the owner.
+    const ownTeacherId = isAdmin(req) ? req.body.teacherId : await teacherId(req);
+    if (isAdmin(req) && !(await prisma.teacher.findUnique({ where: { id: ownTeacherId }, select: { id: true } })))
+      return res.status(404).json({ error: "Teacher not found" });
     const group = await prisma.group.create({
       data: { id: newId(), ...req.body, teacherId: ownTeacherId },
       include: { Direction: true, Teacher: true, Enrollment: true },
@@ -254,7 +259,15 @@ groupsRouter.patch(
   asyncRoute(async (req: any, res: any) => {
     const group = await prisma.group.findFirst({ where: { id: req.params.id, ...(await groupScope(req)) } });
     if (!group) return res.status(404).json({ error: "Group not found" });
-    res.json(await prisma.group.update({ where: { id: group.id }, data: req.body }));
+    const data = { ...req.body };
+    // Only an ADMIN may hand a group to another teacher. The edit form re-sends
+    // the current owner, which is fine.
+    if (data.teacherId !== undefined && data.teacherId !== group.teacherId) {
+      if (!isAdmin(req)) throw httpError(403, "Only an admin can change a group's teacher");
+      if (!(await prisma.teacher.findUnique({ where: { id: data.teacherId }, select: { id: true } })))
+        return res.status(404).json({ error: "Teacher not found" });
+    }
+    res.json(await prisma.group.update({ where: { id: group.id }, data }));
   }),
 );
 
@@ -283,14 +296,14 @@ groupsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const student = await prisma.user.findFirst({ where: { id: req.body.userId, role: "STUDENT" } });
-    if (!student) return res.status(404).json({ error: "Student not found" });
+    const student = await assertStudent(req, req.body.userId);
+    if (student.status !== "ACTIVE") return res.status(404).json({ error: "Student not found" });
     const group = await prisma.group.findFirst({ where: { id: req.params.id, ...(await groupScope(req)) } });
     if (!group) return res.status(404).json({ error: "Group not found" });
     res.status(201).json(
       await prisma.enrollment.upsert({
         where: { studentId_groupId: { studentId: student.id, groupId: group.id } },
-        update: {},
+        update: { status: "ACTIVE" },
         create: { id: newId(), studentId: student.id, groupId: group.id },
       }),
     );

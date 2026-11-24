@@ -12,7 +12,8 @@ notificationsRouter.get(
   asyncRoute(async (req: any, res: any) =>
     res.json({
       notifications: (
-        await prisma.notification.findMany({ where: { userId: uid(req) }, orderBy: { createdAt: "desc" } })
+        // Newest 200 only: the table grows forever (every homework notifies a whole group).
+        await prisma.notification.findMany({ where: { userId: uid(req) }, orderBy: { createdAt: "desc" }, take: 200 })
       ).map((item) => ({ ...item, type: lower(item.type) })),
     }),
   ),

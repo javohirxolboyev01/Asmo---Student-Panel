@@ -19,6 +19,7 @@ import { Button, Input, Select, Textarea } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAuthStore } from "@/stores/authStore";
 import { CoinTag, EmptyBox, PageHeader, Seg, Skel, Toggle } from "../components/ui";
 
 // Attendance and good-grade missions were retired (2026-10-05); the backend no longer accepts them.
@@ -41,7 +42,7 @@ interface MissionForm {
   isActive: boolean;
 }
 
-type FormErrors = Partial<Record<"title" | "description" | "emoji" | "target" | "coinReward" | "quizId", string>>;
+type FormErrors = Partial<Record<"title" | "description" | "emoji" | "target" | "coinReward" | "quizId" | "groupId", string>>;
 
 const EMPTY_FORM: MissionForm = {
   title: "",
@@ -90,6 +91,10 @@ export const MissionsPage = () => {
   const { t } = useTranslation();
   const { data: missions = [], isLoading, isError, error, refetch, isFetching } = useMissionsQuery();
   const { data: groups = [] } = useGroupsQuery();
+  // Missions for all students (no group) have no owner, so only an admin may
+  // create or change them; a teacher works with their own groups' missions.
+  const isAdmin = useAuthStore((s) => s.user?.role) === "admin";
+  const canManage = (m: Mission) => isAdmin || !!m.groupId;
   const { data: quizzes = [] } = useQuizzesQuery();
   const createMission = useCreateMissionMutation();
   const updateMission = useUpdateMissionMutation();
@@ -110,7 +115,7 @@ export const MissionsPage = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(EMPTY_FORM);
+    setForm(isAdmin ? EMPTY_FORM : { ...EMPTY_FORM, groupId: groups[0]?.id ?? "" });
     setErrors({});
     setFormError(null);
     setIsModalOpen(true);
@@ -139,6 +144,7 @@ export const MissionsPage = () => {
     if (USES_TARGET.has(form.type) && !isIntInRange(form.target, 1, 100)) next.target = t("missions.error.target");
     if (form.type === "PASS_QUIZ" && !form.quizId) next.quizId = t("missions.error.quiz");
     if (!isIntInRange(form.coinReward, 1, 100)) next.coinReward = t("missions.error.coinReward");
+    if (!isAdmin && !form.groupId) next.groupId = t("us.manage.missionPickGroup");
     return next;
   };
 
@@ -340,6 +346,9 @@ export const MissionsPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
+                  {!canManage(mission) ? (
+                    <small className="u-sub m-0">{t("us.manage.missionAdminOnly")}</small>
+                  ) : (
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -359,12 +368,13 @@ export const MissionsPage = () => {
                       <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
                     </button>
                   </div>
+                  )}
                   <button
                     type="button"
                     role="switch"
                     aria-checked={mission.isActive}
                     onClick={() => handleToggleActive(mission)}
-                    disabled={togglingId !== null}
+                    disabled={togglingId !== null || !canManage(mission)}
                     className={cn(
                       "flex items-center gap-2 font-bold text-u-mu disabled:cursor-wait",
                       togglingId === mission.id && "opacity-60",
@@ -522,8 +532,17 @@ export const MissionsPage = () => {
             />
           </div>
 
-          <Select label={t("missions.field.group")} value={form.groupId} onChange={(e) => setField("groupId", e.target.value)}>
-            <option value="">{t("missions.allStudents")}</option>
+          <Select
+            label={t("missions.field.group")}
+            value={form.groupId}
+            onChange={(e) => setField("groupId", e.target.value)}
+            error={errors.groupId}
+          >
+            {(isAdmin || !form.groupId) && (
+              <option value="" disabled={!isAdmin}>
+                {isAdmin ? t("missions.allStudents") : t("us.manage.missionPickGroup")}
+              </option>
+            )}
             {editing?.groupId && !groups.some((g) => g.id === editing.groupId) && (
               <option value={editing.groupId}>{editing.groupName ?? editing.groupId}</option>
             )}

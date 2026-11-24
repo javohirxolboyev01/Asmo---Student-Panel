@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, assertGroup as assertScopedGroup, quizScope } from "../../utils/teacherScope.js";
 import { httpError } from "../missions/missions.service.js";
 import {
   attemptDeadline,
@@ -195,9 +195,9 @@ const quizBody = z.object({
 
 type QuestionInput = z.infer<typeof questionBody>;
 
-const assertGroup = async (groupId?: string | null) => {
-  if (groupId && !(await prisma.group.findUnique({ where: { id: groupId }, select: { id: true } })))
-    throw httpError(404, "Group not found");
+/** A quiz may only target a group in the caller's scope (null = every student). */
+const assertGroup = async (req: any, groupId?: string | null) => {
+  if (groupId) await assertScopedGroup(req, groupId);
 };
 
 const questionRows = (quizId: string, questions: QuestionInput[]) =>
@@ -220,15 +220,17 @@ quizzesRouter.get(
   "/quizzes",
   requireAuth,
   requireRole(...staff),
-  asyncRoute(async (_req: any, res: any) => {
+  asyncRoute(async (req: any, res: any) => {
+    const scope = await quizScope(req);
     const [quizzes, stats] = await Promise.all([
       prisma.quiz.findMany({
+        where: scope,
         orderBy: { createdAt: "desc" },
         include: { Group: { select: { name: true } }, _count: { select: { QuizQuestion: true, QuizAttempt: true } } },
       }),
       prisma.quizAttempt.groupBy({
         by: ["quizId"],
-        where: { finishedAt: { not: null } },
+        where: { finishedAt: { not: null }, Quiz: scope },
         _avg: { score: true, total: true },
         _count: { _all: true },
       }),
@@ -262,8 +264,8 @@ quizzesRouter.get(
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: req.params.id },
+    const quiz = await prisma.quiz.findFirst({
+      where: { id: req.params.id, ...(await quizScope(req)) },
       include: { QuizQuestion: orderedQuestions, _count: { select: { QuizAttempt: true } } },
     });
     if (!quiz) throw httpError(404, "Quiz not found");
@@ -287,7 +289,7 @@ quizzesRouter.post(
   validate(z.object({ body: quizBody, params: z.object({}), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) => {
     const { questions, ...meta } = req.body as z.infer<typeof quizBody>;
-    await assertGroup(meta.groupId);
+    await assertGroup(req, meta.groupId);
     const id = newId();
     await prisma.$transaction([
       prisma.quiz.create({ data: { id, ...meta, createdById: uid(req) } }),
@@ -304,12 +306,12 @@ quizzesRouter.put(
   validate(z.object({ body: quizBody, params: z.object({ id: z.string().min(1) }), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) => {
     const { questions, ...meta } = req.body as z.infer<typeof quizBody>;
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: req.params.id },
+    const quiz = await prisma.quiz.findFirst({
+      where: { id: req.params.id, ...(await quizScope(req)) },
       include: { QuizQuestion: orderedQuestions, _count: { select: { QuizAttempt: true } } },
     });
     if (!quiz) throw httpError(404, "Quiz not found");
-    await assertGroup(meta.groupId);
+    await assertGroup(req, meta.groupId);
     const changed = !sameQuestions(quiz.QuizQuestion, questions);
     const locked = () => httpError(409, "Quiz already has attempts; questions can't change");
     // Scores already given are only fair against the questions they were given for.
@@ -339,7 +341,10 @@ quizzesRouter.patch(
   requireRole(...staff),
   validate(z.object({ body: z.object({ isActive: z.boolean() }), params: z.object({ id: z.string().min(1) }), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) => {
-    const updated = await prisma.quiz.updateMany({ where: { id: req.params.id }, data: { isActive: req.body.isActive } });
+    const updated = await prisma.quiz.updateMany({
+      where: { id: req.params.id, ...(await quizScope(req)) },
+      data: { isActive: req.body.isActive },
+    });
     if (!updated.count) throw httpError(404, "Quiz not found");
     res.json({ id: req.params.id, isActive: req.body.isActive });
   }),
@@ -351,7 +356,7 @@ quizzesRouter.delete(
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const deleted = await prisma.quiz.deleteMany({ where: { id: req.params.id } });
+    const deleted = await prisma.quiz.deleteMany({ where: { id: req.params.id, ...(await quizScope(req)) } });
     if (!deleted.count) throw httpError(404, "Quiz not found");
     res.status(204).end();
   }),
@@ -363,8 +368,8 @@ quizzesRouter.get(
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: req.params.id },
+    const quiz = await prisma.quiz.findFirst({
+      where: { id: req.params.id, ...(await quizScope(req)) },
       include: {
         QuizQuestion: orderedQuestions,
         QuizAttempt: {

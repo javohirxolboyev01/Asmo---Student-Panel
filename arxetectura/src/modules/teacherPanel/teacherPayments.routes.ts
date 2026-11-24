@@ -5,7 +5,7 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { publicUser } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
 import { paymentData } from "../../utils/schemas.js";
-import { teacherStudentIds } from "../../utils/teacherScope.js";
+import { assertStudent, studentScope } from "../../utils/teacherScope.js";
 
 export const teacherPaymentsRouter = Router();
 
@@ -21,16 +21,19 @@ const paymentUpdate = z.object({
   query: z.object({}),
 });
 
+/** A payment whose student is in the teacher's scope, or null. */
+const scopedPayment = async (req: any, id: string) =>
+  prisma.payment.findFirst({ where: { id, User: await studentScope(req) } });
+
 teacherPaymentsRouter.get(
   "/teacher/payments",
   requireAuth,
   requireRole("TEACHER"),
   asyncRoute(async (req: any, res: any) => {
-    const memberships = await teacherStudentIds(req);
     const payments = await prisma.payment.findMany({
       where: {
-        studentId: { in: memberships.map((item) => item.studentId) },
-        ...(req.query.status ? { status: String(req.query.status) } : {}),
+        User: await studentScope(req),
+        ...(typeof req.query.status === "string" ? { status: req.query.status } : {}),
       },
       include: { User: { select: publicUser } },
       orderBy: { createdAt: "desc" },
@@ -45,9 +48,7 @@ teacherPaymentsRouter.post(
   requireRole("TEACHER"),
   validate(paymentCreate),
   asyncRoute(async (req: any, res: any) => {
-    const memberships = await teacherStudentIds(req);
-    if (!memberships.some((item) => item.studentId === req.body.studentId))
-      return res.status(403).json({ error: "Student is not in your groups" });
+    await assertStudent(req, req.body.studentId);
     const payment = await prisma.payment.create({
       data: { id: newId(), ...req.body },
       include: { User: { select: publicUser } },
@@ -62,10 +63,7 @@ teacherPaymentsRouter.patch(
   requireRole("TEACHER"),
   validate(paymentUpdate),
   asyncRoute(async (req: any, res: any) => {
-    const memberships = await teacherStudentIds(req);
-    const payment = await prisma.payment.findFirst({
-      where: { id: req.params.id, studentId: { in: memberships.map((item) => item.studentId) } },
-    });
+    const payment = await scopedPayment(req, req.params.id);
     if (!payment) return res.status(404).json({ error: "Payment not found" });
     res.json(
       await prisma.payment.update({ where: { id: payment.id }, data: req.body, include: { User: { select: publicUser } } }),
@@ -79,10 +77,7 @@ teacherPaymentsRouter.delete(
   requireRole("TEACHER"),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const memberships = await teacherStudentIds(req);
-    const payment = await prisma.payment.findFirst({
-      where: { id: req.params.id, studentId: { in: memberships.map((item) => item.studentId) } },
-    });
+    const payment = await scopedPayment(req, req.params.id);
     if (!payment) return res.status(404).json({ error: "Payment not found" });
     await prisma.payment.delete({ where: { id: payment.id } });
     res.status(204).send();

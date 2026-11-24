@@ -3,6 +3,8 @@ import type { TeacherDict } from "./index";
 
 const dict: TeacherDict = {
   uz: {
+    "us.manage.missionPickGroup": "Guruhni tanlang",
+    "us.manage.missionAdminOnly": "Barcha talabalar uchun — faqat admin o'zgartiradi",
     "us.manage.all": "Hammasi",
     "us.manage.filterLabel": "Filtr",
     "us.manage.emptyFilter": "Bu yerda hozircha hech narsa yo'q",
@@ -30,6 +32,8 @@ const dict: TeacherDict = {
     "us.manage.changeStatus": "Holatni o'zgartirish",
   },
   ru: {
+    "us.manage.missionPickGroup": "Выберите группу",
+    "us.manage.missionAdminOnly": "Для всех студентов — изменяет только админ",
     "us.manage.all": "Все",
     "us.manage.filterLabel": "Фильтр",
     "us.manage.emptyFilter": "Здесь пока ничего нет",
@@ -57,6 +61,8 @@ const dict: TeacherDict = {
     "us.manage.changeStatus": "Изменить статус",
   },
   en: {
+    "us.manage.missionPickGroup": "Choose a group",
+    "us.manage.missionAdminOnly": "All students — only an admin can change this",
     "us.manage.all": "All",
     "us.manage.filterLabel": "Filter",
     "us.manage.emptyFilter": "Nothing here yet",

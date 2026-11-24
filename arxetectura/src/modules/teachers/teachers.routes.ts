@@ -33,10 +33,11 @@ teachersRouter.get(
   }),
 );
 
+// Creating and removing teacher accounts is admin-only.
 teachersRouter.post(
   "/teachers",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(
     z.object({
       body: z
@@ -90,7 +91,7 @@ teachersRouter.patch(
 teachersRouter.delete(
   "/teachers/:id",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     if (await prisma.group.count({ where: { teacherId: req.params.id } }))

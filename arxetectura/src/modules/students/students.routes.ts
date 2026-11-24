@@ -5,31 +5,63 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { lower, paymentSummary, userSummary } from "../../utils/serializers.js";
 import { avatarSchema, studentCreate } from "../../utils/schemas.js";
 import { newId } from "../../utils/ids.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, assertStudent, studentScope } from "../../utils/teacherScope.js";
 import { register } from "../auth/auth.service.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
 export const studentsRouter = Router();
 
+/**
+ * Archives a student instead of deleting them: the login is disabled, sessions
+ * are revoked and they leave every group, but payments, coin history,
+ * submissions and attendance stay for the records.
+ */
+export const archiveStudent = (studentId: string) =>
+  prisma.$transaction([
+    prisma.user.update({ where: { id: studentId }, data: { status: "INACTIVE", updatedAt: new Date() } }),
+    prisma.refreshToken.updateMany({ where: { userId: studentId, revokedAt: null }, data: { revokedAt: new Date() } }),
+    prisma.enrollment.deleteMany({ where: { studentId } }),
+  ]);
+
+const listQuery = z.object({
+  search: z.string().max(100).optional(),
+  groupId: z.string().max(100).optional(),
+  // Default: active students only. "INACTIVE" = archived, "all" = both.
+  status: z.enum(["ACTIVE", "INACTIVE", "all"]).optional(),
+});
+
+const queryString = (value: unknown) => (typeof value === "string" ? value : undefined);
+
 studentsRouter.get(
   "/students",
   requireAuth,
   requireRole(...staff),
   asyncRoute(async (req: any, res: any) => {
+    const parsed = listQuery.safeParse({
+      search: queryString(req.query.search),
+      groupId: queryString(req.query.groupId),
+      status: queryString(req.query.status),
+    });
+    if (!parsed.success) return res.status(400).json({ error: "Invalid query" });
+    const { search, groupId, status = "ACTIVE" } = parsed.data;
     const rows = await prisma.user.findMany({
       where: {
         role: "STUDENT",
-        ...(req.query.search
-          ? {
-              OR: [
-                { firstName: { contains: String(req.query.search) } },
-                { lastName: { contains: String(req.query.search) } },
-                { email: { contains: String(req.query.search) } },
-              ],
-            }
-          : {}),
-        ...(req.query.groupId ? { Enrollment: { some: { groupId: String(req.query.groupId) } } } : {}),
+        ...(status === "all" ? {} : { status }),
+        AND: [
+          await studentScope(req),
+          search
+            ? {
+                OR: [
+                  { firstName: { contains: search } },
+                  { lastName: { contains: search } },
+                  { email: { contains: search } },
+                ],
+              }
+            : {},
+        ],
+        ...(groupId ? { Enrollment: { some: { groupId } } } : {}),
       },
       include: { Enrollment: { include: { Group: { select: { id: true, name: true } } } } },
     });
@@ -77,7 +109,7 @@ studentsRouter.get(
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     const user = await prisma.user.findFirst({
-      where: { id: req.params.id, role: "STUDENT" },
+      where: { id: req.params.id, role: "STUDENT", ...(await studentScope(req)) },
       include: {
         Enrollment: { include: { Group: true } },
         AttendanceRecord: { include: { Lesson: true } },
@@ -132,24 +164,25 @@ studentsRouter.patch(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const user = await prisma.user.updateMany({ where: { id: req.params.id, role: "STUDENT" }, data: req.body });
+    const user = await prisma.user.updateMany({
+      where: { id: req.params.id, role: "STUDENT", ...(await studentScope(req)) },
+      data: req.body,
+    });
     if (!user.count) return res.status(404).json({ error: "Student not found" });
     res.json(userSummary(await prisma.user.findUniqueOrThrow({ where: { id: req.params.id } })));
   }),
 );
 
-// Cascading deletes on User (Enrollment, AttendanceRecord, CoinTransaction,
-// Payment, Submission, Notification, RefreshToken) are declared in the Prisma
-// schema, so removing the student row cleans up everything that references it.
+// "Delete" archives the student (see archiveStudent): a hard delete would
+// cascade away their payments and coin history.
 studentsRouter.delete(
   "/students/:id",
   requireAuth,
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    const student = await prisma.user.findFirst({ where: { id: req.params.id, role: "STUDENT" } });
-    if (!student) return res.status(404).json({ error: "Student not found" });
-    await prisma.user.delete({ where: { id: student.id } });
+    const student = await assertStudent(req, req.params.id);
+    await archiveStudent(student.id);
     res.status(204).send();
   }),
 );
@@ -169,8 +202,7 @@ studentsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const student = await prisma.user.findFirst({ where: { id: req.params.id, role: "STUDENT" } });
-    if (!student) return res.status(404).json({ error: "Student not found" });
+    const student = await assertStudent(req, req.params.id);
     const result = await prisma.$transaction(async (tx) => {
       // Relative update in SQL (see teacherCoins.routes.ts): never writes a stale balance.
       // The ledger records what was actually applied (a penalty is clipped at 0),
@@ -217,9 +249,8 @@ studentsRouter.post(
   requireRole(...staff),
   validate(payCreate),
   asyncRoute(async (req: any, res: any) => {
-    const student = await prisma.user.findFirst({ where: { id: req.params.id, role: "STUDENT" } });
-    if (!student) return res.status(404).json({ error: "Student not found" });
-    const teacher = await prisma.teacher.findUnique({ where: { userId: uid(req) } });
+    const student = await assertStudent(req, req.params.id);
+    const teacher =await prisma.teacher.findUnique({ where: { userId: uid(req) } });
     const status = req.body.status ?? "PENDING";
     const actor = teacher ?? (await prisma.user.findUniqueOrThrow({ where: { id: uid(req) } }));
     const payment = await prisma.payment.create({

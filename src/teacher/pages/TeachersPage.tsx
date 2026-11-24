@@ -22,6 +22,8 @@ const EMPTY_FORM = { fullName: "", avatar: "", email: "", password: "" };
 export const TeachersPage = () => {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
+  // Adding and removing teachers is admin-only on the server.
+  const isAdmin = me?.role === "admin";
   const { data: teachers = [], isLoading, error, refetch } = useTeachersQuery();
   const createTeacher = useCreateTeacherMutation();
   const updateTeacher = useUpdateTeacherMutation();
@@ -102,10 +104,12 @@ export const TeachersPage = () => {
         title={t("teachers.title")}
         subtitle={t("us.people.teachersSubtitle")}
         right={
-          <button type="button" className="u-btn" onClick={openCreate}>
-            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
-            {t("common.add")}
-          </button>
+          isAdmin && (
+            <button type="button" className="u-btn" onClick={openCreate}>
+              <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+              {t("common.add")}
+            </button>
+          )
         }
       />
 
@@ -144,15 +148,17 @@ export const TeachersPage = () => {
                 >
                   <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
                 </button>
-                <button
-                  type="button"
-                  className="u-ib"
-                  aria-label={t("common.delete")}
-                  onClick={() => handleDelete(teacher.id)}
-                  disabled={deleteTeacher.isPending}
-                >
-                  <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="u-ib"
+                    aria-label={t("common.delete")}
+                    onClick={() => handleDelete(teacher.id)}
+                    disabled={deleteTeacher.isPending}
+                  >
+                    <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+                  </button>
+                )}
               </div>
             );
           })

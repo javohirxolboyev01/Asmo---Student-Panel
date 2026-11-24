@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
+import { assertStudent } from "../../utils/teacherScope.js";
 
 export const teacherCoinsRouter = Router();
 
@@ -23,8 +24,7 @@ teacherCoinsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const student = await prisma.user.findFirst({ where: { id: req.body.studentId, role: "STUDENT" } });
-    if (!student) return res.status(404).json({ error: "Student not found" });
+    const student = await assertStudent(req, req.body.studentId);
     // Ledger entry and balance change together, same as POST /students/:id/coins
     // (the balance never goes below zero).
     const transaction = await prisma.$transaction(async (tx) => {

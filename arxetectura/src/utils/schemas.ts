@@ -14,7 +14,10 @@ export const avatarSchema = z.preprocess(
         value === null ||
         /^https?:\/\/|^data:image\/[a-z0-9.+-]+;base64,/.test(value),
       "Avatar must be an http(s) URL or supported image data URL",
-    ),
+    )
+    // SVG avatars only come from PUT /avatar/character, which checks the drawing
+    // and that the paid items are owned; a raw SVG here would skip both.
+    .refine((value) => value === null || !/^data:image\/svg/i.test(value), "Use the character editor for SVG avatars"),
 );
 
 export const gradeBody = z.object({

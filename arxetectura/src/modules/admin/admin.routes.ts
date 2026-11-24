@@ -6,6 +6,7 @@ import { publicUser, userSummary } from "../../utils/serializers.js";
 import { studentCreate } from "../../utils/schemas.js";
 import { uid } from "../../utils/teacherScope.js";
 import { register } from "../auth/auth.service.js";
+import { archiveStudent } from "../students/students.routes.js";
 
 export const adminRouter = Router();
 
@@ -62,7 +63,11 @@ adminRouter.delete(
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     if (req.params.id === uid(req)) return res.status(400).json({ error: "You cannot delete yourself" });
-    await prisma.user.delete({ where: { id: req.params.id } });
+    const user = await prisma.user.findUnique({ where: { id: req.params.id }, select: { id: true, role: true } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    // Students are archived, never hard-deleted (payments and coin history stay).
+    if (user.role === "STUDENT") await archiveStudent(user.id);
+    else await prisma.user.delete({ where: { id: user.id } });
     res.status(204).send();
   }),
 );

@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { uid, currentUser } from "../../utils/teacherScope.js";
+import { currentUser, assertLesson, groupScope } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -20,7 +20,10 @@ lessonsRouter.get(
     const lesson = await prisma.lesson.findFirst({
       where: {
         id: req.params.id,
-        ...(current.role === "STUDENT" ? { Group: { Enrollment: { some: { studentId: current.id } } } } : {}),
+        Group:
+          current.role === "STUDENT"
+            ? { Enrollment: { some: { studentId: current.id, status: "ACTIVE" } } }
+            : await groupScope(req),
       },
       include: {
         Group: {
@@ -110,9 +113,10 @@ lessonsRouter.patch(
       query: z.object({}),
     }),
   ),
-  asyncRoute(async (req: any, res: any) =>
-    res.json(await prisma.lesson.update({ where: { id: req.params.id }, data: req.body })),
-  ),
+  asyncRoute(async (req: any, res: any) => {
+    const lesson = await assertLesson(req, req.params.id);
+    res.json(await prisma.lesson.update({ where: { id: lesson.id }, data: req.body }));
+  }),
 );
 
 lessonsRouter.delete(
@@ -121,7 +125,8 @@ lessonsRouter.delete(
   requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
-    await prisma.lesson.delete({ where: { id: req.params.id } });
+    const lesson = await assertLesson(req, req.params.id);
+    await prisma.lesson.delete({ where: { id: lesson.id } });
     res.status(204).send();
   }),
 );
@@ -143,8 +148,8 @@ lessonsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const lesson = await prisma.lesson.findUnique({
-      where: { id: req.params.id },
+    const lesson = await prisma.lesson.findFirst({
+      where: { id: req.params.id, Group: await groupScope(req) },
       include: { Group: { include: { Enrollment: true } }, Homework: true },
     });
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
@@ -179,8 +184,7 @@ lessonsRouter.post(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const lesson = await prisma.lesson.findUnique({ where: { id: req.params.id }, select: { groupId: true } });
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    const lesson = await assertLesson(req, req.params.id);
     // Only students enrolled in this lesson's group can get an attendance mark.
     const enrolled = new Set(
       (

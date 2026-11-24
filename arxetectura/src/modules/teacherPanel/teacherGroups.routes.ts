@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { publicUser } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { groupScope, teacherGroup, teacherId } from "../../utils/teacherScope.js";
+import { groupScope, studentScope, teacherGroup, teacherId } from "../../utils/teacherScope.js";
 
 export const teacherGroupsRouter = Router();
 
@@ -134,7 +134,9 @@ teacherGroupsRouter.post(
   asyncRoute(async (req: any, res: any) => {
     const group = await teacherGroup(req, req.params.id);
     if (!group) return res.status(404).json({ error: "Group not found" });
-    const user = await prisma.user.findFirst({ where: { id: req.body.studentId, role: "STUDENT", status: "ACTIVE" } });
+    const user = await prisma.user.findFirst({
+      where: { id: req.body.studentId, role: "STUDENT", status: "ACTIVE", ...(await studentScope(req)) },
+    });
     if (!user) return res.status(404).json({ error: "Active student not found" });
     const enrollment = await prisma.enrollment.upsert({
       where: { studentId_groupId: { studentId: user.id, groupId: group.id } },

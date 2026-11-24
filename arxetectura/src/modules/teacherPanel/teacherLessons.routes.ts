@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
-import { teacherGroup } from "../../utils/teacherScope.js";
+import { assertLesson, teacherGroup } from "../../utils/teacherScope.js";
 
 export const teacherLessonsRouter = Router();
 
@@ -48,8 +48,7 @@ teacherLessonsRouter.patch(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    const lesson = await prisma.lesson.findUnique({ where: { id: req.params.id } });
-    if (!lesson) return res.status(404).json({ error: "Lesson not found" });
+    const lesson = await assertLesson(req, req.params.id);
     res.json(await prisma.lesson.update({ where: { id: lesson.id }, data: req.body }));
   }),
 );

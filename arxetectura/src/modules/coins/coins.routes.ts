@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth } from "../../middleware/index.js";
-import { uid } from "../../utils/teacherScope.js";
+import { uid, studentScope } from "../../utils/teacherScope.js";
 
 export const coinsRouter = Router();
 
@@ -23,9 +23,10 @@ coinsRouter.get(
       });
     }
     const transactions = await prisma.coinTransaction.findMany({
+      where: { User: await studentScope(req) },
       orderBy: { createdAt: "desc" },
       take: 100,
-      include: { User: true },
+      include: { User: { select: { firstName: true, lastName: true } } },
     });
     res.json({
       transactions: transactions.map(({ id, studentId, amount, reason, createdAt, User }) => ({
