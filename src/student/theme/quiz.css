@@ -18,18 +18,67 @@
   white-space: pre-line;
 }
 .sp-quiz-facts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px auto 0;
+  max-width: 460px;
+  padding: 0;
+  list-style: none;
+}
+.sp-quiz-facts li {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 12px 6px;
+  border-radius: 18px;
+  background: var(--sp-fill);
+}
+.sp-quiz-facts svg {
+  width: 20px;
+  height: 20px;
+  color: var(--sp-accent-ink);
+}
+.sp-quiz-facts b {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
 }
 .sp-quiz-facts span {
-  background: var(--sp-card);
-  border: 1px solid var(--sp-line);
-  border-radius: 99px;
-  padding: 6px 12px;
-  font-size: 14px;
+  color: var(--sp-mute);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.sp-quiz-rules {
+  max-width: 460px;
+  margin: 18px auto 0;
+  text-align: left;
+}
+.sp-quiz-rules h2 {
+  font-size: 16px;
+  font-weight: 800;
+}
+.sp-quiz-rules ul {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0;
+  list-style: none;
+}
+.sp-quiz-rules li {
+  display: flex;
+  gap: 8px;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.sp-quiz-rules li svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  color: var(--sp-lime-ink);
 }
 .sp-quiz-rule {
   margin-top: 12px;
@@ -37,6 +86,8 @@
   color: var(--sp-mute);
 }
 .sp-quiz-go {
+  width: 100%;
+  max-width: 460px;
   min-width: 160px;
   font-size: 16px;
   padding: 10px 24px;
@@ -53,17 +104,48 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   font-size: 14px;
   color: var(--sp-mute);
 }
+.sp-quiz-bar b {
+  display: block;
+  color: var(--sp-ink);
+  font-size: 17px;
+  font-weight: 800;
+}
+.sp-quiz-bar small {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
 .sp-quiz-clock {
-  font-family: var(--sp-font-display);
-  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--sp-card);
+  border: 1px solid var(--sp-line);
+  font-size: 17px;
+  font-weight: 800;
   color: var(--sp-ink);
   font-variant-numeric: tabular-nums;
 }
+.sp-quiz-clock svg {
+  width: 18px;
+  height: 18px;
+  color: var(--sp-accent-ink);
+}
 .sp-quiz-clock.sp-quiz-low {
+  background: var(--sp-pink-soft);
+  border-color: transparent;
   color: var(--sp-pink-ink);
+}
+.sp-quiz-clock.sp-quiz-low svg {
+  color: inherit;
 }
 .sp-quiz-track {
   margin: 8px 0 14px;
@@ -102,7 +184,10 @@
   background: var(--sp-card);
   border: 2px solid var(--sp-line);
   border-radius: 18px;
+  min-height: 58px;
   padding: 12px 14px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   overflow-wrap: anywhere;
   transition: border-color 0.15s ease, transform 0.1s ease;
@@ -141,8 +226,8 @@
   margin-top: 14px;
 }
 .sp-quiz-dots button {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   font: inherit;
   font-size: 13px;
@@ -179,4 +264,44 @@
 .sp-quiz-nav .sp-cta svg {
   width: 18px;
   height: 18px;
+}
+
+/* Result ring */
+.sp-quiz-done {
+  color: var(--sp-mute);
+  font-weight: 700;
+}
+.sp-quiz-ring {
+  --p: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 128px;
+  height: 128px;
+  margin: 12px auto 4px;
+  border-radius: 50%;
+  background: conic-gradient(var(--rc, var(--sp-lime)) calc(var(--p) * 1%), var(--sp-track) 0);
+}
+.sp-quiz-ring::before {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--sp-card);
+}
+.sp-quiz-ring b {
+  position: relative;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--rt, var(--sp-lime-ink));
+  font-variant-numeric: tabular-nums;
+}
+.sp-quiz-score {
+  font-size: 17px;
+  font-weight: 800;
+}
+.sp-quiz-opt:focus-visible,
+.sp-quiz-dots button:focus-visible {
+  outline: 3px solid var(--sp-accent-ink);
+  outline-offset: 2px;
 }

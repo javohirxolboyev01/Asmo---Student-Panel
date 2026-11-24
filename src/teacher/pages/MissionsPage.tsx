@@ -234,9 +234,9 @@ export const MissionsPage = () => {
         title={t("missions.title")}
         subtitle={missions.length ? t("us.manage.missionsActive", { count: activeCount }) : t("missions.subtitle")}
         right={
-          <button type="button" className="u-btn" onClick={openCreate} aria-label={t("missions.create")}>
+          <button type="button" className="u-btn" onClick={openCreate}>
             <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
-            {t("us.manage.missionBtn")}
+            {t("missions.create")}
           </button>
         }
       />

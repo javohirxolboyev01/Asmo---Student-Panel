@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { publicUser } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { groupScope, studentScope, teacherGroup, teacherId } from "../../utils/teacherScope.js";
+import { groupScope, studentScope, teacherGroup, teacherId, liveEnrollment } from "../../utils/teacherScope.js";
 
 export const teacherGroupsRouter = Router();
 
@@ -47,7 +47,7 @@ teacherGroupsRouter.get(
         include: {
           Direction: true,
           Teacher: true,
-          Enrollment: { include: { User: { select: publicUser } } },
+          Enrollment: { where: liveEnrollment, include: { User: { select: publicUser } } },
           Lesson: { orderBy: { lessonDate: "desc" }, take: 10 },
         },
       }),
@@ -66,7 +66,7 @@ teacherGroupsRouter.get(
       include: {
         Direction: true,
         Teacher: true,
-        Enrollment: { include: { User: { select: publicUser } } },
+        Enrollment: { where: liveEnrollment, include: { User: { select: publicUser } } },
         Lesson: { orderBy: { lessonDate: "desc" }, include: { Homework: true } },
       },
     });

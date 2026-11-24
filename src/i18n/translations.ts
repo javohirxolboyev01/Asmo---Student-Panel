@@ -47,7 +47,7 @@ export const translations: Record<Language, Dict> = {
     "nav.more": "Ko'proq",
 
     // auth
-    "auth.welcomeBack": "Student paneliga xush kelibsiz",
+    "auth.welcomeBack": "Hisobingizga kiring",
     "auth.createAccount": "Yangi hisob yarating",
     "auth.email": "Email manzil",
     "auth.emailPlaceholder": "Email manzilingiz",
@@ -673,7 +673,7 @@ export const translations: Record<Language, Dict> = {
     "nav.close": "Закрыть",
     "nav.more": "Ещё",
 
-    "auth.welcomeBack": "Добро пожаловать в панель студента",
+    "auth.welcomeBack": "Войдите в свой аккаунт",
     "auth.createAccount": "Создайте новый аккаунт",
     "auth.email": "Email адрес",
     "auth.emailPlaceholder": "Ваш email",
@@ -1295,7 +1295,7 @@ export const translations: Record<Language, Dict> = {
     "nav.close": "Close",
     "nav.more": "More",
 
-    "auth.welcomeBack": "Welcome to the student panel",
+    "auth.welcomeBack": "Sign in to your account",
     "auth.createAccount": "Create a new account",
     "auth.email": "Email address",
     "auth.emailPlaceholder": "Your email",

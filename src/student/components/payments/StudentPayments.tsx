@@ -25,6 +25,7 @@ import { usePaymentsQuery } from "@/hooks/queries/usePayments";
 import type { RawPayment } from "@/services/paymentService";
 import { formatDate, formatTime } from "@/utilist/formatData";
 import { getErrorMessage } from "@/lib/toast";
+import { humanDateTime, humanDay } from "@/lib/humanDate";
 import {
   EmptyState,
   ErrorState,
@@ -208,7 +209,7 @@ export const StudentPayments = () => {
 
       <div className="sp-sums sp-pay-sums">
         <div className={stats.debt > 0 ? "sp-s sp-sm sp-pay-status sp-pay-debt" : "sp-s sp-sm sp-pay-status"}>
-          <small>{t("payments.status")}</small>
+          <small>{stats.debt > 0 ? t("space.payments.dueLabel") : t("payments.status")}</small>
           {stats.debt > 0 ? (
             <>
               <b style={{ color: "var(--sp-pink-ink)" }}>{money(stats.debt)}</b>
@@ -231,7 +232,7 @@ export const StudentPayments = () => {
           {stats.lastPaidAt && (
             <small>
               {t("payments.lastPayment", {
-                date: formatDate(stats.lastPaidAt),
+                date: humanDay(stats.lastPaidAt, t),
               })}
             </small>
           )}
@@ -433,22 +434,25 @@ export const StudentPayments = () => {
                     </div>
                     <div className="sp-t">
                       <b>{money(p.amountNumber)}</b>
-                      <small>
-                        <InlineIcon icon={User} /> {p.teacherName || "—"} · {typeLabel(p.paymentType)}
-                      </small>
-                      <small>
-                        <InlineIcon icon={CalendarDays} />{" "}
-                        {p.paidAt
-                          ? `${formatDate(p.paidAt)} · ${formatTime(p.paidAt)}`
-                          : t("space.payments.notPaidYet")}
-                        {p.receiptNumber ? ` · #${p.receiptNumber}` : ""}
-                      </small>
+                      {/* What the payment is for comes first; the status badge already says if it's unpaid. */}
                       {p.description && (
                         <small className="sp-pay-desc">{p.description}</small>
                       )}
+                      <small>
+                        <InlineIcon icon={User} /> {p.teacherName || "—"} · {typeLabel(p.paymentType)}
+                      </small>
+                      {(p.paidAt || p.receiptNumber) && (
+                        <small>
+                          <InlineIcon icon={CalendarDays} />{" "}
+                          {p.paidAt ? humanDateTime(p.paidAt, t) : t("space.payments.notPaidYet")}
+                          {p.receiptNumber ? ` · #${p.receiptNumber}` : ""}
+                        </small>
+                      )}
                     </div>
                     <div className="sp-pay-end">
-                      <span className={st.badge}>{t(st.labelKey)}</span>
+                      <span className={st.badge}>
+                        <InlineIcon icon={st.icon} /> {t(st.labelKey)}
+                      </span>
                       <small>#{p.orderNumber}</small>
                     </div>
                   </button>

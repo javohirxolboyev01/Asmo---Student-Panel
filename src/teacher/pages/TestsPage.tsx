@@ -85,9 +85,9 @@ export const TestsPage = () => {
         title={t("quizzes.title")}
         subtitle={quizzes.length ? t("us.manage.testsActive", { count: activeCount }) : t("quizzes.subtitle")}
         right={
-          <button type="button" className="u-btn" onClick={() => navigate("/tests/new")} aria-label={t("quizzes.create")}>
+          <button type="button" className="u-btn" onClick={() => navigate("/tests/new")}>
             <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
-            {t("us.manage.testBtn")}
+            {t("quizzes.create")}
           </button>
         }
       />

@@ -230,10 +230,13 @@ export const DashboardPage = () => {
                     <CalendarDays aria-hidden="true" /> {t("dashboardWidgets.week", { week })}
                   </span>
                 )}
-                <span>
-                  <CircleCheck aria-hidden="true" />{" "}
-                  {t("dashboardWidgets.completed", { percentage: Math.round(fuel) })}
-                </span>
+                {/* The ring already shows the %; the chip only appears once the course is done. */}
+                {fuel >= 100 && (
+                  <span>
+                    <CircleCheck aria-hidden="true" />{" "}
+                    {t("dashboardWidgets.completed", { percentage: Math.round(fuel) })}
+                  </span>
+                )}
               </div>
               {nextLevel && totalLessons > 0 && (
                 <p className="sp-home-hint">{t("space.heroSub", { planet: nextLevel })}</p>
@@ -261,17 +264,17 @@ export const DashboardPage = () => {
             <div className="sp-s">
               <IconTile icon={Trophy} tint="orange" soft />
               <b>{myRank ?? "-"}</b>
-              <small>{t("dashboard.rank")}</small>
+              <small>{t("home.statRank")}</small>
             </div>
             <Link to="/attendance" className="sp-s">
               <IconTile icon={CalendarCheck} tint="green" soft />
               <b>{attendance?.stats.present ?? 0}</b>
-              <small>{t("dashboard.attendedDays")}</small>
+              <small>{t("home.statAttended")}</small>
             </Link>
             <Link to="/coins" className="sp-s">
               <IconTile icon={Gem} tint="teal" soft />
               <b>+{coinsThisMonth}</b>
-              <small>{t("space.thisMonth")}</small>
+              <small>{t("home.statCoinsMonth")}</small>
             </Link>
           </div>
         </section>

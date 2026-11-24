@@ -13,7 +13,8 @@ import type { Notification } from "@/types/notification";
 import type { Language } from "@/i18n/translations";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
-import { Bell, BellOff, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
+import { isCoinNotification, notificationTitle } from "@/lib/notificationTitle";
+import { Bell, BellOff, Gem, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel, Spinner } from "../components/ui";
 import { IconTile, type Tint } from "../components/icons";
 
@@ -78,11 +79,6 @@ export const NotificationsPage = () => {
         subtitle={
           unreadCount > 0 ? t("notifications.unreadCount", { count: unreadCount }) : t("notifications.allRead")
         }
-        right={
-          unreadCount > 0 ? (
-            <div className="sp-pill">{t("space.profile.unreadPill", { count: unreadCount })}</div>
-          ) : undefined
-        }
       />
 
       {unreadCount > 0 && (
@@ -115,14 +111,20 @@ export const NotificationsPage = () => {
               onClick={() => open(n)}
             >
               <span className="sp-ic" aria-hidden="true">
-                <IconTile {...(TYPE_ICON[n.type] ?? TYPE_ICON.system)} />
+                <IconTile
+                  {...(isCoinNotification(n.title) ? { icon: Gem, tint: "teal" as Tint } : (TYPE_ICON[n.type] ?? TYPE_ICON.system))}
+                />
               </span>
               <span className="sp-t">
-                <b>{n.title}</b>
+                <b>{notificationTitle(n.title, t)}</b>
                 {n.message && <small>{n.message}</small>}
                 <small className="sp-profile-time">{relativeTime(n.createdAt, language)}</small>
               </span>
-              {!n.isRead && <span className="sp-profile-ndot" aria-hidden="true" />}
+              {!n.isRead && (
+                <span className="sp-badge sp-profile-newtag">
+                  <span className="sp-profile-ndot" aria-hidden="true" /> {t("notes.unread")}
+                </span>
+              )}
             </button>
           ))}
         </div>

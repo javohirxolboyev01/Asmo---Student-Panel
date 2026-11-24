@@ -2,7 +2,7 @@ import { Router } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth } from "../../middleware/index.js";
 import { userSummary } from "../../utils/serializers.js";
-import { uid, groupScope } from "../../utils/teacherScope.js";
+import { uid, groupScope, liveEnrollment } from "../../utils/teacherScope.js";
 
 export const dashboardRouter = Router();
 
@@ -102,7 +102,7 @@ dashboardRouter.get(
     ]);
     const ownedIds = owned.map((x) => x.id);
     const [studentsCount, todayLessonsCount] = await Promise.all([
-      prisma.enrollment.count({ where: { groupId: { in: ownedIds } } }),
+      prisma.enrollment.count({ where: { groupId: { in: ownedIds }, ...liveEnrollment } }),
       prisma.lesson.count({
         where: {
           groupId: { in: ownedIds },

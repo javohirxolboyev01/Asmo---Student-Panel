@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { paymentSummary } from "../../utils/serializers.js";
 import { currentUser, studentScope } from "../../utils/teacherScope.js";
+import { parsePage, setTotalCount } from "../../utils/pagination.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -15,7 +16,7 @@ const scopedPayment = async (req: any, id: string) =>
 
 const payUpdate = z.object({
   body: z.object({
-    amountNumber: z.number().int().positive().optional(),
+    amountNumber: z.number().int().positive().max(1_000_000_000).optional(),
     status: z.enum(["PAID", "PENDING", "OVERDUE", "CANCELLED"]).optional(),
     paymentType: z.enum(["CASH", "CLICK", "PAYME", "BANK", "UZUM"]).optional(),
     description: z.string().nullable().optional(),
@@ -30,14 +31,20 @@ paymentsRouter.get(
   requireAuth,
   asyncRoute(async (req: any, res: any) => {
     const current = currentUser(req);
+    // Optional ?limit=&offset= (staff only); without them the full list, as before.
+    const page = current.role === "STUDENT" ? null : parsePage(req);
+    // Staff: payments of students in their scope (archived students included,
+    // so payment history survives archiving).
+    const where = current.role === "STUDENT" ? { studentId: current.id } : { User: await studentScope(req) };
     const payments = await prisma.payment.findMany({
-      // Staff: payments of students in their scope (archived students included,
-      // so payment history survives archiving).
-      where: current.role === "STUDENT" ? { studentId: current.id } : { User: await studentScope(req) },
+      where,
       // Only staff rows show the student's name.
       include: current.role === "STUDENT" ? undefined : { User: { select: { id: true, firstName: true, lastName: true } } },
-      orderBy: { createdAt: "desc" },
+      // A tiebreak keeps pages stable when timestamps collide.
+      orderBy: page ? [{ createdAt: "desc" }, { id: "asc" }] : { createdAt: "desc" },
+      ...(page ?? {}),
     });
+    if (page) setTotalCount(res, await prisma.payment.count({ where }));
     res.json({ payments: payments.map((payment) => paymentSummary(payment, current.role !== "STUDENT")) });
   }),
 );

@@ -109,7 +109,13 @@ export const Missions = ({
             </div>
             <div className="sp-t">
               <b>{m.title}</b>
-              <small>{m.status === "READY" ? t("space.missionReady") : describe(m)}</small>
+              <small>
+                {m.status === "READY"
+                  ? t("space.missionReady")
+                  : m.status === "CLAIMED"
+                    ? `${t("space.missionStatusCLAIMED")} · ${describe(m)}`
+                    : describe(m)}
+              </small>
             </div>
             <span className="sp-rw">
               +{m.coinReward} <CoinGlyph />

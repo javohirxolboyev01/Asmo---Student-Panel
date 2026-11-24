@@ -134,20 +134,24 @@ export const TeachersPage = () => {
                 <div className="min-w-0 flex-1">
                   <b className="block truncate text-[17px]">{teacher.fullName}</b>
                   <small className="u-sub m-0 block truncate">
-                    {[teacher.email || t("teachers.noLogin"), t("teachers.groupsCount", { count: teacher.groupsCount })].join(
-                      " · ",
-                    )}
+                    {[
+                      teacher.email || t("teachers.noLogin"),
+                      t("teachers.groupsCount", { count: teacher.groupsCount }),
+                    ].join(" · ")}
                   </small>
                 </div>
                 {isMe && <Tag tone="pr">{t("us.people.me")}</Tag>}
-                <button
-                  type="button"
-                  className="u-ib"
-                  aria-label={t("common.edit")}
-                  onClick={() => openEdit(teacher)}
-                >
-                  <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
-                </button>
+                {/* A teacher may only edit their own profile (enforced by the API). */}
+                {(isAdmin || isMe) && (
+                  <button
+                    type="button"
+                    className="u-ib"
+                    aria-label={t("common.edit")}
+                    onClick={() => openEdit(teacher)}
+                  >
+                    <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                  </button>
+                )}
                 {isAdmin && (
                   <button
                     type="button"

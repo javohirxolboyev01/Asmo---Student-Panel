@@ -3,6 +3,7 @@ import type { TeacherDict } from "./index";
 
 const dict: TeacherDict = {
   uz: {
+    "us.home.coinsEmptySub": "Talabaga birinchi coinni bering — bu yerda ko'rinadi.",
     "us.home.night": "Xayrli tun",
     "us.home.morning": "Xayrli tong",
     "us.home.day": "Xayrli kun",
@@ -23,7 +24,7 @@ const dict: TeacherDict = {
     "us.home.gradeTitle": "Vazifalarni tekshirish",
     "us.home.gradeSub": "{{n}} ta topshiriq javob kutmoqda",
     "us.home.gradeDone": "Vazifalar tekshirilgan",
-    "us.home.gradeDoneSub": "Yangi topshiriq yo'q",
+    "us.home.gradeDoneSub": "Hammasi tekshirilgan, yangi topshiriq yo'q",
     "us.home.attendSub": "Bugun {{n}} ta dars bor",
     "us.home.attendNone": "Bugun dars yo'q",
     "us.home.coinSub": "Talabani rag'batlantiring",
@@ -42,6 +43,7 @@ const dict: TeacherDict = {
     "us.home.coinsEmpty": "Hali coin berilmagan",
   },
   ru: {
+    "us.home.coinsEmptySub": "Выдайте первые коины ученику — они появятся здесь.",
     "us.home.night": "Доброй ночи",
     "us.home.morning": "Доброе утро",
     "us.home.day": "Добрый день",
@@ -62,7 +64,7 @@ const dict: TeacherDict = {
     "us.home.gradeTitle": "Проверить задания",
     "us.home.gradeSub": "{{n}} работ(ы) ждут ответа",
     "us.home.gradeDone": "Задания проверены",
-    "us.home.gradeDoneSub": "Новых работ нет",
+    "us.home.gradeDoneSub": "Всё проверено, новых работ нет",
     "us.home.attendSub": "Сегодня {{n}} урок(ов)",
     "us.home.attendNone": "Сегодня уроков нет",
     "us.home.coinSub": "Поощрите ученика",
@@ -81,6 +83,7 @@ const dict: TeacherDict = {
     "us.home.coinsEmpty": "Коины ещё не выдавались",
   },
   en: {
+    "us.home.coinsEmptySub": "Give a student their first coins — they will show up here.",
     "us.home.night": "Good night",
     "us.home.morning": "Good morning",
     "us.home.day": "Good afternoon",
@@ -101,7 +104,7 @@ const dict: TeacherDict = {
     "us.home.gradeTitle": "Grade assignments",
     "us.home.gradeSub": "{{n}} submission(s) waiting",
     "us.home.gradeDone": "All graded",
-    "us.home.gradeDoneSub": "No new submissions",
+    "us.home.gradeDoneSub": "All checked, no new submissions",
     "us.home.attendSub": "{{n}} lesson(s) today",
     "us.home.attendNone": "No lessons today",
     "us.home.coinSub": "Reward a student",

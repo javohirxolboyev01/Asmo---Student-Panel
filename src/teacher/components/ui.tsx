@@ -275,7 +275,8 @@ export const Seg = <T extends string>({
 /** Mock `.ring`: percentage ring; red under 50, green otherwise, grey when unknown. */
 export const Ring = ({ percent }: { percent: number | null | undefined }) => {
   const known = percent !== null && percent !== undefined;
-  const color = !known ? "var(--ln)" : percent < 50 ? "var(--er)" : "var(--ok)";
+  // Same thresholds everywhere: under 50% = red, under 80% = amber, else green.
+  const color = !known ? "var(--ln)" : percent < 50 ? "var(--er)" : percent < 80 ? "var(--gd)" : "var(--ok)";
   return (
     <span className="u-ring" style={{ "--p": known ? percent : 0, "--rc": color } as CSSProperties}>
       <b>{known ? `${Math.round(percent)}%` : "—"}</b>

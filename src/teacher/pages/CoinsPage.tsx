@@ -9,7 +9,8 @@ import { Button, Input } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import { Avatar, EmptyBox, PageHeader, Skel, formatDate } from "../components/ui";
+import { Avatar, EmptyBox, PageHeader, Skel } from "../components/ui";
+import { humanDay } from "@/lib/humanDate";
 import { COIN_REASON_KEYS } from "../components/sheets";
 
 const PRESETS = [1, 5, 10, 20, -5];
@@ -47,13 +48,13 @@ export const CoinsPage = () => {
   const days = useMemo(() => {
     const out: [string, typeof transactions][] = [];
     for (const tx of transactions) {
-      const day = formatDate(tx.createdAt);
+      const day = humanDay(tx.createdAt, t);
       const last = out[out.length - 1];
       if (last && last[0] === day) last[1].push(tx);
       else out.push([day, [tx]]);
     }
     return out;
-  }, [transactions]);
+  }, [transactions, t]);
 
   const handleGive = async (e: FormEvent) => {
     e.preventDefault();
@@ -180,6 +181,9 @@ export const CoinsPage = () => {
               {selected ? t("us.people.giveTo", { name: fullName(selected), n: signed(n) }) : t("us.coin.title")}
             </span>
           </button>
+          {!selected && students.length > 0 && (
+            <p className="u-sub -mt-2 m-0 text-center">{t("us.people.pickFirst")}</p>
+          )}
         </form>
 
         {/* Recent operations */}
@@ -219,7 +223,7 @@ export const CoinsPage = () => {
                           className="flex-none font-fd text-[19px]"
                           style={{ color: tx.amount > 0 ? "var(--ok)" : "var(--er)" }}
                         >
-                          {signed(tx.amount)}
+                          {signed(tx.amount)} <small className="text-[13px] font-bold">{t("unit.coin")}</small>
                         </b>
                       </Link>
                     );

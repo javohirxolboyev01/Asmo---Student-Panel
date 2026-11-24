@@ -10,7 +10,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { isImageUrl } from "@/lib/utils";
 import { Button } from "@/components/ui";
-import { Avatar, EmptyBox, PageHeader, Ring, SectionHead, Skel, groupColor } from "../components/ui";
+import { Avatar, EmptyBox, PageHeader, Ring, SectionHead, Skel, Tag, groupColor } from "../components/ui";
 
 export const AttendancePage = () => {
   const { t } = useTranslation();
@@ -139,13 +139,18 @@ export const AttendancePage = () => {
       {/* Per student (mock `attend`) */}
       <section className="u-sec">
         <SectionHead title={t("us.att.students")} />
+        <p className="u-sub -mt-1 mb-3">{t("us.att.studentsHint")}</p>
         {students.length === 0 ? (
           <EmptyBox icon={Users} tone="mu" title={t("groupDetail.noStudents")} />
         ) : (
           <div className="u-cols u-stack">
-            {students.map((s) => {
+            {/* Lowest attendance first: the students who need attention are on top. */}
+            {[...students]
+              .sort((a, b) => (a.groups.length ? a.attendancePercentage : 101) - (b.groups.length ? b.attendancePercentage : 101))
+              .map((s) => {
               const name = `${s.firstName} ${s.lastName}`;
               const hasGroup = s.groups.length > 0;
+              const low = hasGroup && s.attendancePercentage < 50;
               return (
                 <Link key={s.id} to={`/students/${s.id}`} className="u-les">
                   <Avatar name={name} src={isImageUrl(s.avatar) ? s.avatar : null} seed={s.id} />
@@ -154,6 +159,12 @@ export const AttendancePage = () => {
                     <small className="u-sub block truncate">
                       {hasGroup ? s.groups.map((g) => g.name).join(", ") : t("us.att.noGroup")}
                     </small>
+                    {low && (
+                      <Tag tone="er" className="mt-1">
+                        <AlertTriangle className="u-i s" strokeWidth={2} aria-hidden="true" />
+                        {t("us.home.tagLow")}
+                      </Tag>
+                    )}
                   </div>
                   <Ring percent={hasGroup ? s.attendancePercentage : null} />
                 </Link>

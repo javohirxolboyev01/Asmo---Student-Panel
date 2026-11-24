@@ -7,6 +7,7 @@ import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { formatDate } from "@/utilist/formatData";
+import { humanDay } from "@/lib/humanDate";
 import type { AttendanceRecord } from "@/types/attendance";
 import {
   EmptyState,
@@ -167,7 +168,7 @@ export const AttendancePage = () => {
       <PageHeader
         title={t("attendance.title")}
         subtitle={t("attendance.subtitle")}
-        right={<div className="sp-pill">{percentage}%</div>}
+        right={<div className="sp-pill">{t("space.attendance.ratePill", { n: percentage })}</div>}
       />
 
       <div className="sp-g3">
@@ -312,6 +313,10 @@ export const AttendancePage = () => {
             <i style={{ background: "var(--sp-pink)" }} />
             {t("attendance.legendAbsent")}
           </span>
+          <span>
+            <i style={{ background: "var(--sp-fill-strong)" }} />
+            {t("space.attendance.restLegend")}
+          </span>
         </div>
       </div>
 
@@ -332,7 +337,7 @@ export const AttendancePage = () => {
                   <StatusIcon present={r.status === "present"} />
                   <span>
                     <span className="block truncate">{r.lessonTopic}</span>
-                    <small>{formatDate(r.lessonDate)}</small>
+                    <small>{humanDay(r.lessonDate, t)}</small>
                   </span>
                   <span
                     className={
@@ -381,7 +386,7 @@ export const AttendancePage = () => {
                 ? t("space.attendance.dayLessons")
                 : t("attendance.noLessonTitle")}
             </h2>
-            <p>{formatDate(dayModal.date)}</p>
+            <p>{humanDay(dayModal.date, t)}</p>
             {dayModal.records.length === 0 ? (
               <p>{t("attendance.noLessonThisDay")}</p>
             ) : (

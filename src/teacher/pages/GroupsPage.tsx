@@ -17,6 +17,7 @@ import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { GroupsView } from "@/components/Groups/GroupsView";
 import { EmptyBox, GROUP_COLORS } from "../components/ui";
+import { useAuthStore } from "@/stores/authStore";
 
 const emptyGroupForm = {
   name: "",
@@ -30,6 +31,8 @@ const emptyGroupForm = {
 
 export const GroupsPage = () => {
   const { t } = useTranslation();
+  // Directions are view-only for teachers; only an admin may add or delete them.
+  const isAdmin = useAuthStore((s) => s.user?.role) === "admin";
   const { data: directions = [] } = useDirectionsQuery();
   const { data: teachers = [] } = useTeachersQuery();
   const createGroup = useCreateGroupMutation();
@@ -93,7 +96,10 @@ export const GroupsPage = () => {
   const handleAddDirection = async () => {
     if (!newDirectionName.trim()) return;
     try {
-      await createDirection.mutateAsync({ name: newDirectionName.trim(), color: newDirectionColor });
+      await createDirection.mutateAsync({
+        name: newDirectionName.trim(),
+        color: newDirectionColor,
+      });
       setNewDirectionName("");
       toast.success(t("common.createSuccess"));
     } catch (err) {
@@ -232,47 +238,56 @@ export const GroupsPage = () => {
                   <div className="g">
                     <b className="break-words">{d.name}</b>
                   </div>
-                  <button
-                    type="button"
-                    className="u-ib"
-                    style={{ background: "var(--ert)", color: "var(--er)" }}
-                    aria-label={t("common.delete")}
-                    onClick={() => handleDeleteDirection(d.id)}
-                  >
-                    <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="u-ib"
+                      style={{ background: "var(--ert)", color: "var(--er)" }}
+                      aria-label={t("common.delete")}
+                      onClick={() => handleDeleteDirection(d.id)}
+                    >
+                      <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           )}
-          <form
-            className="flex items-end gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAddDirection();
-            }}
-          >
-            <Input
-              label={t("groups.directionName")}
-              type="text"
-              value={newDirectionName}
-              onChange={(e) => setNewDirectionName(e.target.value)}
-              containerClassName="flex-1 min-w-0"
-            />
-            <label className="u-label flex-none">
-              <span className="sr-only">{t("us.groups.directionColor")}</span>
-              <input
-                type="color"
-                value={newDirectionColor}
-                onChange={(e) => setNewDirectionColor(e.target.value)}
-                aria-label={t("us.groups.directionColor")}
-                className="h-[52px] w-[52px] cursor-pointer rounded-[14px] border-2 u-field p-1"
+          {!isAdmin && (
+            <p className="text-sm font-semibold" style={{ color: "var(--mu)" }}>
+              {t("us.access.adminOnly")}
+            </p>
+          )}
+          {isAdmin && (
+            <form
+              className="flex items-end gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleAddDirection();
+              }}
+            >
+              <Input
+                label={t("groups.directionName")}
+                type="text"
+                value={newDirectionName}
+                onChange={(e) => setNewDirectionName(e.target.value)}
+                containerClassName="flex-1 min-w-0"
               />
-            </label>
-            <Button type="submit" className="h-[52px]" isLoading={createDirection.isPending}>
-              {t("common.add")}
-            </Button>
-          </form>
+              <label className="u-label flex-none">
+                <span className="sr-only">{t("us.groups.directionColor")}</span>
+                <input
+                  type="color"
+                  value={newDirectionColor}
+                  onChange={(e) => setNewDirectionColor(e.target.value)}
+                  aria-label={t("us.groups.directionColor")}
+                  className="h-[52px] w-[52px] cursor-pointer rounded-[14px] border-2 u-field p-1"
+                />
+              </label>
+              <Button type="submit" className="h-[52px]" isLoading={createDirection.isPending}>
+                {t("common.add")}
+              </Button>
+            </form>
+          )}
         </div>
       </Modal>
       {confirmModal}

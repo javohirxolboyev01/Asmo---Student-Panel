@@ -14,7 +14,8 @@ import { getRelativeTime } from "@/utilist/formatData";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui";
 import { GradeSheet } from "@/teacher/components/sheets";
-import { EmptyBox, PageHeader, Skel } from "@/teacher/components/ui";
+import { EmptyBox, PageHeader, Skel, Tag } from "@/teacher/components/ui";
+import { notificationTitle } from "@/lib/notificationTitle";
 
 // The backend may name the submission link differently — try each field.
 const getSubmissionId = (n: Notification): string | undefined => {
@@ -105,7 +106,14 @@ export const NotificationsPage = () => {
                 <Mail className="u-i" strokeWidth={2} aria-hidden="true" />
               </span>
               <div className="min-w-0 flex-1">
-                <b className="block break-words">{n.title}</b>
+                <b className="block break-words">
+                  {notificationTitle(n.title, t)}
+                  {!n.isRead && (
+                    <Tag tone="er" className="ml-2 align-middle">
+                      {t("notes.unread")}
+                    </Tag>
+                  )}
+                </b>
                 <p className="u-sub break-words" style={{ margin: 0 }}>
                   {n.message}
                 </p>

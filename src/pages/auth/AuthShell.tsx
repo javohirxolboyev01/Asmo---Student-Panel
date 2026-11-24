@@ -51,7 +51,7 @@ export const AuthShell = ({ subtitle, children }: { subtitle: string; children: 
               <small>{t("auth.educationCenter")}</small>
             </div>
           </div>
-          <p className="au-sub">{subtitle}</p>
+          <h1 className="au-sub">{subtitle}</h1>
           {children}
           <p className="au-copy">{t("auth.footer")}</p>
         </div>

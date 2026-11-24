@@ -3,6 +3,8 @@ import type { StudentDict } from "./index";
 
 const dict: StudentDict = {
   uz: {
+    "space.attendance.ratePill": "{{n}}% qatnashish",
+    "space.attendance.restLegend": "Dam — yakshanba, dars yo'q",
     "space.attendance.months":
       "Yanvar,Fevral,Mart,Aprel,May,Iyun,Iyul,Avgust,Sentyabr,Oktyabr,Noyabr,Dekabr",
     "space.attendance.todayCell": "BUGUN",
@@ -17,6 +19,8 @@ const dict: StudentDict = {
     "space.attendance.noRecordsHint": "Darsga kelganingda shu yerda belgilanadi.",
   },
   ru: {
+    "space.attendance.ratePill": "Посещаемость {{n}}%",
+    "space.attendance.restLegend": "Вых. — воскресенье, уроков нет",
     "space.attendance.months":
       "Январь,Февраль,Март,Апрель,Май,Июнь,Июль,Август,Сентябрь,Октябрь,Ноябрь,Декабрь",
     "space.attendance.todayCell": "Сегодня",
@@ -31,6 +35,8 @@ const dict: StudentDict = {
     "space.attendance.noRecordsHint": "Когда придёшь на урок, отметка появится здесь.",
   },
   en: {
+    "space.attendance.ratePill": "{{n}}% attendance",
+    "space.attendance.restLegend": "Off — Sunday, no lessons",
     "space.attendance.months":
       "January,February,March,April,May,June,July,August,September,October,November,December",
     "space.attendance.todayCell": "TODAY",

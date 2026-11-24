@@ -37,7 +37,19 @@ export const teacherId = async (req: any) => {
 export const groupScope = async (req: any): Promise<Prisma.GroupWhereInput> =>
   isAdmin(req) ? {} : { teacherId: await teacherId(req) };
 
-/** Students the caller may see: all for ADMIN; own groups' + unassigned for TEACHER. */
+/**
+ * Enrollments that count as "in the group" for staff rosters, counts and
+ * fan-outs. Archiving a student marks their enrollments DROPPED (instead of
+ * deleting them) so the former group's teacher keeps seeing their history.
+ */
+export const liveEnrollment = { status: { not: "DROPPED" } } satisfies Prisma.EnrollmentWhereInput;
+
+/**
+ * Students the caller may see: all for ADMIN. For a TEACHER: students with any
+ * enrollment (any status, so archived = DROPPED ones too) in their groups, plus
+ * students with no enrollment at all. An archived student therefore stays
+ * visible to their former teachers only.
+ */
 export const studentScope = async (req: any): Promise<Prisma.UserWhereInput> =>
   isAdmin(req)
     ? {}

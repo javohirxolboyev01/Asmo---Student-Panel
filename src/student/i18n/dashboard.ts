@@ -3,6 +3,9 @@ import type { StudentDict } from "./index";
 
 const dict: StudentDict = {
   uz: {
+    "home.statRank": "Guruhdagi o'rning",
+    "home.statAttended": "Kelgan darslar",
+    "home.statCoinsMonth": "Bu oy olingan coin",
     "home.subtitle": "Bugungi missiyalar, kursdagi o'sishing va guruh reytingi.",
     "home.lessonsDone": "{{completed}} / {{total}} dars o'tildi",
     "home.nextLesson": "Navbatdagi dars: {{n}}-dars",
@@ -44,6 +47,9 @@ const dict: StudentDict = {
     "space.capsule": "{{n}}-quti",
   },
   ru: {
+    "home.statRank": "Место в группе",
+    "home.statAttended": "Посещено уроков",
+    "home.statCoinsMonth": "Коинов за месяц",
     "home.subtitle": "Миссии на сегодня, прогресс по курсу и рейтинг группы.",
     "home.lessonsDone": "Пройдено уроков: {{completed}} из {{total}}",
     "home.nextLesson": "Следующий урок: {{n}}",
@@ -84,6 +90,9 @@ const dict: StudentDict = {
     "space.capsule": "Коробка {{n}}",
   },
   en: {
+    "home.statRank": "Your place in group",
+    "home.statAttended": "Lessons attended",
+    "home.statCoinsMonth": "Coins this month",
     "home.subtitle": "Today's missions, your course progress and the group ranking.",
     "home.lessonsDone": "{{completed}} of {{total}} lessons done",
     "home.nextLesson": "Next: lesson {{n}}",

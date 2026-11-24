@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
-import { groupScope } from "../../utils/teacherScope.js";
+import { groupScope, liveEnrollment } from "../../utils/teacherScope.js";
 
 export const teacherAttendanceRouter = Router();
 
@@ -25,7 +25,7 @@ teacherAttendanceRouter.put(
     const lesson = await prisma.lesson.findFirst({
       where: {
         id: req.params.lessonId,
-        Group: { ...(await groupScope(req)), Enrollment: { some: { studentId: req.params.studentId } } },
+        Group: { ...(await groupScope(req)), Enrollment: { some: { studentId: req.params.studentId, ...liveEnrollment } } },
       },
     });
     if (!lesson) return res.status(404).json({ error: "Lesson or student not found" });

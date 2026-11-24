@@ -37,10 +37,11 @@ export const ShopPage = () => {
           </Link>
           <Link
             to="/wishlist"
-            className="sp-pill sp-pill-round"
+            className="sp-pill"
             aria-label={t("space.shop.cartAria", { count: totalItems })}
           >
             <ShoppingCart aria-hidden="true" strokeWidth={2.2} />
+            <span>{t("space.shop.cartLabel")}</span>
             {totalItems > 0 && <span className="sp-dot">{totalItems > 99 ? "99+" : totalItems}</span>}
           </Link>
         </div>
@@ -49,7 +50,7 @@ export const ShopPage = () => {
   );
 
   return (
-    <ProductCatalog header={header} cart={cart}>
+    <ProductCatalog header={header} cart={cart} balance={coinsLoading ? undefined : balance}>
       {totalItems > 0 && (
         <Link to="/wishlist" className="sp-cta sp-shop-float">
           <ShoppingCart aria-hidden="true" /> {t("shop.cartItems", { count: totalItems })}

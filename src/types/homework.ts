@@ -12,10 +12,12 @@ export interface Homework {
 export interface HomeworkSummary {
   id: string;
   title: string;
-  status?: "submitted" | "not_submitted" | "pending";
+  /** Student view: this student's own state ("graded" since the group detail returns it). */
+  status?: "submitted" | "graded" | "not_submitted" | "pending";
   deadline: string;
   isOverdue: boolean;
-  score?: number;
+  score?: number | null;
+  submittedAt?: string | null;
   maxScore: number;
   submittedCount?: number;
   gradedCount?: number;

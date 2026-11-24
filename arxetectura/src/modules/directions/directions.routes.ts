@@ -4,8 +4,6 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
 
-const staff = ["TEACHER", "ADMIN"];
-
 export const directionsRouter = Router();
 
 directionsRouter.get(
@@ -25,7 +23,7 @@ directionsRouter.get(
 directionsRouter.post(
   "/directions",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(
     z.object({
       body: z.object({ name: z.string().min(2), color: z.string().optional() }),
@@ -43,7 +41,7 @@ directionsRouter.post(
 directionsRouter.patch(
   "/directions/:id",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(
     z.object({
       body: z.object({ name: z.string().min(2).optional(), color: z.string().optional() }),
@@ -59,7 +57,7 @@ directionsRouter.patch(
 directionsRouter.delete(
   "/directions/:id",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     if (await prisma.group.count({ where: { directionId: req.params.id } }))

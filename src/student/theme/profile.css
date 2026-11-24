@@ -54,12 +54,18 @@
   box-shadow: 0 0 0 3px var(--sp-accent-soft);
 }
 .sp-profile-ndot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--sp-accent);
   flex-shrink: 0;
-  margin-top: 6px;
+}
+/* Unread = border + dot + the word "Yangi" (not colour alone). */
+.sp-badge.sp-profile-newtag {
+  flex-shrink: 0;
+  gap: 5px;
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent-ink);
 }
 
 @media (min-width: 900px) {

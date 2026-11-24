@@ -74,9 +74,12 @@ const ProductGridSkeleton = () => (
 const ProductCard = ({
   product,
   cart,
+  balance,
 }: {
   product: Product;
   cart: CartControls;
+  /** Coin balance; when set, cards the student can't afford yet say how much is missing. */
+  balance?: number;
 }) => {
   const { t } = useTranslation();
   const qty = cart.quantity(product.id);
@@ -146,10 +149,13 @@ const ProductCard = ({
       )}
 
       <div className="sp-shop-meta">
-        <span>
-          <Star className="sp-ii sp-star" aria-hidden="true" /> {product.rating ?? 0} (
-          {t("shop.reviewsSuffix", { count: product.reviews ?? 0 })})
-        </span>
+        {/* "0 (0 sharh)" says nothing — the rating only shows once someone rated it. */}
+        {(product.reviews ?? 0) > 0 && (
+          <span>
+            <Star className="sp-ii sp-star" aria-hidden="true" /> {product.rating ?? 0} (
+            {t("shop.reviewsSuffix", { count: product.reviews ?? 0 })})
+          </span>
+        )}
         {stock !== null && stock > 0 && (
           <span>{t("space.shop.left", { n: stock })}</span>
         )}
@@ -159,6 +165,9 @@ const ProductCard = ({
         <CoinGlyph /> {product.price}
         {product.originalPrice ? <s>{product.originalPrice}</s> : null}
       </div>
+      {balance !== undefined && !soldOut && qty === 0 && product.price > balance && (
+        <p className="sp-shop-need">{t("space.shop.needMore", { n: product.price - balance })}</p>
+      )}
 
       <div className="sp-shop-act">
         {soldOut ? (
@@ -197,11 +206,13 @@ const ProductCard = ({
 export const ProductCatalog = ({
   header,
   cart,
+  balance,
   children,
 }: {
   /** Page header (title, balance, cart button). */
   header: ReactNode;
   cart: CartControls;
+  balance?: number;
   /** Rendered after the grid (floating cart button). */
   children?: ReactNode;
 }) => {
@@ -303,7 +314,7 @@ export const ProductCatalog = ({
         ) : (
           <div className="sp-prods sp-shop-products" aria-busy={isFetching}>
             {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} cart={cart} />
+              <ProductCard key={p.id} product={p} cart={cart} balance={balance} />
             ))}
           </div>
         )}

@@ -1,7 +1,7 @@
 // src/components/Payments/PaymentsView.tsx
 // Teacher panel payments ("Ustoz paneli" look): summary, search, status/type
 // filters and the list. Row actions and modals come from the page.
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -83,7 +83,8 @@ const TONE_COLORS: Record<Tone, { background: string; color: string }> = {
 };
 
 /** Rows shown before "Barchasini ko'rish". */
-const PAGE_SIZE = 20;
+/** Rows rendered at first and added per "show more" click (keeps the DOM small). */
+const PAGE_SIZE = 30;
 
 export const formatAmount = (amount: number) => new Intl.NumberFormat("uz-UZ").format(amount) + " so'm";
 
@@ -105,11 +106,14 @@ export const PaymentsView = ({
   children,
 }: PaymentsViewProps) => {
   const { t } = useTranslation();
-  const getLabel = (item: { label?: string; labelKey?: string }) => (item.labelKey ? t(item.labelKey) : item.label ?? "");
+  const getLabel = (item: { label?: string; labelKey?: string }) =>
+    item.labelKey ? t(item.labelKey) : (item.label ?? "");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
-  const [showAll, setShowAll] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // A new search or filter starts again from the first page of rows.
+  useEffect(() => setVisibleCount(PAGE_SIZE), [searchQuery, filterStatus, filterType]);
 
   const { data: rawPayments = [], isLoading, error, refetch, isFetching } = usePaymentsQuery();
 
@@ -189,7 +193,9 @@ export const PaymentsView = ({
   const totalPaid = sumOf(byStatus("paid"));
   const debt = sumOf([...byStatus("pending"), ...byStatus("overdue")]);
   const lastPayment = payments.find((p) => p.status === "paid");
-  const visible = showAll ? filteredPayments : filteredPayments.slice(0, PAGE_SIZE);
+  // Totals above use the full list; only the rendered rows are limited.
+  const visible = filteredPayments.slice(0, visibleCount);
+  const remaining = filteredPayments.length - visible.length;
 
   const statusOptions = [
     { value: "all", label: t("us.manage.all") },
@@ -362,9 +368,13 @@ export const PaymentsView = ({
               })}
             </div>
 
-            {!showAll && filteredPayments.length > PAGE_SIZE && (
-              <button type="button" className="u-btn soft block mt-3" onClick={() => setShowAll(true)}>
-                {t("payments.viewAll")}
+            {remaining > 0 && (
+              <button
+                type="button"
+                className="u-btn soft block mt-3"
+                onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+              >
+                {t("us.list.showMore", { count: remaining })}
               </button>
             )}
           </>

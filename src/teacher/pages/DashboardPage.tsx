@@ -139,7 +139,9 @@ export const DashboardPage = () => {
         ? t("us.home.inMin", { m: minutes })
         : minutes < 24 * 60
           ? t("us.home.inHours", { h: Math.floor(minutes / 60), m: minutes % 60 })
-          : "";
+          : dayDiff > 1
+            ? t("when.inDays", { n: dayDiff })
+            : "";
     return `${day}, ${hhmm(at)}${rel ? ` · ${rel}` : ""}`;
   };
 
@@ -215,7 +217,7 @@ export const DashboardPage = () => {
           <Link to="/grading" className="u-tile">
             {tileIcon(ClipboardCheck, "var(--ok)", "var(--okt)")}
             <div>
-              <b>{t("us.home.gradeDone")}</b>
+              <b>{t("us.home.gradeTitle")}</b>
               <span>{t("us.home.gradeDoneSub")}</span>
             </div>
           </Link>
@@ -314,7 +316,17 @@ export const DashboardPage = () => {
             {coinsLoading ? (
               Array.from({ length: 3 }, (_, i) => <Skel key={i} className="h-[62px] rounded-[18px]" />)
             ) : latestCoins.length === 0 ? (
-              <EmptyBox tone="mu" icon={Coins} title={t("us.home.coinsEmpty")} />
+              <EmptyBox
+                tone="mu"
+                icon={Coins}
+                title={t("us.home.coinsEmpty")}
+                text={t("us.home.coinsEmptySub")}
+                action={
+                  <Link to="/coins" className="u-btn">
+                    {t("us.coin.title")}
+                  </Link>
+                }
+              />
             ) : (
               latestCoins.map((c) => (
                 <div key={c.id} className="u-row">
@@ -328,7 +340,7 @@ export const DashboardPage = () => {
                     style={{ color: c.amount > 0 ? "var(--ok)" : "var(--er)" }}
                   >
                     {c.amount > 0 ? "+" : ""}
-                    {c.amount}
+                    {c.amount} <small className="text-[13px] font-bold">{t("unit.coin")}</small>
                   </b>
                 </div>
               ))

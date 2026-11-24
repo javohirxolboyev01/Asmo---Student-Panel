@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower, publicUser, userSummary } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { groupScope, teacherId, currentUser, isAdmin, assertStudent, httpError } from "../../utils/teacherScope.js";
+import { groupScope, teacherId, currentUser, isAdmin, assertStudent, httpError, liveEnrollment } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -23,12 +23,13 @@ groupsRouter.get(
       include: {
         Direction: true,
         Teacher: true,
-        _count: { select: { Enrollment: true } },
+        _count: { select: { Enrollment: { where: liveEnrollment } } },
         // Staff cards show the first few members' avatars.
         ...(isStudent
           ? {}
           : {
               Enrollment: {
+                where: liveEnrollment,
                 take: 3,
                 orderBy: { joinedAt: "asc" as const },
                 include: { User: { select: { id: true, firstName: true, lastName: true, avatar: true } } },
@@ -93,7 +94,7 @@ groupsRouter.get(
         orderBy: { lessonDate: "asc" },
       }),
       prisma.enrollment.findMany({
-        where: { groupId: group.id, status: { not: "DROPPED" } },
+        where: { groupId: group.id, ...liveEnrollment },
         include: { User: true },
       }),
     ]);
@@ -138,13 +139,24 @@ groupsRouter.get(
         Direction: true,
         Teacher: true,
         Enrollment:
-          current.role === "STUDENT" ? false : { include: { User: { select: { ...publicUser, coinBalance: true } } } },
+          current.role === "STUDENT"
+            ? false
+            : { where: liveEnrollment, include: { User: { select: { ...publicUser, coinBalance: true } } } },
         Lesson: {
           orderBy: { lessonDate: "desc" },
           include: {
+            // A student gets only their own submission (no attachment), so the
+            // lesson list can show submitted / graded / missed without extra calls.
             Homework:
               current.role === "STUDENT"
-                ? true
+                ? {
+                    include: {
+                      Submission: {
+                        where: { studentId: current.id },
+                        select: { status: true, score: true, submittedAt: true },
+                      },
+                    },
+                  }
                 : { include: { Submission: { select: { status: true } } } },
             AttendanceRecord: current.role === "STUDENT" ? { where: { studentId: current.id } } : true,
           },
@@ -185,7 +197,17 @@ groupsRouter.get(
               deadline: lesson.Homework.deadline,
               isOverdue: lesson.Homework.deadline < new Date(),
               ...(current.role === "STUDENT"
-                ? { status: "not_submitted", score: null, maxScore: lesson.Homework.maxScore }
+                ? (() => {
+                    const mine = ((lesson.Homework as any).Submission ?? [])[0] as
+                      | { status: string; score: number | null; submittedAt: Date }
+                      | undefined;
+                    return {
+                      status: !mine ? "not_submitted" : mine.status === "GRADED" ? "graded" : "submitted",
+                      score: mine?.score ?? null,
+                      submittedAt: mine?.submittedAt ?? null,
+                      maxScore: lesson.Homework.maxScore,
+                    };
+                  })()
                 : (() => {
                     const submissions: { status: string }[] = (lesson.Homework as any).Submission ?? [];
                     return {

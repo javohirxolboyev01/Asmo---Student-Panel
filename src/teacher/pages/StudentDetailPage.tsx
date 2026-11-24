@@ -18,8 +18,9 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import type { TeacherPayment } from "@/types/teacher";
-import { Avatar, BackButton, EmptyBox, Skel, Tag, formatDate, groupColor, type Tone } from "../components/ui";
+import { Avatar, BackButton, EmptyBox, Skel, Tag, groupColor, type Tone } from "../components/ui";
 import { GiveCoinSheet } from "../components/sheets";
+import { humanDateTime, humanDay } from "@/lib/humanDate";
 
 const PAYMENT_STATUS: Record<TeacherPayment["status"], { key: string; tone: Tone }> = {
   paid: { key: "payments.statusPaid", tone: "ok" },
@@ -209,33 +210,35 @@ export const StudentDetailPage = () => {
             {[student.phone, student.email].filter(Boolean).join(" · ")}
           </p>
         )}
-        <div className="mt-1.5 flex gap-2.5">
+        {/* Icon + caption, so every action says what it does. */}
+        <div className="u-sd-acts mt-1.5 flex gap-3.5">
           {student.phone && (
-            <a className="u-ib gl" href={`tel:${student.phone}`} aria-label={t("us.people.call")}>
-              <Phone className="u-i m" strokeWidth={2} aria-hidden="true" />
+            <a className="u-sd-act" href={`tel:${student.phone}`}>
+              <span className="u-ib gl" aria-hidden="true">
+                <Phone className="u-i m" strokeWidth={2} />
+              </span>
+              {t("us.people.actCall")}
             </a>
           )}
           {student.email && (
-            <a className="u-ib gl" href={`mailto:${student.email}`} aria-label={t("students.email")}>
-              <Mail className="u-i m" strokeWidth={2} aria-hidden="true" />
+            <a className="u-sd-act" href={`mailto:${student.email}`}>
+              <span className="u-ib gl" aria-hidden="true">
+                <Mail className="u-i m" strokeWidth={2} />
+              </span>
+              {t("us.people.actEmail")}
             </a>
           )}
-          <button
-            type="button"
-            className="u-ib gl"
-            aria-label={t("common.edit")}
-            onClick={() => setIsEditOpen(true)}
-          >
-            <Pencil className="u-i m" strokeWidth={2} aria-hidden="true" />
+          <button type="button" className="u-sd-act" onClick={() => setIsEditOpen(true)}>
+            <span className="u-ib gl" aria-hidden="true">
+              <Pencil className="u-i m" strokeWidth={2} />
+            </span>
+            {t("us.people.actEdit")}
           </button>
-          <button
-            type="button"
-            className="u-ib gl"
-            aria-label={t("common.delete")}
-            onClick={handleDelete}
-            disabled={deleteStudent.isPending}
-          >
-            <Trash2 className="u-i m" strokeWidth={2} aria-hidden="true" />
+          <button type="button" className="u-sd-act" onClick={handleDelete} disabled={deleteStudent.isPending}>
+            <span className="u-ib gl" aria-hidden="true">
+              <Trash2 className="u-i m" strokeWidth={2} />
+            </span>
+            {t("us.people.actArchive")}
           </button>
         </div>
       </section>
@@ -264,7 +267,7 @@ export const StudentDetailPage = () => {
               <div className="u-stack mb-3 gap-2">
                 {studentGroups.map((g) => (
                   <div key={g.id} className="u-row min-w-0">
-                    <b className="g truncate">{g.name}</b>
+                    <b className="g break-words">{g.name}</b>
                     <Link to={`/groups/${g.id}`} className="u-btn soft sm">
                       {t("us.people.open")}
                     </Link>
@@ -323,7 +326,7 @@ export const StudentDetailPage = () => {
                     <div className="g">
                       <b className="truncate">{s.lessonTopic || s.homeworkTitle}</b>
                       <small className="block truncate">
-                        {[s.lessonTopic && s.homeworkTitle !== s.lessonTopic ? s.homeworkTitle : null, formatDate(s.submittedAt)]
+                        {[s.lessonTopic && s.homeworkTitle !== s.lessonTopic ? s.homeworkTitle : null, humanDay(s.submittedAt, t)]
                           .filter(Boolean)
                           .join(" · ")}
                       </small>
@@ -348,7 +351,7 @@ export const StudentDetailPage = () => {
             <div className="u-sech">
               <h2>{t("students.attendanceTitle")}</h2>
               {attPct !== null && (
-                <Tag tone={attPct < 50 ? "er" : "ok"}>
+                <Tag tone={attPct < 50 ? "er" : attPct < 80 ? "gd" : "ok"}>
                   {attendance.stats.present}/{attendance.stats.total}
                 </Tag>
               )}
@@ -361,7 +364,7 @@ export const StudentDetailPage = () => {
                   <div key={r.id} className="u-row min-w-0">
                     <div className="g">
                       <b className="truncate">{r.lessonTopic ?? t("students.lessonFallback")}</b>
-                      <small>{formatDate(r.lessonDate ?? r.markedAt)}</small>
+                      <small>{humanDay(r.lessonDate ?? r.markedAt, t)}</small>
                     </div>
                     <StatusBadge status={r.status} />
                   </div>
@@ -390,14 +393,14 @@ export const StudentDetailPage = () => {
                     <Avatar name={name} src={student.avatar} seed={student.id} size="s" />
                     <div className="g">
                       <b className="break-words">{tx.reason}</b>
-                      <small>{formatDate(tx.createdAt)}</small>
+                      <small>{humanDateTime(tx.createdAt, t)}</small>
                     </div>
                     <b
                       className="flex-none font-fd text-[19px]"
                       style={{ color: tx.amount > 0 ? "var(--ok)" : "var(--er)" }}
                     >
                       {tx.amount > 0 ? "+" : ""}
-                      {tx.amount}
+                      {tx.amount} <small className="text-[13px] font-bold">{t("unit.coin")}</small>
                     </b>
                   </div>
                 ))}
@@ -422,13 +425,13 @@ export const StudentDetailPage = () => {
                   const st = PAYMENT_STATUS[p.status] ?? PAYMENT_STATUS.pending;
                   const type = PAYMENT_TYPE_KEYS[p.paymentType?.toUpperCase()]
                     ? t(PAYMENT_TYPE_KEYS[p.paymentType.toUpperCase()])
-                    : p.paymentType;
+                    : p.paymentType ? p.paymentType.charAt(0).toUpperCase() + p.paymentType.slice(1).toLowerCase() : "";
                   return (
                     <div key={p.id} className="u-row min-w-0">
                       <div className="g">
                         <b>{t("us.people.sum", { n: money(p.amountNumber) })}</b>
                         <small className="block break-words">
-                          {[p.paidAt ? formatDate(p.paidAt) : null, type, p.description].filter(Boolean).join(" · ")}
+                          {[p.description, type, p.paidAt ? humanDay(p.paidAt, t) : null].filter(Boolean).join(" · ")}
                         </small>
                       </div>
                       <Tag tone={st.tone} className="flex-none">

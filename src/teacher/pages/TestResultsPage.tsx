@@ -5,7 +5,7 @@ import { AlertTriangle, ListChecks, Users } from "lucide-react";
 import { useQuizResultsQuery } from "@/hooks/queries/useQuizzes";
 import { Button } from "@/components/ui";
 import { getErrorMessage } from "@/lib/toast";
-import { formatDateTime } from "@/utilist/formatData";
+import { humanDateTime } from "@/lib/humanDate";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Avatar, BackButton, Bar, EmptyBox, PageHeader, SectionHead, Skel, Tag, type Tone } from "../components/ui";
 
@@ -106,7 +106,7 @@ export const TestResultsPage = () => {
                   <Avatar name={a.studentName} seed={a.studentId} size="s" />
                   <div className="g">
                     <b className="truncate">{a.studentName}</b>
-                    <small>{a.finishedAt ? formatDateTime(a.finishedAt) : t("quizzes.inProgress")}</small>
+                    <small>{a.finishedAt ? humanDateTime(a.finishedAt, t) : t("quizzes.inProgress")}</small>
                   </div>
                   {a.percent != null ? (
                     <div className="flex-none text-right leading-tight">

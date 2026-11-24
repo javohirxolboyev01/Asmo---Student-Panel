@@ -1,0 +1,289 @@
+/* src/teacher/theme/lesson.css
+ * Teacher lesson timeline, lesson page and grading pieces. Only the ustoz.css
+ * short vars (--pr, --sf, --ok, …), so light/dark follow the --u-* tokens.
+ */
+
+/* ══════════ Course timeline (group page) ══════════ */
+.u-tl-sec:first-child .u-day {
+  margin-top: 4px;
+}
+.u-les.u-tl {
+  align-items: flex-start;
+  min-height: 84px;
+}
+.u-les.u-tl > .u-i:last-child {
+  align-self: center;
+}
+.u-tl-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mu);
+  font-size: 13px;
+  font-weight: 700;
+}
+.u-tl-topic {
+  display: block;
+  margin-top: 2px;
+  font-size: 17px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.u-tl-flag {
+  display: inline-block;
+  margin-bottom: 2px;
+  color: var(--pr);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.u-les.u-tl.hi {
+  border-color: rgb(var(--u-pr) / 0.45);
+  box-shadow:
+    0 0 0 4px var(--prt),
+    var(--sh);
+}
+.u-les.u-tl.hi .u-db {
+  background: var(--pr);
+  color: var(--on);
+}
+.u-les.u-tl.past .u-db {
+  background: var(--sf2);
+  color: var(--mu);
+}
+.u-les.u-tl .u-tag .u-i {
+  width: 14px;
+  height: 14px;
+}
+.u-les.u-tl .u-tag {
+  white-space: normal;
+}
+
+/* ══════════ Lesson page ══════════ */
+.u-lh-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.u-lh-chips .u-chip {
+  min-height: 34px;
+  padding: 5px 12px;
+  font-size: 13.5px;
+}
+.u-lh-chips .u-tag {
+  min-height: 34px;
+  padding: 5px 12px;
+}
+.u-lh-title {
+  margin: 12px 0 4px;
+  overflow-wrap: anywhere;
+}
+.u-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.u-stat-strip > div {
+  padding: 10px 6px;
+  border-radius: 16px;
+  background: var(--sf2);
+  text-align: center;
+}
+.u-stat-strip b {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.u-stat-strip span {
+  color: var(--mu);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.u-stat-strip .gd b {
+  color: var(--gdx);
+}
+.u-stat-strip .ok b {
+  color: var(--ok);
+}
+.u-sub-group {
+  margin: 14px 2px 8px;
+  color: var(--mu);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.u-hw-box {
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--sf2);
+}
+.u-hw-box .u-paper {
+  background: var(--sf);
+}
+.u-hw-box .u-paper:not(.full)::after {
+  background: linear-gradient(transparent, var(--sf));
+}
+.u-form-sec {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--sf2);
+}
+.u-form-sec > h3,
+.u-form-sec > legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+.u-form-sec .u-hint {
+  margin-top: -8px;
+  color: var(--mu);
+  font-size: 13px;
+  font-weight: 600;
+}
+.u-hint {
+  color: var(--mu);
+  font-size: 13px;
+  font-weight: 600;
+}
+.u-step {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pr);
+  color: var(--on);
+  font-size: 13px;
+  font-weight: 800;
+  flex: none;
+}
+.u-late {
+  background: var(--ert);
+  color: var(--er);
+}
+
+/* ══════════ Grading ══════════ */
+.u-gq-item {
+  align-items: flex-start;
+}
+.u-gq-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.u-gq-meta .u-tag {
+  padding: 3px 9px;
+  font-size: 12.5px;
+}
+.u-gq-meta .u-tag .u-i {
+  width: 13px;
+  height: 13px;
+}
+.u-attach {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.u-attach img {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  min-width: 64px;
+  min-height: 64px;
+  object-fit: contain;
+  border-radius: 14px;
+  border: 1px solid var(--hair);
+  background: var(--sf2);
+}
+.u-attach a {
+  width: fit-content;
+  max-width: 100%;
+}
+.u-score-in {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.u-score-in > :first-child {
+  flex: 1;
+}
+.u-score-in .u-of {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  color: var(--mu);
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.u-grade-info {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--sf2);
+}
+.u-grade-info b {
+  overflow-wrap: anywhere;
+}
+@media (min-width: 1024px) {
+  .u-grade-two {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .u-grade-two > .u-sec {
+    margin-top: 0;
+  }
+  .u-grade-two > :last-child {
+    position: sticky;
+    top: 76px;
+  }
+}
+.u-tl .u-tag:focus-visible,
+.u-les:focus-visible {
+  outline: 3px solid var(--pr);
+  outline-offset: 2px;
+}
+fieldset.u-form-sec {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+}
+.u-grade-info .u-tag.mu {
+  background: var(--sf);
+}
+.u-grade-info .u-gq-meta .u-tag {
+  white-space: normal;
+}
+@media (max-width: 639px) {
+  .u-gq-item {
+    flex-wrap: wrap;
+  }
+  .u-gq-item > div:last-child {
+    flex-direction: row-reverse;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+  }
+  .u-gq-item > div:last-child > .u-btn {
+    flex: 1;
+  }
+  .u-gq-item > div:last-child > a {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+  }
+}

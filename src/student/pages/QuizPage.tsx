@@ -2,9 +2,19 @@
 // Test: kirish → savollar (bittadan, taymer bilan) → natija. Ballni server
 // hisoblaydi; to'g'ri javoblar brauzerga umuman kelmaydi. Javoblar
 // localStorage'da saqlanadi, sahifa yangilansa ham yo'qolmaydi.
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useQuizPlayQuery, useStartQuizMutation, useSubmitQuizMutation } from "@/hooks/queries/useQuizzes";
+import {
+  useQuizPlayQuery,
+  useStartQuizMutation,
+  useSubmitQuizMutation,
+} from "@/hooks/queries/useQuizzes";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ApiError } from "@/services/apiClient";
 import { quizService } from "@/services/quizService";
@@ -14,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  CircleCheck,
   CircleHelp,
   FlaskConical,
   ListOrdered,
@@ -23,13 +34,22 @@ import {
   TrendingUp,
   RotateCcw,
 } from "lucide-react";
-import { EmptyState, ErrorState, Modal, PageHeader, Skel, Spinner, burst } from "../components/ui";
-import { IconTile, InlineIcon } from "../components/icons";
+import {
+  EmptyState,
+  ErrorState,
+  Modal,
+  PageHeader,
+  Skel,
+  Spinner,
+  burst,
+} from "../components/ui";
+import { IconTile } from "../components/icons";
 import "../theme/quiz.css";
 
 const LETTERS = "ABCDEF";
 
-const storageKey = (quizId: string, startedAt: string) => `quiz:${quizId}:${startedAt}`;
+const storageKey = (quizId: string, startedAt: string) =>
+  `quiz:${quizId}:${startedAt}`;
 const readAnswers = (key: string): Record<string, number> => {
   try {
     return JSON.parse(localStorage.getItem(key) ?? "{}") ?? {};
@@ -69,22 +89,68 @@ const QuizSkeleton = () => (
 
 // ── Intro ──
 
-const Intro = ({ play, onStart, starting }: { play: QuizPlay; onStart: () => void; starting: boolean }) => {
+const Intro = ({
+  play,
+  onStart,
+  starting,
+}: {
+  play: QuizPlay;
+  onStart: () => void;
+  starting: boolean;
+}) => {
   const { t } = useTranslation();
+  const rules = [
+    t("quizPlay.rule1"),
+    t("quizPlay.rule2"),
+    play.timeLimitMin ? t("quizPlay.rule3") : null,
+    t("quizPlay.onceRule"),
+  ].filter(Boolean) as string[];
   return (
     <div className="sp-panel sp-quiz-intro">
-      <IconTile icon={FlaskConical} tint="purple" size="lg" className="sp-quiz-big" />
+      <IconTile
+        icon={FlaskConical}
+        tint="purple"
+        size="lg"
+        className="sp-quiz-big"
+      />
       {play.description && <p className="sp-quiz-desc">{play.description}</p>}
-      <div className="sp-quiz-facts">
-        <span>
-          <InlineIcon icon={ListOrdered} /> {t("quizPlay.questions", { count: play.questionCount })}
-        </span>
-        <span>
-          <InlineIcon icon={Timer} />{" "}
-          {play.timeLimitMin ? t("quizPlay.minutes", { count: play.timeLimitMin }) : t("quizPlay.noLimit")}</span>
+      <ul className="sp-quiz-facts">
+        <li>
+          <ListOrdered aria-hidden="true" />
+          <b>{play.questionCount}</b>
+          <span>{t("quizPlay.factQuestions")}</span>
+        </li>
+        <li>
+          <Timer aria-hidden="true" />
+          <b>{play.timeLimitMin ?? "∞"}</b>
+          <span>
+            {play.timeLimitMin
+              ? t("quizPlay.factMinutes")
+              : t("quizPlay.noLimit")}
+          </span>
+        </li>
+        <li>
+          <RotateCcw aria-hidden="true" />
+          <b>1</b>
+          <span>{t("quizPlay.factAttempt")}</span>
+        </li>
+      </ul>
+      <div className="sp-quiz-rules">
+        <h2>{t("quizPlay.rulesTitle")}</h2>
+        <ul>
+          {rules.map((r) => (
+            <li key={r}>
+              <CircleCheck aria-hidden="true" />
+              <span>{r}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <p className="sp-quiz-rule">{t("quizPlay.onceRule")}</p>
-      <button className="sp-cta sp-quiz-go" onClick={onStart} disabled={starting || play.questionCount === 0}>
+      <button
+        className="sp-cta sp-quiz-go"
+        onClick={onStart}
+        disabled={starting || play.questionCount === 0}
+      >
         {starting ? <Spinner /> : t("quizPlay.start")}
       </button>
     </div>
@@ -112,10 +178,43 @@ const Result = ({ play }: { play: QuizPlay }) => {
   return (
     <div className="sp-panel sp-quiz-result" ref={ref}>
       <IconTile {...badge} size="lg" className="sp-quiz-big" />
-      <div className="sp-quiz-percent">{percent}%</div>
-      <p>{t("quizPlay.score", { score: attempt.score ?? 0, total: attempt.total })}</p>
+      <p className="sp-quiz-done">{t("quizPlay.done")}</p>
+      <div
+        className="sp-quiz-ring"
+        style={
+          {
+            "--p": percent,
+            "--rc":
+              percent >= 80
+                ? "var(--sp-lime)"
+                : percent >= 50
+                  ? "var(--sp-sun)"
+                  : "var(--sp-pink)",
+            "--rt":
+              percent >= 80
+                ? "var(--sp-lime-ink)"
+                : percent >= 50
+                  ? "var(--sp-sun-ink)"
+                  : "var(--sp-pink-ink)",
+          } as CSSProperties
+        }
+        role="img"
+        aria-label={`${percent}%`}
+      >
+        <b>{percent}%</b>
+      </div>
+      <p className="sp-quiz-score">
+        {t("quizPlay.score", {
+          score: attempt.score ?? 0,
+          total: attempt.total,
+        })}
+      </p>
       <p className="sp-quiz-desc">
-        {percent >= 80 ? t("quizPlay.great") : percent >= 50 ? t("quizPlay.good") : t("quizPlay.tryHarder")}
+        {percent >= 80
+          ? t("quizPlay.great")
+          : percent >= 50
+            ? t("quizPlay.good")
+            : t("quizPlay.tryHarder")}
       </p>
       <p className="sp-quiz-rule">{t("quizPlay.missionHint")}</p>
       <button className="sp-cta" onClick={() => navigate("/")}>
@@ -129,6 +228,7 @@ const Result = ({ play }: { play: QuizPlay }) => {
 
 /** Own component so the 1s tick re-renders only the clock, not the whole test. */
 const QuizClock = ({ deadline }: { deadline: number }) => {
+  const { t } = useTranslation();
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -136,8 +236,12 @@ const QuizClock = ({ deadline }: { deadline: number }) => {
   }, []);
   const left = deadline - now;
   return (
-    <span className={left < 60_000 ? "sp-quiz-clock sp-quiz-low" : "sp-quiz-clock"} role="timer">
-      ⏱ {formatClock(left)}
+    <span
+      className={left < 60_000 ? "sp-quiz-clock sp-quiz-low" : "sp-quiz-clock"}
+      role="timer"
+      aria-label={t("quizPlay.timeLeft")}
+    >
+      <Timer aria-hidden="true" /> {formatClock(left)}
     </span>
   );
 };
@@ -150,7 +254,9 @@ const Runner = ({ play }: { play: QuizPlay }) => {
   const questions = attempt.questions ?? [];
   const key = storageKey(play.id, attempt.startedAt);
   const submit = useSubmitQuizMutation(play.id);
-  const [answers, setAnswers] = useState<Record<string, number>>(() => readAnswers(key));
+  const [answers, setAnswers] = useState<Record<string, number>>(() =>
+    readAnswers(key),
+  );
   const [index, setIndex] = useState(() => {
     // Resume at the first unanswered question.
     const saved = readAnswers(key);
@@ -159,7 +265,9 @@ const Runner = ({ play }: { play: QuizPlay }) => {
   });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const deadline = attempt.deadline ? new Date(attempt.deadline).getTime() : null;
+  const deadline = attempt.deadline
+    ? new Date(attempt.deadline).getTime()
+    : null;
   const answersRef = useRef(answers);
   answersRef.current = answers;
   const saveTimer = useRef<number>();
@@ -214,25 +322,50 @@ const Runner = ({ play }: { play: QuizPlay }) => {
   };
 
   const question = questions[index];
-  const answeredCount = questions.filter((q) => answers[q.id] !== undefined).length;
+  const answeredCount = questions.filter(
+    (q) => answers[q.id] !== undefined,
+  ).length;
   const isLast = index === questions.length - 1;
   const busy = submit.isPending;
 
-  if (!question) return <EmptyState icon={SearchX} title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} />;
+  if (!question)
+    return (
+      <EmptyState
+        icon={SearchX}
+        title={t("quizPlay.notFound")}
+        text={t("quizPlay.notFoundHint")}
+      />
+    );
 
   return (
     <>
       <div className="sp-quiz-bar">
-        <span>{t("quizPlay.progress", { n: index + 1, total: questions.length })}</span>
+        <div className="min-w-0">
+          <b>
+            {t("quizPlay.progress", { n: index + 1, total: questions.length })}
+          </b>
+          <small>
+            {t("quizPlay.answered", {
+              n: answeredCount,
+              total: questions.length,
+            })}
+          </small>
+        </div>
         {deadline !== null && <QuizClock deadline={deadline} />}
       </div>
       <div className="sp-quiz-track" aria-hidden="true">
-        <div style={{ width: `${(answeredCount * 100) / questions.length}%` }} />
+        <div
+          style={{ width: `${(answeredCount * 100) / questions.length}%` }}
+        />
       </div>
 
       <div className="sp-panel sp-quiz-q">
         <h2>{question.text}</h2>
-        <div className="sp-quiz-opts" role="radiogroup" aria-label={question.text}>
+        <div
+          className="sp-quiz-opts"
+          role="radiogroup"
+          aria-label={question.text}
+        >
           {question.options.map((option, i) => {
             const on = answers[question.id] === option.index;
             return (
@@ -256,9 +389,17 @@ const Runner = ({ play }: { play: QuizPlay }) => {
         {questions.map((q, i) => (
           <button
             key={q.id}
-            className={[i === index && "cur", answers[q.id] !== undefined && "done"].filter(Boolean).join(" ")}
+            className={[
+              i === index && "cur",
+              answers[q.id] !== undefined && "done",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             onClick={() => setIndex(i)}
-            aria-label={t("quizPlay.progress", { n: i + 1, total: questions.length })}
+            aria-label={t("quizPlay.progress", {
+              n: i + 1,
+              total: questions.length,
+            })}
             aria-current={i === index ? "step" : undefined}
           >
             {i + 1}
@@ -267,30 +408,51 @@ const Runner = ({ play }: { play: QuizPlay }) => {
       </div>
 
       <div className="sp-quiz-nav">
-        <button className="sp-cta sp-ghost" onClick={() => setIndex(index - 1)} disabled={index === 0 || busy}>
+        <button
+          className="sp-cta sp-ghost"
+          onClick={() => setIndex(index - 1)}
+          disabled={index === 0 || busy}
+        >
           <ChevronLeft aria-hidden="true" /> {t("quizPlay.prev")}
         </button>
         {isLast ? (
           <button
             className="sp-cta"
             disabled={busy}
-            onClick={() => (answeredCount < questions.length ? setConfirmOpen(true) : finish())}
+            onClick={() =>
+              answeredCount < questions.length ? setConfirmOpen(true) : finish()
+            }
           >
             {busy ? <Spinner /> : t("quizPlay.finish")}
           </button>
         ) : (
-          <button className="sp-cta" onClick={() => setIndex(index + 1)} disabled={busy}>
+          <button
+            className="sp-cta"
+            onClick={() => setIndex(index + 1)}
+            disabled={busy}
+          >
             {t("quizPlay.next")} <ChevronRight aria-hidden="true" />
           </button>
         )}
       </div>
 
-      <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} labelledBy="sp-quiz-confirm">
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        labelledBy="sp-quiz-confirm"
+      >
         <IconTile icon={CircleHelp} tint="orange" size="lg" />
         <h2 id="sp-quiz-confirm">{t("quizPlay.confirmTitle")}</h2>
-        <p>{t("quizPlay.confirmText", { count: questions.length - answeredCount })}</p>
+        <p>
+          {t("quizPlay.confirmText", {
+            count: questions.length - answeredCount,
+          })}
+        </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <button className="sp-cta sp-ghost" onClick={() => setConfirmOpen(false)}>
+          <button
+            className="sp-cta sp-ghost"
+            onClick={() => setConfirmOpen(false)}
+          >
             {t("quizPlay.keepGoing")}
           </button>
           <button className="sp-cta" onClick={finish}>
@@ -324,7 +486,9 @@ export const QuizPage = () => {
   const start = useStartQuizMutation(id);
   const [startError, setStartError] = useState<string | null>(null);
 
-  const header = <PageHeader title={data?.title ?? t("quizPlay.title")} back={{ to: "/" }} />;
+  const header = (
+    <PageHeader title={data?.title ?? t("quizPlay.title")} back={{ to: "/" }} />
+  );
 
   if (isLoading) return <QuizSkeleton />;
 
@@ -335,7 +499,12 @@ export const QuizPage = () => {
       <>
         {header}
         {notFound ? (
-          <EmptyState icon={SearchX} title={t("quizPlay.notFound")} text={t("quizPlay.notFoundHint")} className="mt-4" />
+          <EmptyState
+            icon={SearchX}
+            title={t("quizPlay.notFound")}
+            text={t("quizPlay.notFoundHint")}
+            className="mt-4"
+          />
         ) : (
           <ErrorState onRetry={() => refetch()} />
         )}
@@ -353,7 +522,10 @@ export const QuizPage = () => {
             play={data}
             starting={start.isPending}
             onStart={() =>
-              start.mutate(undefined, { onError: (e) => setStartError(getErrorMessage(e, t("common.error"))) })
+              start.mutate(undefined, {
+                onError: (e) =>
+                  setStartError(getErrorMessage(e, t("common.error"))),
+              })
             }
           />
         ) : attempt.finishedAt ? (

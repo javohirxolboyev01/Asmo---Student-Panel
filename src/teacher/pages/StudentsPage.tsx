@@ -3,11 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Plus, Search, Trash2, Users } from "lucide-react";
-import {
-  useStudentsQuery,
-  useCreateStudentMutation,
-  useDeleteStudentMutation,
-} from "@/hooks/queries/useStudents";
+import { useStudentsQuery, useCreateStudentMutation, useDeleteStudentMutation } from "@/hooks/queries/useStudents";
 import { useGroupsQuery } from "@/hooks/queries/useGroups";
 import { Modal } from "@/components/common/Modal";
 import { Button, Input } from "@/components/ui";
@@ -18,6 +14,8 @@ import { cn } from "@/lib/utils";
 import { Avatar, CoinTag, EmptyBox, PageHeader, Skel, Tag } from "../components/ui";
 
 const NO_GROUP = "__none__";
+/** Cards rendered at first and added per "show more" click (keeps the DOM small). */
+const PAGE_SIZE = 30;
 const EMPTY_FORM = { email: "", password: "", firstName: "", lastName: "", phone: "" };
 
 export const StudentsPage = () => {
@@ -25,6 +23,9 @@ export const StudentsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // A new search or group filter starts again from the first page of cards.
+  useEffect(() => setVisibleCount(PAGE_SIZE), [search, filter]);
 
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(searchQuery.trim()), 250);
@@ -33,12 +34,7 @@ export const StudentsPage = () => {
 
   // All students (for the total) + the server-side search result (same query when the search is empty).
   const { data: allStudents = [] } = useStudentsQuery();
-  const {
-    data: found = [],
-    isLoading,
-    error,
-    refetch,
-  } = useStudentsQuery(search ? { search } : undefined);
+  const { data: found = [], isLoading, error, refetch } = useStudentsQuery(search ? { search } : undefined);
   const { data: groups = [] } = useGroupsQuery();
   const createStudent = useCreateStudentMutation();
   const deleteStudent = useDeleteStudentMutation();
@@ -54,6 +50,8 @@ export const StudentsPage = () => {
       ),
     [found, filter],
   );
+  const visibleStudents = students.slice(0, visibleCount);
+  const remaining = students.length - visibleStudents.length;
 
   const openCreate = () => {
     setForm(EMPTY_FORM);
@@ -152,55 +150,61 @@ export const StudentsPage = () => {
           ))}
         </div>
       ) : students.length === 0 ? (
-        <EmptyBox
-          tone="mu"
-          icon={Users}
-          title={t("us.people.notFound")}
-          text={t("us.people.notFoundHint")}
-        />
+        <EmptyBox tone="mu" icon={Users} title={t("us.people.notFound")} text={t("us.people.notFoundHint")} />
       ) : (
-        <div className="u-cols c3 u-stack">
-          {students.map((s) => {
-            const name = `${s.firstName} ${s.lastName}`.trim();
-            return (
-              <div key={s.id} className="u-les min-w-0">
-                <Link to={`/students/${s.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-                  <Avatar name={name} src={s.avatar} seed={s.id} />
-                  <span className="min-w-0 flex-1">
-                    <b className="block truncate text-[17px]">{name}</b>
-                    <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                      {s.groups.length ? (
-                        s.groups.map((g) => (
-                          <Tag key={g.id} tone="pr" className="max-w-full truncate">
-                            {g.name}
-                          </Tag>
-                        ))
-                      ) : (
-                        <Tag tone="gd">{t("us.people.noGroup")}</Tag>
-                      )}
-                      {s.status === "inactive" && <Tag tone="mu">{t("students.inactive")}</Tag>}
+        <>
+          <div className="u-cols c3 u-stack">
+            {visibleStudents.map((s) => {
+              const name = `${s.firstName} ${s.lastName}`.trim();
+              return (
+                <div key={s.id} className="u-les min-w-0">
+                  <Link to={`/students/${s.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                    <Avatar name={name} src={s.avatar} seed={s.id} />
+                    <span className="min-w-0 flex-1">
+                      <b className="block truncate text-[17px]">{name}</b>
+                      <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {s.groups.length ? (
+                          s.groups.map((g) => (
+                            <Tag key={g.id} tone="pr" className="max-w-full truncate">
+                              {g.name}
+                            </Tag>
+                          ))
+                        ) : (
+                          <Tag tone="gd">{t("us.people.noGroup")}</Tag>
+                        )}
+                        {s.status === "inactive" && <Tag tone="mu">{t("students.inactive")}</Tag>}
+                      </span>
+                      <span className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                        <CoinTag n={s.coinBalance} />
+                        <small className="text-[13.5px] font-semibold text-u-mu whitespace-nowrap">
+                          {s.groups.length ? t("us.people.attPct", { n: s.attendancePercentage }) : "—"}
+                        </small>
+                      </span>
                     </span>
-                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                      <CoinTag n={s.coinBalance} />
-                      <small className="text-[13.5px] font-semibold text-u-mu whitespace-nowrap">
-                        {s.groups.length ? t("us.people.attPct", { n: s.attendancePercentage }) : "—"}
-                      </small>
-                    </span>
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  className="u-ib"
-                  aria-label={t("common.delete")}
-                  onClick={() => handleDelete(s.id)}
-                  disabled={deleteStudent.isPending}
-                >
-                  <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  </Link>
+                  <button
+                    type="button"
+                    className="u-ib"
+                    aria-label={t("common.delete")}
+                    onClick={() => handleDelete(s.id)}
+                    disabled={deleteStudent.isPending}
+                  >
+                    <Trash2 className="u-i s" strokeWidth={2} aria-hidden="true" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+          {remaining > 0 && (
+            <button
+              type="button"
+              className="u-btn soft block mt-3"
+              onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            >
+              {t("us.list.showMore", { count: remaining })}
+            </button>
+          )}
+        </>
       )}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t("us.people.newStudent")}>

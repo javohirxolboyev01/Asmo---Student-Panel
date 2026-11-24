@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 app.use(helmet());
-app.use(cors({ origin: config.corsOrigins }));
+app.use(cors({ origin: config.corsOrigins, exposedHeaders: ['X-Total-Count', 'X-Request-Id'] }));
 app.use(compression());
 app.use(express.json({ limit: '3mb' }));
 morgan.token('rid', (_req, res) => (res as express.Response).locals.requestId);

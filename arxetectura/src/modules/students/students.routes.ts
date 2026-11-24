@@ -5,8 +5,10 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { lower, paymentSummary, userSummary } from "../../utils/serializers.js";
 import { avatarSchema, studentCreate } from "../../utils/schemas.js";
 import { newId } from "../../utils/ids.js";
-import { uid, assertStudent, studentScope } from "../../utils/teacherScope.js";
+import { uid, assertStudent, studentScope, liveEnrollment } from "../../utils/teacherScope.js";
 import { register } from "../auth/auth.service.js";
+import { parsePage, setTotalCount } from "../../utils/pagination.js";
+import type { Prisma } from "@prisma/client";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -14,14 +16,15 @@ export const studentsRouter = Router();
 
 /**
  * Archives a student instead of deleting them: the login is disabled, sessions
- * are revoked and they leave every group, but payments, coin history,
+ * are revoked and they leave every group (enrollments become DROPPED, so the
+ * former teachers still see them in the archive), but payments, coin history,
  * submissions and attendance stay for the records.
  */
 export const archiveStudent = (studentId: string) =>
   prisma.$transaction([
     prisma.user.update({ where: { id: studentId }, data: { status: "INACTIVE", updatedAt: new Date() } }),
     prisma.refreshToken.updateMany({ where: { userId: studentId, revokedAt: null }, data: { revokedAt: new Date() } }),
-    prisma.enrollment.deleteMany({ where: { studentId } }),
+    prisma.enrollment.updateMany({ where: { studentId }, data: { status: "DROPPED" } }),
   ]);
 
 const listQuery = z.object({
@@ -45,26 +48,31 @@ studentsRouter.get(
     });
     if (!parsed.success) return res.status(400).json({ error: "Invalid query" });
     const { search, groupId, status = "ACTIVE" } = parsed.data;
+    // Optional ?limit=&offset=; without them the full list, as before.
+    const page = parsePage(req);
+    const where = {
+      role: "STUDENT",
+      ...(status === "all" ? {} : { status }),
+      AND: [
+        await studentScope(req),
+        search
+          ? {
+              OR: [
+                { firstName: { contains: search } },
+                { lastName: { contains: search } },
+                { email: { contains: search } },
+              ],
+            }
+          : {},
+      ],
+      ...(groupId ? { Enrollment: { some: { groupId, ...liveEnrollment } } } : {}),
+    } satisfies Prisma.UserWhereInput;
     const rows = await prisma.user.findMany({
-      where: {
-        role: "STUDENT",
-        ...(status === "all" ? {} : { status }),
-        AND: [
-          await studentScope(req),
-          search
-            ? {
-                OR: [
-                  { firstName: { contains: search } },
-                  { lastName: { contains: search } },
-                  { email: { contains: search } },
-                ],
-              }
-            : {},
-        ],
-        ...(groupId ? { Enrollment: { some: { groupId } } } : {}),
-      },
-      include: { Enrollment: { include: { Group: { select: { id: true, name: true } } } } },
+      where,
+      ...(page ? { orderBy: [{ createdAt: "desc" as const }, { id: "asc" as const }], ...page } : {}),
+      include: { Enrollment: { where: liveEnrollment, include: { Group: { select: { id: true, name: true } } } } },
     });
+    if (page) setTotalCount(res, await prisma.user.count({ where }));
     // Count attendance per student/status in the DB instead of loading every record.
     const counts = await prisma.attendanceRecord.groupBy({
       by: ["studentId", "status"],
@@ -111,7 +119,7 @@ studentsRouter.get(
     const user = await prisma.user.findFirst({
       where: { id: req.params.id, role: "STUDENT", ...(await studentScope(req)) },
       include: {
-        Enrollment: { include: { Group: true } },
+        Enrollment: { where: liveEnrollment, include: { Group: true } },
         AttendanceRecord: { include: { Lesson: true } },
         CoinTransaction: true,
         Payment: true,
@@ -233,7 +241,7 @@ studentsRouter.post(
 
 const payCreate = z.object({
   body: z.object({
-    amountNumber: z.number().int().positive(),
+    amountNumber: z.number().int().positive().max(1_000_000_000),
     paymentType: z.enum(["CASH", "CLICK", "PAYME", "BANK", "UZUM"]),
     status: z.enum(["PAID", "PENDING", "OVERDUE", "CANCELLED"]).optional(),
     description: z.string().optional(),

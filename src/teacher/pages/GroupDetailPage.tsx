@@ -21,7 +21,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { Modal } from "@/components/common/Modal";
 import { Button, Input, Select } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
-import { GroupLessonList } from "@/components/Groups/GroupLessonList";
+import { LessonTimeline } from "../components/LessonTimeline";
 import { AddLessonSheet } from "../components/sheets";
 import {
   Avatar,
@@ -280,7 +280,7 @@ export const GroupDetailPage = () => {
       {tab === "lessons" ? (
         <>
           <SectionHead title={t("us.groups.lessons")} right={addLessonButton} />
-          <GroupLessonList lessons={lessons} studentCount={studentCount} />
+          <LessonTimeline lessons={lessons} studentCount={studentCount} action={addLessonButton} />
         </>
       ) : (
         <>

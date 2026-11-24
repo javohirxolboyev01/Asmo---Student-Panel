@@ -11,7 +11,7 @@ export const productsRouter = Router();
 const productData = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  price: z.number().int().positive(),
+  price: z.number().int().positive().max(100_000_000),
   originalPrice: z.number().int().positive().optional(),
   category: z.string().min(1),
   image: z.string().optional(),
@@ -53,7 +53,7 @@ productsRouter.get(
 productsRouter.post(
   "/products",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(z.object({ body: productData, params: z.object({}), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) =>
     res.status(201).json(await prisma.product.create({ data: { id: newId(), ...req.body } })),
@@ -63,7 +63,7 @@ productsRouter.post(
 productsRouter.patch(
   "/products/:id",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(z.object({ body: productData.partial(), params: z.object({ id: z.string() }), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) =>
     res.json(await prisma.product.update({ where: { id: req.params.id }, data: req.body })),
@@ -73,7 +73,7 @@ productsRouter.patch(
 productsRouter.delete(
   "/products/:id",
   requireAuth,
-  requireRole(...staff),
+  requireRole("ADMIN"),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     if (await prisma.purchase.count({ where: { productId: req.params.id } }))

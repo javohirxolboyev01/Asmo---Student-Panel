@@ -4,7 +4,7 @@
 import { useCoinsQuery } from "@/hooks/queries/useCoins";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
-import { formatDate } from "@/utilist/formatData";
+import { humanDateTime } from "@/lib/humanDate";
 import type { CoinRecord } from "@/types/coin";
 import { Link } from "react-router-dom";
 import { Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
@@ -83,15 +83,15 @@ export const CoinsPage = () => {
       <div className="sp-g3 mt-3">
         <div className="sp-s">
           <b style={{ color: "var(--sp-lime-ink)" }}>+{totalEarned}</b>
-          <small>{t("coins.earned")}</small>
+          <small>{t("space.coins.earnedLabel")}</small>
         </div>
         <div className="sp-s">
           <b style={{ color: "var(--sp-pink-ink)" }}>-{totalSpent}</b>
-          <small>{t("coins.spent")}</small>
+          <small>{t("space.coins.spentLabel")}</small>
         </div>
         <div className="sp-s">
           <b>{transactions.length}</b>
-          <small>{t("coins.operations")}</small>
+          <small>{t("space.coins.opsLabel")}</small>
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export const CoinsPage = () => {
                   <IconTile {...coinIcon(record)} size="sm" />
                   <span>
                     <span className="block truncate">{record.reason}</span>
-                    <small>{formatDate(record.createdAt)}</small>
+                    <small>{humanDateTime(record.createdAt, t)}</small>
                   </span>
                   <b style={{ color: plus ? "var(--sp-lime-ink)" : "var(--sp-pink-ink)" }}>
                     {plus ? "+" : ""}

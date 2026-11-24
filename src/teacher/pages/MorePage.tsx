@@ -32,6 +32,8 @@ interface MenuItem {
   icon: LucideIcon;
   color: string;
   label: string;
+  /** One plain line saying what the page is for. */
+  hint?: string;
   badge?: number;
 }
 
@@ -40,7 +42,10 @@ const MenuRow = ({ item }: { item: MenuItem }) => (
     <span className="u-mi" style={{ background: item.color, color: "#fff" }}>
       <item.icon className="u-i" strokeWidth={2} aria-hidden="true" />
     </span>
-    <span className="g truncate">{item.label}</span>
+    <span className="g min-w-0">
+      <span className="block truncate">{item.label}</span>
+      {item.hint && <small className="u-sub block truncate text-[13px] font-semibold">{item.hint}</small>}
+    </span>
     {!!item.badge && <Tag tone="er">{item.badge > 99 ? "99+" : item.badge}</Tag>}
     <ChevronRight className="u-i" strokeWidth={2} aria-hidden="true" />
   </Link>
@@ -84,19 +89,19 @@ export const MorePage = () => {
 
   // Warm icon tiles (white glyph on them), grouped as "Boshqaruv" / "Hisob".
   const manage: MenuItem[] = [
-    { to: "/tests", icon: ListChecks, color: "#8a58a6", label: t("nav.tests") },
-    { to: "/missions", icon: Target, color: "#c45379", label: t("nav.missions") },
-    { to: "/payments", icon: CreditCard, color: "#3f8a5c", label: t("nav.payments") },
-    { to: "/attendance", icon: BarChart3, color: "#d0602f", label: t("nav.attendance") },
-    { to: "/shop", icon: ShoppingBag, color: "#2b8783", label: t("nav.shop") },
+    { to: "/tests", icon: ListChecks, color: "#8a58a6", label: t("nav.tests"), hint: t("us.more.hint.tests") },
+    { to: "/missions", icon: Target, color: "#c45379", label: t("nav.missions"), hint: t("us.more.hint.missions") },
+    { to: "/payments", icon: CreditCard, color: "#3f8a5c", label: t("nav.payments"), hint: t("us.more.hint.payments") },
+    { to: "/attendance", icon: BarChart3, color: "#d0602f", label: t("nav.attendance"), hint: t("us.more.hint.attendance") },
+    { to: "/shop", icon: ShoppingBag, color: "#2b8783", label: t("nav.shop"), hint: t("us.more.hint.shop") },
     ...(isTeacher
-      ? [{ to: "/teachers", icon: GraduationCap, color: "#5a60b2", label: t("nav.teachers") }]
+      ? [{ to: "/teachers", icon: GraduationCap, color: "#5a60b2", label: t("nav.teachers"), hint: t("us.more.hint.teachers") }]
       : []),
   ];
   const account: MenuItem[] = [
-    { to: ROUTES.PROFILE_EDIT, icon: User, color: "#3f78b0", label: t("profile.editInfo") },
-    { to: ROUTES.SETTINGS, icon: Settings, color: "#8a7d71", label: t("nav.settings") },
-    { to: "/notifications", icon: Bell, color: "#c8463b", label: t("nav.notifications"), badge: unread },
+    { to: ROUTES.PROFILE_EDIT, icon: User, color: "#3f78b0", label: t("profile.editInfo"), hint: t("us.more.hint.profile") },
+    { to: ROUTES.SETTINGS, icon: Settings, color: "#8a7d71", label: t("nav.settings"), hint: t("us.more.hint.settings") },
+    { to: "/notifications", icon: Bell, color: "#c8463b", label: t("nav.notifications"), hint: t("us.more.hint.notifications"), badge: unread },
   ];
 
   return (

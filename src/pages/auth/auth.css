@@ -237,11 +237,13 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
+/* The page's h1 ("Hisobingizga kiring" / "Yangi hisob yarating"). */
 .au-sub {
-  margin: 12px 0 16px;
-  color: var(--au-mute);
-  font-size: 15px;
-  font-weight: 600;
+  margin: 14px 0 16px;
+  color: var(--au-ink);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
   text-align: center;
 }
 

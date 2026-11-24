@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
 import { register } from "../auth/auth.service.js";
+import { isAdmin, uid } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -78,14 +79,30 @@ teachersRouter.patch(
   requireRole(...staff),
   validate(
     z.object({
-      body: z.object({ fullName: z.string().min(2).optional(), avatar: z.string().nullable().optional() }),
+      // Only the profile's name/avatar are editable here: an account's email and
+      // password are never changed through this route.
+      body: z.object({
+        fullName: z.string().min(2).max(120).optional(),
+        avatar: z.string().max(300_000).nullable().optional(),
+      }),
       params: z.object({ id: z.string() }),
       query: z.object({}),
     }),
   ),
-  asyncRoute(async (req: any, res: any) =>
-    res.json(await prisma.teacher.update({ where: { id: req.params.id }, data: req.body })),
-  ),
+  asyncRoute(async (req: any, res: any) => {
+    // A TEACHER may only edit their own profile; an ADMIN may edit any.
+    const teacher = await prisma.teacher.findFirst({
+      where: { id: req.params.id, ...(isAdmin(req) ? {} : { userId: uid(req) }) },
+      select: { id: true },
+    });
+    if (!teacher) {
+      const exists = await prisma.teacher.findUnique({ where: { id: req.params.id }, select: { id: true } });
+      return exists
+        ? res.status(403).json({ error: "You can only edit your own profile" })
+        : res.status(404).json({ error: "Teacher not found" });
+    }
+    res.json(await prisma.teacher.update({ where: { id: teacher.id }, data: req.body }));
+  }),
 );
 
 teachersRouter.delete(

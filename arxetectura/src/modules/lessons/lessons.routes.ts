@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { lower } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
-import { currentUser, assertLesson, groupScope } from "../../utils/teacherScope.js";
+import { currentUser, assertLesson, groupScope, liveEnrollment } from "../../utils/teacherScope.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -29,7 +29,7 @@ lessonsRouter.get(
         Group: {
           include: {
             Teacher: true,
-            ...(isStaff ? { Enrollment: { where: { status: { not: "DROPPED" } }, include: { User: true } } } : {}),
+            ...(isStaff ? { Enrollment: { where: liveEnrollment, include: { User: true } } } : {}),
           },
         },
         Homework: {
@@ -150,7 +150,7 @@ lessonsRouter.post(
   asyncRoute(async (req: any, res: any) => {
     const lesson = await prisma.lesson.findFirst({
       where: { id: req.params.id, Group: await groupScope(req) },
-      include: { Group: { include: { Enrollment: true } }, Homework: true },
+      include: { Group: { include: { Enrollment: { where: liveEnrollment } } }, Homework: true },
     });
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
     if (lesson.Homework) return res.status(409).json({ error: "Lesson already has homework" });
@@ -189,7 +189,11 @@ lessonsRouter.post(
     const enrolled = new Set(
       (
         await prisma.enrollment.findMany({
-          where: { groupId: lesson.groupId, studentId: { in: req.body.records.map((r: any) => r.userId) } },
+          where: {
+            groupId: lesson.groupId,
+            studentId: { in: req.body.records.map((r: any) => r.userId) },
+            ...liveEnrollment,
+          },
           select: { studentId: true },
         })
       ).map((e) => e.studentId),

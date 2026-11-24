@@ -3,6 +3,7 @@ import type { StudentDict } from "./index";
 
 const dict: StudentDict = {
   uz: {
+    "space.payments.dueLabel": "To'lashingiz kerak",
     "space.payments.sum": "{{n}} so'm",
     "space.payments.debtSub": "{{count}} ta to'lov to'lanmagan",
     "space.payments.listTitle": "To'lovlar ro'yxati",
@@ -28,6 +29,7 @@ const dict: StudentDict = {
     "space.payments.open": "To'lov tafsilotlari",
   },
   ru: {
+    "space.payments.dueLabel": "К оплате",
     "space.payments.sum": "{{n}} сум",
     "space.payments.debtSub": "Не оплачено: {{count}}",
     "space.payments.listTitle": "Список платежей",
@@ -53,6 +55,7 @@ const dict: StudentDict = {
     "space.payments.open": "Детали платежа",
   },
   en: {
+    "space.payments.dueLabel": "Amount due",
     "space.payments.sum": "{{n}} UZS",
     "space.payments.debtSub": "{{count}} unpaid",
     "space.payments.listTitle": "Payments list",
