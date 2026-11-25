@@ -14,7 +14,8 @@ const dict: StudentDict = {
     "tg.backToBot": "Botga qaytish",
     "tg.studentUseBot":
       "O'quvchilar ilovani faqat Telegram bot orqali ochadi. Ustozingiz bergan kodni botga yuboring va ilovani bot ichidan oching.",
-    "tg.openBot": "Telegram botni ochish",
+    "tg.areYouStudent": "O'quvchimisiz?",
+    "tg.openFromBot": "Ilovani Telegram botdan oching",
   },
   ru: {
     "tg.gateTitle": "Вход через Telegram",
@@ -28,7 +29,8 @@ const dict: StudentDict = {
     "tg.backToBot": "Вернуться в бот",
     "tg.studentUseBot":
       "Ученики открывают приложение только через Telegram-бота. Отправьте боту код от преподавателя и откройте приложение внутри бота.",
-    "tg.openBot": "Открыть Telegram-бота",
+    "tg.areYouStudent": "Вы ученик?",
+    "tg.openFromBot": "Откройте приложение в Telegram-боте",
   },
   en: {
     "tg.gateTitle": "Sign in with Telegram",
@@ -42,7 +44,8 @@ const dict: StudentDict = {
     "tg.backToBot": "Back to the bot",
     "tg.studentUseBot":
       "Students open the app only through the Telegram bot. Send the code from your teacher to the bot and open the app inside it.",
-    "tg.openBot": "Open the Telegram bot",
+    "tg.areYouStudent": "A student?",
+    "tg.openFromBot": "Open the app from the Telegram bot",
   },
 };
 

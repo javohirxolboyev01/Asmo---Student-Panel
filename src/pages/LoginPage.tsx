@@ -1,7 +1,7 @@
 // src/pages/LoginPage.tsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Info, Lock, Mail, Send } from "lucide-react";
+import { ArrowRight, Lock, Mail } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -42,7 +42,12 @@ export const LoginPage = () => {
     try {
       await login(cleanEmail, password);
       const loggedInUser = useAuthStore.getState().user;
-      if (loggedInUser && loggedInUser.role !== role) {
+      // An admin signs in through the teacher side. With Telegram-only
+      // students the page is staff-only, so there is no role to pick.
+      const expected = telegramOnly ? "teacher" : role;
+      const actual =
+        loggedInUser?.role === "admin" ? "teacher" : loggedInUser?.role;
+      if (loggedInUser && actual !== expected) {
         logout();
         setLoginError(t("auth.roleMismatch"));
         return;
@@ -59,70 +64,62 @@ export const LoginPage = () => {
 
   return (
     <AuthShell subtitle={t("auth.welcomeBack")}>
-      <RoleSwitch role={role} onChange={setRole} />
-      {/* Students open the app from the Telegram bot, not with a password. */}
-      {telegramOnly && role === "student" ? (
-        <>
-          <div className="au-note">
-            <Info className="ic" />
-            <span>{t("tg.studentUseBot")}</span>
-          </div>
-          {botLink && (
-            <a
-              className="au-cta"
-              href={botLink}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Send className="ic" /> {t("tg.openBot")}
-            </a>
-          )}
-        </>
-      ) : (
-        <form onSubmit={handleSubmit} noValidate>
-          <AuthField
-            label={t("auth.email")}
-            icon={<Mail className="ic" />}
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t("auth.emailPlaceholder")}
-            autoComplete="email"
-          />
-          <AuthField
-            label={t("auth.password")}
-            icon={<Lock className="ic" />}
-            type="password"
-            revealable
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={t("auth.passwordPlaceholder")}
-            autoComplete="current-password"
-          />
+      {/* Students open the app from the Telegram bot, so then the page is staff-only. */}
+      {!telegramOnly && <RoleSwitch role={role} onChange={setRole} />}
+      <form onSubmit={handleSubmit} noValidate>
+        <AuthField
+          label={t("auth.email")}
+          icon={<Mail className="ic" />}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("auth.emailPlaceholder")}
+          autoComplete="email"
+        />
+        <AuthField
+          label={t("auth.password")}
+          icon={<Lock className="ic" />}
+          type="password"
+          revealable
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t("auth.passwordPlaceholder")}
+          autoComplete="current-password"
+        />
 
-          <button className="au-cta" type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <span className="au-spin" /> {t("auth.loggingIn")}
-              </>
+        <button className="au-cta" type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <span className="au-spin" /> {t("auth.loggingIn")}
+            </>
+          ) : (
+            <>
+              {t("auth.login")} <ArrowRight className="ic" />
+            </>
+          )}
+        </button>
+        <p className="au-msg" role="alert">
+          {loginError || error}
+        </p>
+
+        {telegramOnly ? (
+          <p className="au-alt">
+            {t("tg.areYouStudent")}{" "}
+            {botLink ? (
+              <a href={botLink} target="_blank" rel="noreferrer">
+                {t("tg.openFromBot")} →
+              </a>
             ) : (
-              <>
-                {t("auth.login")} <ArrowRight className="ic" />
-              </>
+              t("tg.openFromBot")
             )}
-          </button>
-          <p className="au-msg" role="alert">
-            {loginError || error}
           </p>
-
-          {!telegramOnly && (
-            <p className="au-alt">
-              {t("auth.noAccount")}{" "}
-              <Link to="/register">{t("auth.register")}</Link>
-            </p>
-          )}
-        </form>
-      )}
+        ) : (
+          <p className="au-alt">
+            {t("auth.noAccount")}{" "}
+            <Link to="/register">{t("auth.register")}</Link>
+          </p>
+        )}
+      </form>
     </AuthShell>
   );
 };
