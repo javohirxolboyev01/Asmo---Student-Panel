@@ -2,6 +2,7 @@
 // Student notifications — same queries/mutations as
 // src/pages/NotificationsPage.tsx (the teacher keeps that one).
 import "../theme/profile.css";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, parseISO, type Locale } from "date-fns";
 import { enUS, ru, uz } from "date-fns/locale";
 import {
@@ -14,7 +15,7 @@ import type { Language } from "@/i18n/translations";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { isCoinNotification, notificationTitle } from "@/lib/notificationTitle";
-import { Bell, BellOff, Gem, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
+import { Bell, BellOff, ChevronRight, Gem, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel, Spinner } from "../components/ui";
 import { IconTile, type Tint } from "../components/icons";
 
@@ -24,6 +25,24 @@ const TYPE_ICON: Record<string, { icon: LucideIcon; tint: Tint }> = {
   grade: { icon: Star, tint: "yellow" },
   submission: { icon: Inbox, tint: "blue" },
   system: { icon: Bell, tint: "gray" },
+};
+
+/**
+ * Where tapping a notification goes. Homework/grade notifications carry the
+ * lesson id in relatedId (older ones don't → the groups list); coin updates
+ * open the coin history.
+ */
+const targetOf = (n: Notification): string | null => {
+  const related = typeof n.relatedId === "string" && n.relatedId ? n.relatedId : null;
+  if (isCoinNotification(n.title)) return "/coins";
+  switch (n.type) {
+    case "homework":
+    case "grade":
+    case "lesson":
+      return related ? `/lessons/${related}#homework` : "/groups";
+    default:
+      return null;
+  }
 };
 
 const DATE_LOCALE = { uz, ru, en: enUS } satisfies Record<Language, Locale>;
@@ -53,6 +72,7 @@ export const NotificationsPage = () => {
   const { data, isLoading, error, refetch } = useNotificationsQuery();
   const markAsRead = useMarkNotificationAsReadMutation();
   const markAllAsRead = useMarkAllNotificationsAsReadMutation();
+  const navigate = useNavigate();
 
   if (isLoading && !data) return <NotificationsSkeleton />;
 
@@ -69,6 +89,8 @@ export const NotificationsPage = () => {
 
   const open = (n: Notification) => {
     if (!n.isRead) markAsRead.mutate(n.id);
+    const to = targetOf(n);
+    if (to) navigate(to);
   };
 
   return (
@@ -125,6 +147,7 @@ export const NotificationsPage = () => {
                   <span className="sp-profile-ndot" aria-hidden="true" /> {t("notes.unread")}
                 </span>
               )}
+              {targetOf(n) && <ChevronRight className="sp-chev" aria-hidden="true" />}
             </button>
           ))}
         </div>

@@ -171,7 +171,7 @@ export async function awardCoins(
   studentId: string,
   amount: number,
   reason: string,
-  sourceType: "MISSION" | "CHEST",
+  sourceType: "MISSION" | "CHEST" | "QUIZ",
 ) {
   await tx.coinTransaction.create({
     data: { id: newId(), studentId, amount, reason, sourceType },

@@ -6,15 +6,15 @@ export type Gender = "m" | "f";
 
 export const PRICES = {
   hair: { m: [0, 0, 0, 0, 5, 8], f: [0, 0, 0, 0, 5, 8] },
-  outfit: { m: [0, 0, 0, 5, 10, 15], f: [0, 0, 0, 5, 10, 15] },
+  outfit: { m: [0, 0, 0, 5, 10, 15, 5, 8, 12, 20], f: [0, 0, 0, 5, 10, 15, 5, 8, 10, 20] },
   beard: [0, 3, 5, 8],
-  hat: [0, 0, 5, 5, 10, 20, 0, 5],
+  hat: [0, 0, 5, 5, 10, 20, 0, 5, 5, 8, 8, 3, 10, 10, 12, 5],
   glasses: [0, 0, 3, 5, 10],
   bg: [0, 0, 0, 0, 0, 5],
 } as const;
 
 /** Hats offered per gender (indexes into PRICES.hat). */
-export const HATS: Record<Gender, readonly number[]> = { m: [0, 1, 2, 3, 4, 5], f: [0, 6, 7, 1, 2, 3, 4, 5] };
+export const HATS: Record<Gender, readonly number[]> = { m: [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14], f: [0, 6, 7, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15] };
 
 export const COLOR_COUNTS = { skin: 5, hc: 7, eyes: 5 } as const;
 

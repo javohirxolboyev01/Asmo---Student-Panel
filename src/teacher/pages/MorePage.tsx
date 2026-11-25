@@ -14,7 +14,6 @@ import {
   Pencil,
   Settings,
   ShoppingBag,
-  Target,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -91,7 +90,6 @@ export const MorePage = () => {
   // Warm icon tiles (white glyph on them), grouped as "Boshqaruv" / "Hisob".
   const manage: MenuItem[] = [
     { to: "/tests", icon: ListChecks, color: "#8a58a6", label: t("nav.tests"), hint: t("us.more.hint.tests") },
-    { to: "/missions", icon: Target, color: "#c45379", label: t("nav.missions"), hint: t("us.more.hint.missions") },
     { to: "/payments", icon: CreditCard, color: "#3f8a5c", label: t("nav.payments"), hint: t("us.more.hint.payments") },
     { to: "/attendance", icon: BarChart3, color: "#d0602f", label: t("nav.attendance"), hint: t("us.more.hint.attendance") },
     { to: "/shop", icon: ShoppingBag, color: "#2b8783", label: t("nav.shop"), hint: t("us.more.hint.shop") },

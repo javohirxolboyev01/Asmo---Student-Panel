@@ -60,4 +60,15 @@ export interface DashboardData {
   recentTransactions: DashboardTransaction[];
   unreadNotifications: number;
   upcomingLessons: DashboardUpcomingLesson[];
+  /** Homework still to do (active, not submitted, deadline ahead), soonest first. */
+  pendingHomework?: DashboardHomework[];
+}
+
+export interface DashboardHomework {
+  id: string;
+  title: string;
+  deadline: string;
+  lessonId: string;
+  lessonTopic: string;
+  groupName: string;
 }

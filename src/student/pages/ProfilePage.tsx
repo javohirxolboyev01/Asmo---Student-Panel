@@ -12,7 +12,6 @@ import {
   ChevronRight,
   LogOut,
   Mail,
-  Pencil,
   Phone,
   Settings,
   ShoppingCart,
@@ -87,16 +86,10 @@ export const ProfilePage = () => {
           <span className="sp-pf-circ">
             <SpaceAvatar avatar={user.avatar} name={fullName} />
           </span>
-          <span className="sp-pf-pen" aria-hidden="true">
-            <Pencil strokeWidth={2.4} />
-          </span>
         </button>
         <div className="sp-pf-who">
           <h1>{fullName}</h1>
           <p>{isTeacher ? t("profile.teacher") : t("profile.student")}</p>
-          <button type="button" className="sp-btn sp-pf-edit" onClick={() => setEditorOpen(true)}>
-            <Pencil aria-hidden="true" /> {t("space.ce.edit")}
-          </button>
         </div>
       </div>
 

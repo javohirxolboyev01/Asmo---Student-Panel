@@ -49,10 +49,10 @@ export const queryKeys = {
   pendingSubmissions: ["submissions", "pending"] as const,
   submissionDetail: (id: string) => ["submissions", id] as const,
   missionsToday: ["missions", "today"] as const,
-  missions: ["missions", "all"] as const,
   avatarItems: ["avatar", "items"] as const,
   quizzes: ["quizzes", "all"] as const,
   quizDetail: (id: string) => ["quizzes", "detail", id] as const,
   quizResults: (id: string) => ["quizzes", "results", id] as const,
   quizPlay: (id: string) => ["quizzes", "play", id] as const,
+  myQuizzes: ["quizzes", "mine"] as const,
 };

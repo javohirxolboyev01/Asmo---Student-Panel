@@ -20,7 +20,6 @@ const pages = {
   LessonDetailPage: lazyPage(() => import("./pages/LessonDetailPage"), "LessonDetailPage"),
   AttendancePage: lazyPage(() => import("./pages/AttendancePage"), "AttendancePage"),
   CoinsPage: lazyPage(() => import("./pages/CoinsPage"), "CoinsPage"),
-  MissionsPage: lazyPage(() => import("./pages/MissionsPage"), "MissionsPage"),
   TestsPage: lazyPage(() => import("./pages/TestsPage"), "TestsPage"),
   TestEditorPage: lazyPage(() => import("./pages/TestEditorPage"), "TestEditorPage"),
   TestResultsPage: lazyPage(() => import("./pages/TestResultsPage"), "TestResultsPage"),
@@ -59,7 +58,8 @@ export const TeacherRoutes = () => {
         <Route path="lessons/:id" element={<pages.LessonDetailPage />} />
         <Route path="attendance" element={<pages.AttendancePage />} />
         <Route path="coins" element={<pages.CoinsPage />} />
-        <Route path="missions" element={<pages.MissionsPage />} />
+        {/* Missions were replaced by tests that pay coins themselves. */}
+        <Route path="missions" element={<Navigate to="/tests" replace />} />
         <Route path="tests" element={<pages.TestsPage />} />
         <Route path="tests/new" element={<pages.TestEditorPage />} />
         <Route path="tests/:id/edit" element={<pages.TestEditorPage />} />

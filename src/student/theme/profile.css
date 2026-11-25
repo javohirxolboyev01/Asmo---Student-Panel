@@ -94,13 +94,14 @@
   overflow: hidden;
 }
 .sp-pf-hero {
+  position: relative;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 18px;
 }
 .sp-pf-big {
-  position: relative;
   width: 96px;
   height: 96px;
   flex: none;
@@ -108,12 +109,19 @@
   background: none;
   padding: 0;
   cursor: pointer;
-  transition: transform 0.12s;
 }
-.sp-pf-big:active {
+/* The avatar button's tap area covers the whole hero card. */
+.sp-pf-big::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.sp-pf-hero:has(.sp-pf-big:active) .sp-pf-circ {
   transform: scale(0.94);
 }
 .sp-pf-circ {
+  transition: transform 0.12s;
   display: grid;
   place-items: center;
   width: 96px;
@@ -129,22 +137,6 @@
   height: 100%;
   object-fit: cover;
   display: block;
-}
-.sp-pf-pen {
-  position: absolute;
-  right: -4px;
-  bottom: -2px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--sp-accent);
-  color: #ffffff;
-  border: 3px solid var(--sp-card);
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  z-index: 2;
-  box-shadow: 0 4px 12px rgba(90, 55, 25, 0.18);
 }
 .sp-pf-who {
   min-width: 0;
@@ -251,14 +243,6 @@
     border-width: 3px;
     font-size: 36px;
   }
-  .sp-pf-pen {
-    width: 28px;
-    height: 28px;
-    font-size: 13px;
-    right: -2px;
-    bottom: -1px;
-    border-width: 2px;
-  }
   .sp-pf-hero h1 {
     font-size: 24px;
   }
@@ -300,13 +284,6 @@
   }
   .sp-pf-circ {
     font-size: 30px;
-  }
-  .sp-pf-pen {
-    width: 24px;
-    height: 24px;
-    font-size: 12px;
-    right: -2px;
-    bottom: -2px;
   }
   .sp-pf-hero h1 {
     font-size: 21px;
@@ -988,10 +965,6 @@
 }
 
 /* iOS icons in the profile and the character editor */
-.sp-pf-pen svg {
-  width: 15px;
-  height: 15px;
-}
 .sp-pf-ic {
   border-radius: 12px;
 }
@@ -1042,8 +1015,36 @@
   font-size: 0;
 }
 
-/* Visible "change your hero" button next to the name (the avatar is tappable too). */
-.sp-pf-who .sp-btn.sp-pf-edit {
-  margin-top: 10px;
-  min-height: 44px;
+/* Photo upload in the character editor */
+.sp-ce-dice.sp-ce-up {
+  top: auto;
+  bottom: 10px;
+}
+.sp-ce-dice.sp-ce-unphoto {
+  top: auto;
+  bottom: 10px;
+  right: 66px;
+  color: var(--sp-tint-red, #ff3b30);
+}
+.sp-ce-dice:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.sp-ce-photo {
+  display: block;
+  height: 82%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 6px 18px #0003;
+}
+@media (max-width: 460px) {
+  .sp-ce-dice.sp-ce-up,
+  .sp-ce-dice.sp-ce-unphoto {
+    bottom: 8px;
+  }
+  .sp-ce-dice.sp-ce-unphoto {
+    right: 62px;
+  }
 }

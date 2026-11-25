@@ -9,6 +9,10 @@ import { paymentsQueryOptions } from "@/hooks/queries/usePayments";
 import { productsQueryOptions } from "@/hooks/queries/useProducts";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { StudentLayout } from "./layout/StudentLayout";
+import { ShopComingSoon } from "./components/shop/ShopComingSoon";
+
+/** false = /shop and /wishlist show a "coming soon" screen instead of the shop. */
+const SHOP_OPEN = false;
 
 // Each page is its own chunk, so a student never downloads teacher code;
 // once the panel is up, the rest are fetched in the background (preloadWhenIdle).
@@ -37,7 +41,7 @@ const prefetchTabData = () => {
   void queryClient.prefetchQuery(attendanceQueryOptions());
   void queryClient.prefetchQuery(coinsQueryOptions());
   void queryClient.prefetchQuery(paymentsQueryOptions());
-  void queryClient.prefetchQuery(productsQueryOptions());
+  if (SHOP_OPEN) void queryClient.prefetchQuery(productsQueryOptions());
 };
 
 export const StudentRoutes = () => {
@@ -55,9 +59,9 @@ export const StudentRoutes = () => {
         <Route path="lessons/:id" element={<pages.LessonDetailPage />} />
         <Route path="attendance" element={<pages.AttendancePage />} />
         <Route path="coins" element={<pages.CoinsPage />} />
-        <Route path="shop" element={<pages.ShopPage />} />
+        <Route path="shop" element={SHOP_OPEN ? <pages.ShopPage /> : <ShopComingSoon />} />
         <Route path="payments" element={<pages.PaymentsPage />} />
-        <Route path="wishlist" element={<pages.WishlistPage />} />
+        <Route path="wishlist" element={SHOP_OPEN ? <pages.WishlistPage /> : <ShopComingSoon />} />
         <Route path="quiz/:id" element={<pages.QuizPage />} />
         <Route path="notifications" element={<pages.NotificationsPage />} />
         <Route path="profile" element={<pages.ProfilePage />} />

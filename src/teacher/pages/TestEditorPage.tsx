@@ -30,10 +30,20 @@ interface MetaForm {
   description: string;
   groupId: string; // "" = barcha talabalar
   timeLimit: string; // "" = cheklovsiz
+  coinReward: string; // "0" = coin berilmaydi
+  passPercent: string;
   isActive: boolean;
 }
 
-const EMPTY_META: MetaForm = { title: "", description: "", groupId: "", timeLimit: "", isActive: true };
+const EMPTY_META: MetaForm = {
+  title: "",
+  description: "",
+  groupId: "",
+  timeLimit: "",
+  coinReward: "10",
+  passPercent: "60",
+  isActive: true,
+};
 
 /** i18n key of the first problem in a question, or null. */
 const questionProblem = (q: QuizQuestionInput) => {
@@ -76,6 +86,8 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
       description: existing.description ?? "",
       groupId: existing.groupId ?? "",
       timeLimit: existing.timeLimitMin ? String(existing.timeLimitMin) : "",
+      coinReward: String(existing.coinReward ?? 0),
+      passPercent: String(existing.passPercent ?? 60),
       isActive: existing.isActive,
     });
     setQuestions(existing.questions.map(draft));
@@ -129,8 +141,18 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
   const limit = Number(meta.timeLimit);
   const limitError =
     meta.timeLimit.trim() && !(Number.isInteger(limit) && limit >= 1 && limit <= 180) ? t("quizzes.error.timeLimit") : undefined;
+  const coins = Number(meta.coinReward);
+  const coinError = !(meta.coinReward.trim() && Number.isInteger(coins) && coins >= 0 && coins <= 1000)
+    ? t("quizzes.error.coinReward")
+    : undefined;
+  const pass = Number(meta.passPercent);
+  const passError = !(meta.passPercent.trim() && Number.isInteger(pass) && pass >= 1 && pass <= 100)
+    ? t("quizzes.error.passPercent")
+    : undefined;
   const problems = questions.map(questionProblem);
-  const hasErrors = Boolean(titleError || limitError || questions.length === 0 || problems.some(Boolean));
+  const hasErrors = Boolean(
+    titleError || limitError || coinError || passError || questions.length === 0 || problems.some(Boolean),
+  );
 
   const handleSave = async () => {
     setShowErrors(true);
@@ -143,6 +165,8 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
       description: meta.description.trim() || null,
       groupId: meta.groupId || null,
       timeLimitMin: meta.timeLimit.trim() ? limit : null,
+      coinReward: coins,
+      passPercent: pass,
       isActive: meta.isActive,
       questions: questions.map((q) => ({
         text: q.text.trim(),
@@ -413,7 +437,32 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
                 onChange={(e) => setMeta({ ...meta, timeLimit: e.target.value })}
                 error={limitError}
               />
+              <Input
+                label={t("quizzes.field.coinReward")}
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={1000}
+                value={meta.coinReward}
+                onChange={(e) => setMeta({ ...meta, coinReward: e.target.value })}
+                error={showErrors || meta.coinReward.trim() ? coinError : undefined}
+              />
+              <Input
+                label={t("quizzes.field.passPercent")}
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={100}
+                value={meta.passPercent}
+                onChange={(e) => setMeta({ ...meta, passPercent: e.target.value })}
+                error={showErrors || meta.passPercent.trim() ? passError : undefined}
+              />
             </div>
+            {!coinError && !passError && (
+              <p className="u-sub text-[13px] -mt-1">
+                {coins > 0 ? t("quizzes.rewardHint", { pass, coins }) : t("quizzes.noReward")}
+              </p>
+            )}
             <button
               type="button"
               role="switch"

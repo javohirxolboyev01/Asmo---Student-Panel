@@ -54,14 +54,19 @@ export const PageHeader = ({
   back?: { to: string; label?: ReactNode };
 }) => {
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
-    // The bar is ~52px tall; the title counts as "gone" once it slides under it.
+    // The title counts as "gone" once it slides under the pinned bars
+    // (on phones the HUD is pinned above the nav bar).
+    const bar = barRef.current;
+    const stuckTop = bar ? parseFloat(getComputedStyle(bar).top) || 0 : 0;
+    const offset = Math.round(stuckTop + 52);
     const io = new IntersectionObserver(([entry]) => setCollapsed(!entry.isIntersecting), {
-      rootMargin: "-52px 0px 0px 0px",
+      rootMargin: `-${offset}px 0px 0px 0px`,
     });
     io.observe(el);
     return () => io.disconnect();
@@ -69,7 +74,7 @@ export const PageHeader = ({
 
   return (
     <>
-      <div className={collapsed ? "sp-navbar sp-navbar-on" : "sp-navbar"}>
+      <div ref={barRef} className={collapsed ? "sp-navbar sp-navbar-on" : "sp-navbar"}>
         <div className="sp-navbar-side">{back && <BackLink to={back.to} />}</div>
         <div className="sp-navbar-title" aria-hidden={!collapsed}>
           {title}

@@ -162,6 +162,8 @@ lessonsRouter.post(
         type: "HOMEWORK",
         title: "New homework",
         message: homework.title,
+        // Lesson id: tapping the notification opens that lesson's page.
+        relatedId: lesson.id,
       })),
     });
     res.status(201).json(homework);

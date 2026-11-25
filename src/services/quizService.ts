@@ -1,9 +1,10 @@
 // src/services/quizService.ts
 import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./apiClient";
-import type { QuizDetail, QuizInput, QuizPlay, QuizResults, QuizSummary } from "@/types/quiz";
+import type { MyQuiz, QuizDetail, QuizInput, QuizPlay, QuizResults, QuizSummary } from "@/types/quiz";
 
 export const quizService = {
   // student
+  mine: () => apiGet<MyQuiz[]>("/quizzes/mine"),
   play: (id: string) => apiGet<QuizPlay>(`/quizzes/${id}/play`),
   start: (id: string) => apiPost<QuizPlay>(`/quizzes/${id}/start`, {}),
   submit: (id: string, answers: Record<string, number>) => apiPost<QuizPlay>(`/quizzes/${id}/submit`, { answers }),

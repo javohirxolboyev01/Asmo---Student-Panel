@@ -1,7 +1,7 @@
 // src/teacher/navigation.ts
 // "Ustoz paneli" menu (mock: Bosh, Guruh, Baholash, Talabalar, Coin, Ko'proq).
 // Phones show exactly those six in the bottom bar; the desktop rail also lists
-// tests, missions and payments directly, since there is room. Everything else
+// tests and payments directly, since there is room. Everything else
 // (attendance, shop, teachers, notifications, profile, settings) lives on the
 // "Ko'proq" page.
 import {
@@ -12,7 +12,6 @@ import {
   House,
   ListChecks,
   Menu,
-  Target,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -43,7 +42,6 @@ export const teacherMainNav: TeacherNavItem[] = [
 /** Desktop-only rail entries; on phones they are reached from "Ko'proq". */
 export const teacherExtraNav: TeacherNavItem[] = [
   { path: "/tests", icon: ListChecks, labelKey: "nav.tests" },
-  { path: "/missions", icon: Target, labelKey: "nav.missions" },
   { path: "/payments", icon: CreditCard, labelKey: "nav.payments" },
 ];
 
@@ -55,6 +53,6 @@ const under = (pathname: string, path: string) =>
 export const isNavActive = (item: TeacherNavItem, pathname: string) =>
   under(pathname, item.path) || (item.match ?? []).some((path) => under(pathname, path));
 
-/** Phones: tests/missions/payments pages light up "Ko'proq". */
+/** Phones: tests/payments pages light up "Ko'proq". */
 export const isMoreActiveOnMobile = (pathname: string) =>
   isNavActive(more, pathname) || teacherExtraNav.some((item) => isNavActive(item, pathname));

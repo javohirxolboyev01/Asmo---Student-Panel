@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   ChevronRight,
   Clock,
+  Coins,
   FileQuestion,
   ListChecks,
   Pencil,
@@ -163,6 +164,12 @@ export const TestsPage = () => {
                     <Clock className="u-i s" strokeWidth={2} aria-hidden="true" />
                     {quiz.timeLimitMin ? t("quizzes.minutes", { count: quiz.timeLimitMin }) : t("quizzes.noLimit")}
                   </span>
+                  {quiz.coinReward > 0 && (
+                    <span className="u-chip">
+                      <Coins className="u-i s" strokeWidth={2} aria-hidden="true" />
+                      {t("quizzes.rewardChip", { coins: quiz.coinReward, pass: quiz.passPercent })}
+                    </span>
+                  )}
                 </div>
 
                 <Link to={`/tests/${quiz.id}/results`} className="u-row" aria-label={`${t("us.manage.results")}: ${quiz.title}`}>

@@ -12,6 +12,9 @@ export interface QuizInput {
   description?: string | null;
   groupId?: string | null;
   timeLimitMin?: number | null;
+  /** Coins for finishing with ≥ passPercent % (0 = none). */
+  coinReward?: number;
+  passPercent?: number;
   isActive?: boolean;
   questions: QuizQuestionInput[];
 }
@@ -24,6 +27,8 @@ export interface QuizSummary {
   groupId: string | null;
   groupName: string | null;
   timeLimitMin: number | null;
+  coinReward: number;
+  passPercent: number;
   isActive: boolean;
   createdAt: string;
   questionCount: number;
@@ -39,6 +44,8 @@ export interface QuizDetail {
   description: string | null;
   groupId: string | null;
   timeLimitMin: number | null;
+  coinReward: number;
+  passPercent: number;
   isActive: boolean;
   attemptCount: number;
   questions: (QuizQuestionInput & { id: string })[];
@@ -56,6 +63,7 @@ export interface QuizResults {
     score: number | null;
     total: number;
     percent: number | null;
+    coins: number;
   }[];
   questions: { id: string; text: string; answered: number; correct: number }[];
 }
@@ -74,6 +82,8 @@ export interface QuizPlay {
   description: string | null;
   timeLimitMin: number | null;
   questionCount: number;
+  coinReward: number;
+  passPercent: number;
   attempt: {
     startedAt: string;
     finishedAt: string | null;
@@ -81,6 +91,24 @@ export interface QuizPlay {
     score: number | null;
     total: number;
     percent: number | null;
+    /** Coins paid when it finished (0 = below passPercent / no reward). */
+    coins: number;
     questions: PlayQuestion[] | null;
   } | null;
+}
+
+/** Student's test list row (GET /quizzes/mine). */
+export interface MyQuiz {
+  id: string;
+  title: string;
+  description: string | null;
+  groupName: string | null;
+  timeLimitMin: number | null;
+  questionCount: number;
+  coinReward: number;
+  passPercent: number;
+  createdAt: string;
+  status: "new" | "running" | "finished";
+  percent: number | null;
+  coins: number;
 }

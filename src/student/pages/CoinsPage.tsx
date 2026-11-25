@@ -7,14 +7,15 @@ import { getErrorMessage } from "@/lib/toast";
 import { humanDateTime } from "@/lib/humanDate";
 import type { CoinRecord } from "@/types/coin";
 import { Link } from "react-router-dom";
-import { Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
+import { FlaskConical, Gift, Plus, ShoppingBag, Target, Minus, Gem } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel } from "../components/ui";
 import { CoinGlyph, IconTile, type Tint } from "../components/icons";
 import type { LucideIcon } from "lucide-react";
 
-/** Symbol by source (backend reasons: "Missiya: …", "Kunlik sandiq", "Do'kondan xarid") or sign. */
+/** Symbol by source (backend reasons: "Test: …", "Missiya: …", "Kunlik sandiq", "Do'kondan xarid") or sign. */
 const coinIcon = ({ reason, amount }: CoinRecord): { icon: LucideIcon; tint: Tint } => {
   const r = reason.toLowerCase();
+  if (r.startsWith("test:")) return { icon: FlaskConical, tint: "blue" };
   if (r.startsWith("missiya")) return { icon: Target, tint: "indigo" };
   if (r.includes("sandiq")) return { icon: Gift, tint: "purple" };
   if (r.includes("do'kon") || r.includes("dokon")) return { icon: ShoppingBag, tint: "orange" };

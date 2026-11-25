@@ -4,7 +4,7 @@
 // teacher's comment), the task, your answer and the submit form — then what
 // the lesson was about.
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useLessonDetailQuery,
@@ -128,6 +128,20 @@ export const LessonDetailPage = () => {
   const [sentOpen, setSentOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const prefilledFor = useRef<string | null>(null);
+  const { hash } = useLocation();
+  const hasHomework = !!data?.homework;
+  const jumpedFor = useRef<string | null>(null);
+
+  // `/lessons/:id#homework` (notifications, dashboard) lands on the homework
+  // card. Deferred so it runs after the layout's scroll-to-top on navigation.
+  useEffect(() => {
+    if (hash !== "#homework" || !hasHomework || !id || jumpedFor.current === id) return;
+    jumpedFor.current = id;
+    const timer = window.setTimeout(() => {
+      document.getElementById("homework")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [hash, hasHomework, id]);
 
   // Prefill the editor with the existing (ungraded) answer once per submission,
   // so a background refetch never overwrites what the student is typing.
@@ -151,10 +165,8 @@ export const LessonDetailPage = () => {
       },
       {
         onSuccess: () => {
-          // Lets the "submit homework" mission become claimable right away.
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.missionsToday,
-          });
+          // Drops it from the dashboard's "homework to do" list.
+          void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard, exact: true });
           setAttachment(null);
           setMessage({
             type: "success",
@@ -305,7 +317,7 @@ export const LessonDetailPage = () => {
               text={t("space.groups.noHomeworkHint")}
             />
           ) : (
-            <section className="sp-panel sp-hwc" aria-labelledby="sp-hwc-title">
+            <section id="homework" className="sp-panel sp-hwc" aria-labelledby="sp-hwc-title">
               <div className="sp-hwc-head">
                 <h2 id="sp-hwc-title" className="sp-h-ic">
                   <IconTile icon={PencilLine} tint="orange" size="sm" />{" "}
@@ -565,7 +577,7 @@ export const LessonDetailPage = () => {
             className="sp-cta inline-block no-underline"
             onClick={() => setSentOpen(false)}
           >
-            {t("space.groups.toMissions")}
+            {t("space.groups.toHome")}
           </Link>
         </div>
       </Modal>

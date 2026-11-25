@@ -8,7 +8,7 @@ const dict: StudentDict = {
     "space.coins.opsLabel": "Amallar soni",
     "space.coins.toShop": "Do'konga o'tish",
     "space.coins.earn": "Coin ishlash",
-    "space.coins.noTransactionsHint": "Missiyalarni bajar va kunlik sovg'ani och — coinlar shu yerda chiqadi.",
+    "space.coins.noTransactionsHint": "Testlarni yeching va kunlik sovg'ani oching — coinlar shu yerda chiqadi.",
   },
   ru: {
     "space.coins.earnedLabel": "Всего получено",
@@ -16,7 +16,7 @@ const dict: StudentDict = {
     "space.coins.opsLabel": "Операций",
     "space.coins.toShop": "В магазин",
     "space.coins.earn": "Заработать",
-    "space.coins.noTransactionsHint": "Выполняй миссии и открывай ежедневный подарок — монеты появятся здесь.",
+    "space.coins.noTransactionsHint": "Проходите тесты и открывайте ежедневный подарок — монеты появятся здесь.",
   },
   en: {
     "space.coins.earnedLabel": "Coins earned",
@@ -24,7 +24,7 @@ const dict: StudentDict = {
     "space.coins.opsLabel": "Operations",
     "space.coins.toShop": "Go to shop",
     "space.coins.earn": "Earn coins",
-    "space.coins.noTransactionsHint": "Complete missions and open the daily gift — your coins will show up here.",
+    "space.coins.noTransactionsHint": "Take tests and open the daily gift — your coins will show up here.",
   },
 };
 

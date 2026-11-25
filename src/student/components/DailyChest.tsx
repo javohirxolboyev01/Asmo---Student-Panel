@@ -1,5 +1,5 @@
 // src/student/components/DailyChest.tsx
-// "Kunlik sovg'a" row (top of the dashboard missions) + box picker. The server decides what
+// "Kunlik sovg'a" row (top of the dashboard tests) + box picker. The server decides what
 // is inside each box; we only send which one was picked.
 import { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";

@@ -85,6 +85,18 @@
   font-size: 13px;
   color: var(--sp-mute);
 }
+/* Coins a passed test paid out */
+.sp-quiz-coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px auto 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--sp-sun-soft);
+  color: var(--sp-sun-ink);
+  font-weight: 800;
+}
 .sp-quiz-go {
   width: 100%;
   max-width: 460px;

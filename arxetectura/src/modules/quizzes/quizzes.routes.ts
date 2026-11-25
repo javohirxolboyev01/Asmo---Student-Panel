@@ -1,5 +1,5 @@
 // src/modules/quizzes/quizzes.routes.ts
-// Student: GET /quizzes/:id/play, POST /quizzes/:id/start, POST /quizzes/:id/submit.
+// Student: GET /quizzes/mine, GET /quizzes/:id/play, POST /quizzes/:id/start, POST /quizzes/:id/submit.
 // Staff:   GET/POST /quizzes, GET/PUT/DELETE /quizzes/:id, GET /quizzes/:id/results.
 import { Router } from "express";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
 import { uid, assertGroup as assertScopedGroup, quizScope } from "../../utils/teacherScope.js";
-import { httpError } from "../missions/missions.service.js";
+import { awardCoins, httpError } from "../missions/missions.service.js";
 import {
   attemptDeadline,
   isExpired,
@@ -44,16 +44,39 @@ type Attempt = NonNullable<Awaited<ReturnType<typeof prisma.quizAttempt.findUniq
 const savedAnswers = (attempt: Attempt) => (attempt.answers ?? {}) as Record<string, number>;
 
 /**
+ * Finishes an attempt and pays the test's coins when the score reaches
+ * passPercent — in one transaction, and only if it wasn't finished yet, so
+ * parallel submits / expiry checks can never pay twice. Returns false when
+ * someone else finished it first.
+ */
+const finishAttempt = async (
+  quiz: StudentQuiz,
+  attempt: Attempt,
+  answers: Record<string, number>,
+  saveAnswers: boolean,
+) => {
+  const score = scoreAnswers(quiz.QuizQuestion, answers);
+  const passed = percentOf(score, attempt.total) >= quiz.passPercent;
+  const coins = passed ? quiz.coinReward : 0;
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.quizAttempt.updateMany({
+      where: { id: attempt.id, finishedAt: null },
+      data: { finishedAt: new Date(), score, coins, ...(saveAnswers && { answers }) },
+    });
+    if (!updated.count) return false;
+    if (coins > 0) await awardCoins(tx, attempt.studentId, coins, `Test: ${quiz.title}`, "QUIZ");
+    return true;
+  });
+};
+
+/**
  * Out of time and never submitted (phone slept, tab closed) → score the
  * answers autosaved so far. Conditional, so it can't overwrite a submit that
  * landed in between.
  */
 const closeIfExpired = async (quiz: StudentQuiz, attempt: Attempt) => {
   if (attempt.finishedAt || !isExpired(attemptDeadline(attempt.startedAt, quiz.timeLimitMin))) return attempt;
-  await prisma.quizAttempt.updateMany({
-    where: { id: attempt.id, finishedAt: null },
-    data: { finishedAt: new Date(), score: scoreAnswers(quiz.QuizQuestion, savedAnswers(attempt)) },
-  });
+  await finishAttempt(quiz, attempt, savedAnswers(attempt), false);
   return prisma.quizAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
 };
 
@@ -75,6 +98,8 @@ const playView = (quiz: StudentQuiz, attempt: Attempt | null) => ({
   description: quiz.description,
   timeLimitMin: quiz.timeLimitMin,
   questionCount: quiz.QuizQuestion.length,
+  coinReward: quiz.coinReward,
+  passPercent: quiz.passPercent,
   attempt: attempt && {
     startedAt: attempt.startedAt,
     finishedAt: attempt.finishedAt,
@@ -82,10 +107,54 @@ const playView = (quiz: StudentQuiz, attempt: Attempt | null) => ({
     score: attempt.score,
     total: attempt.total,
     percent: attempt.score == null ? null : percentOf(attempt.score, attempt.total),
+    coins: attempt.coins,
     // Only while it's running; a finished test never reveals anything else.
     questions: attempt.finishedAt ? null : playableQuestions(quiz.QuizQuestion, attempt.id),
   },
 });
+
+// The student's tests: open ones first (not started / running), then finished.
+quizzesRouter.get(
+  "/quizzes/mine",
+  requireAuth,
+  requireRole("STUDENT"),
+  asyncRoute(async (req: any, res: any) => {
+    const studentId = uid(req);
+    const quizzes = await prisma.quiz.findMany({
+      where: { ...(await visibleQuizWhere(studentId)), QuizQuestion: { some: {} } },
+      orderBy: { createdAt: "desc" },
+      include: {
+        Group: { select: { name: true } },
+        _count: { select: { QuizQuestion: true } },
+        QuizAttempt: { where: { studentId } },
+      },
+    });
+    const items = quizzes.map((q) => {
+      const a = q.QuizAttempt[0];
+      // A timed-out attempt that was never closed counts as finished here;
+      // opening it closes and scores it for real.
+      const expired = !!a && !a.finishedAt && isExpired(attemptDeadline(a.startedAt, q.timeLimitMin));
+      const status: "new" | "running" | "finished" = !a ? "new" : a.finishedAt || expired ? "finished" : "running";
+      return {
+        id: q.id,
+        title: q.title,
+        description: q.description,
+        groupName: q.Group?.name ?? null,
+        timeLimitMin: q.timeLimitMin,
+        questionCount: q._count.QuizQuestion,
+        coinReward: q.coinReward,
+        passPercent: q.passPercent,
+        createdAt: q.createdAt,
+        status,
+        percent: a?.score == null ? null : percentOf(a.score, a.total),
+        coins: a?.coins ?? 0,
+      };
+    });
+    const rank = { running: 0, new: 1, finished: 2 } as const;
+    items.sort((x, y) => rank[x.status] - rank[y.status]);
+    res.json(items);
+  }),
+);
 
 const quizIdOnly = z.object({ body: z.object({}).passthrough().default({}), params: z.object({ id: z.string().min(1) }), query: z.object({}) });
 
@@ -163,12 +232,8 @@ quizzesRouter.post(
     if (attempt.finishedAt) throw httpError(409, "Quiz already finished");
 
     const answers = knownAnswers(quiz, req.body.answers);
-    // Conditional update: two parallel submits can't both score.
-    const updated = await prisma.quizAttempt.updateMany({
-      where: { id: attempt.id, finishedAt: null },
-      data: { finishedAt: new Date(), score: scoreAnswers(quiz.QuizQuestion, answers), answers },
-    });
-    if (!updated.count) throw httpError(409, "Quiz already finished");
+    // Conditional finish: two parallel submits can't both score (or both pay).
+    if (!(await finishAttempt(quiz, attempt, answers, true))) throw httpError(409, "Quiz already finished");
     const finished = await prisma.quizAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
     res.json(playView(quiz, finished));
   }),
@@ -189,6 +254,8 @@ const quizBody = z.object({
   description: z.string().trim().max(500).nullable().optional(),
   groupId: z.string().min(1).nullable().optional(),
   timeLimitMin: z.number().int().min(1).max(180).nullable().optional(),
+  coinReward: z.number().int().min(0).max(1000).optional(),
+  passPercent: z.number().int().min(1).max(100).optional(),
   isActive: z.boolean().optional(),
   questions: z.array(questionBody).min(1).max(100),
 });
@@ -246,6 +313,8 @@ quizzesRouter.get(
           groupId: q.groupId,
           groupName: q.Group?.name ?? null,
           timeLimitMin: q.timeLimitMin,
+          coinReward: q.coinReward,
+          passPercent: q.passPercent,
           isActive: q.isActive,
           createdAt: q.createdAt,
           questionCount: q._count.QuizQuestion,
@@ -275,6 +344,8 @@ quizzesRouter.get(
       description: quiz.description,
       groupId: quiz.groupId,
       timeLimitMin: quiz.timeLimitMin,
+      coinReward: quiz.coinReward,
+      passPercent: quiz.passPercent,
       isActive: quiz.isActive,
       attemptCount: quiz._count.QuizAttempt,
       questions: quiz.QuizQuestion,
@@ -321,6 +392,8 @@ quizzesRouter.put(
       description: meta.description ?? null,
       groupId: meta.groupId ?? null,
       timeLimitMin: meta.timeLimitMin ?? null,
+      ...(meta.coinReward !== undefined && { coinReward: meta.coinReward }),
+      ...(meta.passPercent !== undefined && { passPercent: meta.passPercent }),
       ...(meta.isActive !== undefined && { isActive: meta.isActive }),
     };
     await prisma.$transaction(async (tx) => {
@@ -393,6 +466,7 @@ quizzesRouter.get(
         score: a.score,
         total: a.total,
         percent: a.score == null ? null : percentOf(a.score, a.total),
+        coins: a.coins,
       })),
       // Which questions the group got wrong most — the teacher's main takeaway.
       questions: quiz.QuizQuestion.map((q) => ({

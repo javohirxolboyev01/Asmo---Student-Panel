@@ -16,7 +16,7 @@ const dict: StudentDict = {
     "space.attendance.backToToday": "Bugunga qaytish",
     "space.attendance.dayLessons": "Shu kungi darslar",
     "space.attendance.noRecords": "Hali davomat yo'q",
-    "space.attendance.noRecordsHint": "Darsga kelganingda shu yerda belgilanadi.",
+    "space.attendance.noRecordsHint": "Darsga kelganingizda shu yerda belgilanadi.",
   },
   ru: {
     "space.attendance.ratePill": "Посещаемость {{n}}%",

@@ -43,7 +43,7 @@ import {
   Spinner,
   burst,
 } from "../components/ui";
-import { IconTile } from "../components/icons";
+import { CoinGlyph, IconTile } from "../components/icons";
 import "../theme/quiz.css";
 
 const LETTERS = "ABCDEF";
@@ -104,6 +104,9 @@ const Intro = ({
     t("quizPlay.rule2"),
     play.timeLimitMin ? t("quizPlay.rule3") : null,
     t("quizPlay.onceRule"),
+    play.coinReward > 0
+      ? t("quizPlay.rewardRule", { pass: play.passPercent, coins: play.coinReward })
+      : null,
   ].filter(Boolean) as string[];
   return (
     <div className="sp-panel sp-quiz-intro">
@@ -216,9 +219,17 @@ const Result = ({ play }: { play: QuizPlay }) => {
             ? t("quizPlay.good")
             : t("quizPlay.tryHarder")}
       </p>
-      <p className="sp-quiz-rule">{t("quizPlay.missionHint")}</p>
+      {attempt.coins > 0 ? (
+        <p className="sp-quiz-coins">
+          <CoinGlyph /> {t("quizPlay.coinsWon", { n: attempt.coins })}
+        </p>
+      ) : play.coinReward > 0 ? (
+        <p className="sp-quiz-rule">
+          {t("quizPlay.coinsMissed", { pass: play.passPercent, coins: play.coinReward })}
+        </p>
+      ) : null}
       <button className="sp-cta" onClick={() => navigate("/")}>
-        {t("quizPlay.toMissions")}
+        {t("quizPlay.toHome")}
       </button>
     </div>
   );

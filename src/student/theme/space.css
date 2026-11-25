@@ -234,6 +234,29 @@ body:has(.sp) {
   align-items: center;
   min-height: 56px;
 }
+/* Phones/tablets: the HUD stays pinned while the page scrolls (frosted,
+ * full-bleed). The page's own nav bar sticks right under it. */
+@media (max-width: 899px) {
+  .sp {
+    --sp-hud-h: 68px;
+  }
+  .sp-hud {
+    position: sticky;
+    top: 0;
+    z-index: 35;
+    min-height: var(--sp-hud-h);
+    margin: calc(-12px - env(safe-area-inset-top, 0px)) -16px 0;
+    padding: env(safe-area-inset-top, 0px) 16px 0;
+    background: var(--sp-nav);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    box-sizing: content-box;
+  }
+  .sp-navbar {
+    top: calc(var(--sp-hud-h) + env(safe-area-inset-top, 0px));
+    padding-top: 0;
+  }
+}
 .sp-ava {
   width: 48px;
   height: 48px;
@@ -1536,7 +1559,7 @@ textarea.sp-in {
 }
 
 /* Dashboard: one column on phones in priority order (greeting → progress
-   → missions → results → ranking); two columns from 900px. */
+   → homework → missions → results → ranking); two columns from 900px. */
 @media (max-width: 899px) {
   .sp-home {
     display: flex;
@@ -1546,10 +1569,80 @@ textarea.sp-in {
     display: contents;
   }
   .sp-home-hero { order: 1; }
+  .sp-home-hw { order: 2; } /* after progress (same order → DOM order), before missions */
   .sp-home-progress { order: 2; }
-  .sp-home-missions { order: 3; }
+  .sp-home-tests { order: 3; }
   .sp-home-results { order: 4; }
   .sp-home-ranking { order: 5; }
+}
+/* Dashboard: daily gift + tests */
+.sp-home-chest {
+  margin-top: 28px;
+}
+.sp-home-chest .sp-row {
+  margin-bottom: 0;
+}
+.sp-test-badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.sp-test-badge.sp-new {
+  background: var(--sp-accent-soft);
+  color: var(--sp-accent-ink);
+}
+.sp-test-badge.sp-run {
+  background: var(--sp-sun-soft);
+  color: var(--sp-sun-ink);
+}
+.sp-test-badge.sp-done {
+  background: var(--sp-lime-soft);
+  color: var(--sp-lime-ink);
+}
+.sp-row .sp-t small.sp-test-coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: var(--sp-sun-ink);
+  font-weight: 700;
+}
+.sp-test-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--sp-fill);
+  color: var(--sp-mute);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sp-test-more svg {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s;
+}
+.sp-test-more svg.sp-rot {
+  transform: rotate(180deg);
+}
+
+/* Dashboard: homework still to do */
+.sp-row .sp-t small.sp-home-hw-due {
+  margin-top: 2px;
+  font-weight: 700;
+}
+.sp-row .sp-t small.sp-home-hw-due.sp-urgent {
+  color: var(--sp-tint-red);
 }
 .sp-home-hint {
   margin: 10px 4px 0;
@@ -2420,6 +2513,12 @@ textarea.sp-in {
     padding-left: 12px;
     padding-right: 12px;
   }
+  .sp-hud {
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
   .sp-navbar {
     margin: 0 -12px;
   }
@@ -2495,6 +2594,14 @@ textarea.sp-in {
   .sp-cell {
     min-height: 76px;
     font-size: 17px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 899px) {
+  .sp-hud {
+    margin: calc(-20px - env(safe-area-inset-top, 0px)) -24px 0;
+    padding-left: 24px;
+    padding-right: 24px;
   }
 }
 

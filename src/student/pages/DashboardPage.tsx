@@ -1,10 +1,10 @@
 // src/student/pages/DashboardPage.tsx
 // Student home. Order = what a student needs first: greeting, course
-// progress ring (completed ÷ all lessons; pulses for every claimed mission,
-// components/ProgressRing), today's missions with the daily gift on top,
-// my results, group ranking. Mobile: one column in that order; desktop:
-// progress + results left, missions + ranking right. Missions and the daily
-// gift are verified/rolled by the backend (modules/missions).
+// progress ring (completed ÷ all lessons), homework to do, the daily gift +
+// tests, my results, group ranking. Mobile: one column in that order;
+// desktop: progress + results left, homework + tests + ranking right.
+// Tests pay their own coins (modules/quizzes); the daily gift is rolled by
+// the backend (modules/missions).
 import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -14,6 +14,7 @@ import {
   ChevronRight,
   CircleCheck,
   Gem,
+  PencilLine,
   Telescope,
   Trophy,
 } from "lucide-react";
@@ -25,6 +26,7 @@ import {
 } from "@/hooks/queries/useDashboard";
 import { useAttendanceQuery } from "@/hooks/queries/useAttendance";
 import { useMissionsTodayQuery } from "@/hooks/queries/useMissions";
+import { useMyQuizzesQuery } from "@/hooks/queries/useQuizzes";
 import { getErrorMessage } from "@/lib/toast";
 import type { LeaderboardFilter } from "@/components/Dashboard/CoinLeaderboard";
 import {
@@ -35,10 +37,12 @@ import {
 } from "../lib/level";
 import { SpaceAvatar } from "../components/SpaceAvatar";
 import { EmptyState, ErrorState } from "../components/ui";
-import { Missions, MissionsSkeleton } from "../components/Missions";
+import { Tests, TestsSkeleton } from "../components/Tests";
 import { DailyChest } from "../components/DailyChest";
-import { ProgressRing, type RingBoost } from "../components/ProgressRing";
+import { ProgressRing } from "../components/ProgressRing";
 import { CoinGlyph, IconTile } from "../components/icons";
+import { timeLeftLabel } from "../components/groups/lessonStatus";
+import { getHoursUntilDeadline } from "@/utilist/calculateDeadline";
 
 const CREW_SIZE = 5;
 const RANK_BADGE: Record<number, CSSProperties> = {
@@ -73,10 +77,12 @@ const DashboardSkeleton = () => (
       </div>
     </div>
     <div className="sp-col sp-col-side">
-      <div className="sp-home-missions">
-        <div className="sp-skel mt-7 h-6 w-44" />
-        <div className="sp-skel mt-3 h-[70px]" />
-        <MissionsSkeleton />
+      <div className="sp-home-tests">
+        <div className="sp-skel mt-7 h-[70px]" />
+        <div className="sp-skel mt-6 h-6 w-32" />
+        <div className="mt-3">
+          <TestsSkeleton />
+        </div>
       </div>
       <div className="sp-home-ranking">
         <div className="sp-skel mt-6 h-6 w-40" />
@@ -94,8 +100,9 @@ export const DashboardPage = () => {
   const { data: leaderboard, isLoading: crewLoading } =
     useLeaderboardQuery(filter);
   const { data: attendance } = useAttendanceQuery();
+  // Only the daily gift (chest) is still used from the missions endpoint.
   const missions = useMissionsTodayQuery();
-  const [boost, setBoost] = useState<RingBoost | null>(null);
+  const tests = useMyQuizzesQuery();
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -109,6 +116,7 @@ export const DashboardPage = () => {
     );
   }
 
+  const homework = data.pendingHomework ?? [];
   const group = data.groups?.[0];
   const level = group ? getLevelFromCourse(getGroupCourseName(group)) : null;
   const nextLevel = level ? getNextLevel(level) : null;
@@ -198,7 +206,7 @@ export const DashboardPage = () => {
           {group && level ? (
             <>
               <div className="sp-ring-card">
-                <ProgressRing value={fuel} boost={boost} label={t("space.fuel")} />
+                <ProgressRing value={fuel} boost={null} label={t("space.fuel")} />
                 <div className="sp-ring-info">
                   <div className="sp-ring-levels">
                     <span>{level}</span>
@@ -281,38 +289,53 @@ export const DashboardPage = () => {
       </div>
 
       <div className="sp-col sp-col-side">
-        <section className="sp-home-missions" aria-labelledby="sp-home-missions">
-          <div className="sp-sec">
-            <h2 id="sp-home-missions">{t("space.todayMissions")}</h2>
-            {missions.data && missions.data.total > 0 && (
-              <small>
-                {missions.data.completed}/{missions.data.total}
-              </small>
-            )}
-          </div>
-          {missions.data && missions.data.total > 0 && (
-            <p className="sp-home-hint sp-home-hint-top">{t("home.missionsHint")}</p>
-          )}
+        {homework.length > 0 && (
+          <section className="sp-home-hw" aria-labelledby="sp-home-hw">
+            <div className="sp-sec">
+              <h2 id="sp-home-hw">{t("home.homeworkTitle")}</h2>
+              <small>{homework.length}</small>
+            </div>
+            {homework.map((hw) => {
+              const urgent = getHoursUntilDeadline(hw.deadline) < 24;
+              return (
+                <Link key={hw.id} to={`/lessons/${hw.lessonId}#homework`} className="sp-row">
+                  <span className="sp-ic" aria-hidden="true">
+                    <IconTile icon={PencilLine} tint="orange" />
+                  </span>
+                  <span className="sp-t">
+                    <b>{hw.title}</b>
+                    <small className="truncate">
+                      {hw.lessonTopic} · {hw.groupName}
+                    </small>
+                    <small className={urgent ? "sp-home-hw-due sp-urgent" : "sp-home-hw-due"}>
+                      {timeLeftLabel(t, hw.deadline)}
+                    </small>
+                  </span>
+                  <ChevronRight className="sp-chev" aria-hidden="true" />
+                </Link>
+              );
+            })}
+          </section>
+        )}
+
+        <section className="sp-home-tests" aria-labelledby="sp-home-tests">
           {missions.data && (
-            <DailyChest
-              opened={missions.data.chest.opened}
-              reward={missions.data.chest.reward}
-            />
+            <div className="sp-home-chest">
+              <DailyChest
+                opened={missions.data.chest.opened}
+                reward={missions.data.chest.reward}
+              />
+            </div>
           )}
-          {missions.isLoading ? (
-            <MissionsSkeleton />
-          ) : missions.data ? (
-            <Missions
-              data={missions.data}
-              onClaimed={(allDone) =>
-                setBoost((b) => ({
-                  kind: allDone ? "launch" : "turbo",
-                  id: (b?.id ?? 0) + 1,
-                }))
-              }
-            />
+          <div className="sp-sec">
+            <h2 id="sp-home-tests">{t("home.testsTitle")}</h2>
+          </div>
+          {tests.isLoading ? (
+            <TestsSkeleton />
+          ) : tests.data ? (
+            <Tests quizzes={tests.data} />
           ) : (
-            <ErrorState onRetry={() => missions.refetch()} />
+            <ErrorState onRetry={() => tests.refetch()} />
           )}
         </section>
 

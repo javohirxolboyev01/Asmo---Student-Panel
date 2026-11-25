@@ -6,6 +6,10 @@ import type { QuizInput, QuizPlay } from "@/types/quiz";
 
 // ── Student ──
 
+/** The student's tests: open ones first, then finished (with score + coins). */
+export const useMyQuizzesQuery = () =>
+  useQuery({ queryKey: queryKeys.myQuizzes, queryFn: quizService.mine });
+
 export const useQuizPlayQuery = (id: string | undefined) =>
   useQuery({
     queryKey: queryKeys.quizPlay(id ?? ""),
@@ -21,8 +25,17 @@ const usePlayMutation = <TArgs,>(id: string, fn: (args: TArgs) => Promise<QuizPl
     mutationFn: fn,
     onSuccess: (play) => {
       queryClient.setQueryData(queryKeys.quizPlay(id), play);
-      // A finished test can turn a PASS_QUIZ mission claimable.
-      if (play.attempt?.finishedAt) queryClient.invalidateQueries({ queryKey: queryKeys.missionsToday });
+      if (play.attempt?.finishedAt) {
+        // The test list shows the result; a passed test pays coins.
+        queryClient.invalidateQueries({ queryKey: queryKeys.myQuizzes });
+        if (play.attempt.coins > 0) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.dashboard, exact: true });
+          queryClient.invalidateQueries({ queryKey: queryKeys.coins });
+        }
+      } else {
+        // Started: the list shows it as "in progress".
+        queryClient.invalidateQueries({ queryKey: queryKeys.myQuizzes });
+      }
     },
     // e.g. "already finished" from another tab — show the server's state.
     onError: () => queryClient.invalidateQueries({ queryKey: queryKeys.quizPlay(id) }),
@@ -62,11 +75,7 @@ const useQuizMutation = <TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>) 
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: fn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["quizzes"] });
-      // Missions show the test's title, and deleting a test deletes its missions.
-      queryClient.invalidateQueries({ queryKey: ["missions"] });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["quizzes"] }),
   });
 };
 

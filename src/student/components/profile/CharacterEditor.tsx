@@ -1,7 +1,9 @@
 // src/student/components/profile/CharacterEditor.tsx
 // "Qahramoningni yarat" — full-screen character editor from the profile mock.
 // Paid items are bought with real coins (server prices + ownership check);
-// saving stores the rendered face as the user's avatar.
+// saving stores the rendered face as the user's avatar. A photo can be
+// uploaded instead: it is cropped/shrunk in the browser and saved through
+// PATCH /profile (data:image/jpeg, well under the server's 300 KB limit).
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthStore } from "@/stores/authStore";
@@ -16,11 +18,13 @@ import {
   Eye,
   Glasses,
   GraduationCap,
+  ImagePlus,
   Lock,
   Palette,
   Scissors,
   Shirt,
   Smile,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { CoinGlyph } from "../icons";
@@ -76,6 +80,43 @@ export const confetti = () => {
   }
 };
 
+const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
+const PHOTO_SIZE = 320;
+
+/** Center-crops an image file to a square JPEG data URL small enough for an avatar. */
+async function photoToAvatar(file: File): Promise<string> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = url;
+    });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    if (!side) throw new Error("empty image");
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = PHOTO_SIZE;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas");
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, PHOTO_SIZE, PHOTO_SIZE);
+    ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, PHOTO_SIZE, PHOTO_SIZE);
+    for (const q of [0.86, 0.72, 0.55]) {
+      const data = canvas.toDataURL("image/jpeg", q);
+      if (data.length < 250_000) return data;
+    }
+    throw new Error("too large");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** A photo (not drawn character) avatar the editor can show and keep. */
+const isPhotoAvatar = (v: string | null | undefined): v is string =>
+  !!v && (/^data:image\/(?!svg)/i.test(v) || /^https?:\/\//i.test(v));
+
 const Svg = ({ html, className }: { html: string; className?: string }) => (
   <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
 );
@@ -96,6 +137,7 @@ type Tab = Category;
 export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
   const { t } = useTranslation();
   const saveCharacter = useAuthStore((s) => s.saveCharacter);
+  const updateProfile = useAuthStore((s) => s.updateProfile);
   const items = useAvatarItemsQuery();
   const purchase = usePurchaseAvatarItemMutation();
   const owned = items.data?.owned ?? [];
@@ -110,6 +152,10 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
   const [buyError, setBuyError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Uploaded photo shown instead of the character; starts as the current photo avatar.
+  const [photo, setPhoto] = useState<string | null>(() => (isPhotoAvatar(avatar) ? avatar : null));
+  const [reading, setReading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const areaRef = useRef<HTMLDivElement>(null);
@@ -129,6 +175,7 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
   };
 
   const update = (next: Character, message: string) => {
+    setPhoto(null);
     setD(next);
     setSay(message);
     setJump((j) => j + 1);
@@ -275,11 +322,30 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
     }
   };
 
+  const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return setSay(t("space.ce.photoBad"));
+    if (file.size > MAX_PHOTO_BYTES) return setSay(t("space.ce.photoBig"));
+    setReading(true);
+    try {
+      setPhoto(await photoToAvatar(file));
+      setSay(t("space.ce.photoReady"));
+      setJump((j) => j + 1);
+    } catch {
+      setSay(t("space.ce.photoBad"));
+    } finally {
+      setReading(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     setSaveError(null);
     try {
-      await saveCharacter(d, avatarSvg(d));
+      if (photo) await updateProfile({ avatar: photo });
+      else await saveCharacter(d, avatarSvg(d));
       onToast(t("space.ce.saved"));
       confetti();
       onClose();
@@ -289,7 +355,7 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
     }
   };
 
-  const unchanged = !!saved && encodeCharacter(saved) === encodeCharacter(d);
+  const unchanged = photo ? photo === avatar : !!saved && encodeCharacter(saved) === encodeCharacter(d);
   const bg = BACKGROUNDS[d.bg];
 
   // ── Area (swatches / item grid) ──
@@ -369,7 +435,11 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
 
           <div className="sp-ce-stage" style={{ background: `linear-gradient(${bg[0]},${bg[1]})` }}>
             <span key={jump} className={jump ? "sp-ce-chw jump" : "sp-ce-chw"}>
-              <Svg html={renderCharacter(d, FULL_VB, { nobg: true, anim: true })} className="sp-ce-ch" />
+              {photo ? (
+                <img src={photo} alt="" className="sp-ce-photo" />
+              ) : (
+                <Svg html={renderCharacter(d, FULL_VB, { nobg: true, anim: true })} className="sp-ce-ch" />
+              )}
             </span>
             <div className="sp-ce-bub" aria-live="polite">
               {say}
@@ -382,6 +452,29 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
             >
               <Dices aria-hidden="true" />
             </button>
+            <button
+              type="button"
+              className="sp-ce-dice sp-ce-up"
+              aria-label={t("space.ce.upload")}
+              title={t("space.ce.upload")}
+              onClick={() => fileRef.current?.click()}
+              disabled={reading || saving}
+            >
+              {reading ? <Spinner /> : <ImagePlus aria-hidden="true" />}
+            </button>
+            {photo && (
+              <button
+                type="button"
+                className="sp-ce-dice sp-ce-unphoto"
+                aria-label={t("space.ce.photoRemove")}
+                title={t("space.ce.photoRemove")}
+                onClick={() => update(d, t("space.ce.hello"))}
+                disabled={saving}
+              >
+                <X aria-hidden="true" />
+              </button>
+            )}
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
           </div>
 
           <div className="sp-ce-gen">

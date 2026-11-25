@@ -655,3 +655,8 @@ a.sp-groups-file {
     height: 72px;
   }
 }
+
+/* Jump target for /lessons/:id#homework: stop below the pinned HUD + nav bar. */
+#homework.sp-hwc {
+  scroll-margin-top: calc(var(--sp-hud-h, 0px) + env(safe-area-inset-top, 0px) + 64px);
+}

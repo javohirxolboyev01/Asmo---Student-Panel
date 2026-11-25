@@ -14,7 +14,7 @@ dashboardRouter.get(
 
     if (req.user.role === "STUDENT") {
       // Independent reads, so fetch them in parallel rather than one by one.
-      const [current, upcoming, enrollments, coins, unreadNotifications] = await Promise.all([
+      const [current, upcoming, enrollments, coins, unreadNotifications, openHomework] = await Promise.all([
         prisma.user.findUniqueOrThrow({ where: { id: userId } }),
         prisma.lesson.findMany({
           where: {
@@ -33,6 +33,18 @@ dashboardRouter.get(
           take: 10,
         }),
         prisma.notification.count({ where: { userId, isRead: false } }),
+        // Homework still to do: active, deadline not passed, not submitted yet.
+        prisma.homework.findMany({
+          where: {
+            status: "ACTIVE",
+            deadline: { gte: new Date() },
+            Lesson: { Group: { Enrollment: { some: { studentId: userId, status: "ACTIVE" } } } },
+            Submission: { none: { studentId: userId } },
+          },
+          orderBy: { deadline: "asc" },
+          take: 5,
+          include: { Lesson: { select: { id: true, topic: true, Group: { select: { name: true } } } } },
+        }),
       ]);
       // Load each group's direction, teacher and lessons side by side instead of
       // through a nested include, which Prisma resolves one level at a time.
@@ -77,6 +89,14 @@ dashboardRouter.get(
         coinBalance: current.coinBalance,
         recentTransactions: coins,
         unreadNotifications,
+        pendingHomework: openHomework.map((hw) => ({
+          id: hw.id,
+          title: hw.title,
+          deadline: hw.deadline,
+          lessonId: hw.Lesson.id,
+          lessonTopic: hw.Lesson.topic,
+          groupName: hw.Lesson.Group.name,
+        })),
         upcomingLessons: upcoming.map((lesson) => ({
           id: lesson.id,
           topic: lesson.topic,

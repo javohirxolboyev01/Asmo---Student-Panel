@@ -70,6 +70,8 @@ submissionsRouter.patch(
         type: "GRADE",
         title: "Homework graded",
         message: `${req.body.score}/${sub.Homework.maxScore}`,
+        // Lesson id: tapping the notification opens that lesson's page.
+        relatedId: sub.Homework.lessonId,
       },
     });
     res.json(updated);
