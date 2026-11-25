@@ -1,4 +1,5 @@
 // src/services/apiClient.ts
+import { isTelegram } from "@/lib/telegram";
 // Fetch-based client for the real Asmo backend (Authorization: Bearer <accessToken>).
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
@@ -20,18 +21,25 @@ export const tokenStorage = {
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  /** Machine-readable error code from the server, e.g. "TELEGRAM_ONLY". */
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
     super(message);
     this.status = status;
+    this.code = code;
   }
 }
 
-const parseErrorMessage = async (response: Response): Promise<string> => {
+const toApiError = async (response: Response): Promise<ApiError> => {
   try {
     const data = await response.json();
-    return data.message || data.error || `So'rov xatoligi (${response.status})`;
+    return new ApiError(
+      data.message || data.error || `So'rov xatoligi (${response.status})`,
+      response.status,
+      typeof data.code === "string" ? data.code : undefined,
+    );
   } catch {
-    return `So'rov xatoligi (${response.status})`;
+    return new ApiError(`So'rov xatoligi (${response.status})`, response.status);
   }
 };
 
@@ -96,14 +104,14 @@ export const apiRequest = async <T = unknown>(
       return apiRequest<T>(path, { ...options, skipRefresh: true });
     }
     tokenStorage.clear();
-    if (window.location.pathname !== "/login") {
-      window.location.href = "/login";
-    }
+    // Inside Telegram there is no login page: a reload signs in again from initData.
+    if (isTelegram()) window.location.replace("/");
+    else if (window.location.pathname !== "/login") window.location.href = "/login";
     throw new ApiError("Sessiya muddati tugagan", 401);
   }
 
   if (!response.ok) {
-    throw new ApiError(await parseErrorMessage(response), response.status);
+    throw await toApiError(response);
   }
 
   if (response.status === 204) return undefined as T;

@@ -3,7 +3,8 @@ import { lazy, Suspense } from "react";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { LoadingSpinner } from "./components/common/LoadingSpinner";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { isTelegram } from "./lib/telegram";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuthStore } from "./stores/authStore";
@@ -43,8 +44,9 @@ function App() {
       <BrowserRouter>
         <Suspense fallback={<LoadingSpinner size="lg" />}>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            {/* The Telegram Mini App signs in by itself; no login/register forms there. */}
+            <Route path="/login" element={isTelegram() ? <Navigate to="/" replace /> : <LoginPage />} />
+            <Route path="/register" element={isTelegram() ? <Navigate to="/" replace /> : <RegisterPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/*" element={<PanelRoutes />} />
             </Route>

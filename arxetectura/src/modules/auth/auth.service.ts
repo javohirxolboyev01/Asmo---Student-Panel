@@ -7,18 +7,27 @@ import { publicUser } from "../../utils/serializers.js";
 
 const id = () => crypto.randomUUID();
 
-export const issueAccessToken = (user: { id: string; role: string }) =>
-  jwt.sign({ role: user.role }, config.jwtSecret, {
+/**
+ * `tg` marks a session opened through the Telegram Mini App. When students are
+ * Telegram-only, requireAuth rejects student tokens without it.
+ */
+export const issueAccessToken = (user: { id: string; role: string }, viaTelegram = false) =>
+  jwt.sign(viaTelegram ? { role: user.role, tg: 1 } : { role: user.role }, config.jwtSecret, {
     subject: user.id,
     expiresIn: config.jwtExpiresIn as any,
   });
 
-export async function issueRefreshToken(userId: string) {
+/** A student outside the Mini App while students are Telegram-only. */
+export const studentNeedsTelegram = (role: string, viaTelegram: boolean) =>
+  config.telegram.studentOnly && role.toUpperCase() === "STUDENT" && !viaTelegram;
+
+export async function issueRefreshToken(userId: string, viaTelegram = false) {
   const raw = crypto.randomBytes(48).toString("hex");
   await prisma.refreshToken.create({
     data: {
       id: id(),
       userId,
+      viaTelegram,
       tokenHash: crypto.createHash("sha256").update(raw).digest("hex"),
       expiresAt: new Date(Date.now() + config.refreshTokenExpiresDays * 86400000),
     },
@@ -41,6 +50,8 @@ export async function authenticate(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
   const passwordOk = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !passwordOk || user.status !== "ACTIVE") return null;
+  // Checked only after the password, so it reveals nothing about unknown emails.
+  if (studentNeedsTelegram(user.role, false)) return { telegramOnly: true as const };
   return {
     user: await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: publicUser }),
     accessToken: issueAccessToken(user),

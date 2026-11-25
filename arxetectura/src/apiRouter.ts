@@ -24,6 +24,7 @@ import { adminRouter } from "./modules/admin/admin.routes.js";
 import { missionsRouter } from "./modules/missions/missions.routes.js";
 import { avatarRouter } from "./modules/avatar/avatar.routes.js";
 import { quizzesRouter } from "./modules/quizzes/quizzes.routes.js";
+import { telegramRouter } from "./modules/telegram/telegram.routes.js";
 import {
   teacherAttendanceRouter,
   teacherCoinsRouter,
@@ -50,6 +51,7 @@ router.get("/health/ready", async (_req, res) => {
 });
 
 router.use(authRouter);
+router.use(telegramRouter);
 router.use(profileRouter);
 router.use(dashboardRouter);
 router.use(groupsRouter);

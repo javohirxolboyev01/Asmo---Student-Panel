@@ -11,12 +11,17 @@ import "./css/index.css";
 import { initPWA } from "./lib/pwa";
 import { tokenStorage } from "./services/apiClient";
 import { clearSessionCache, readCachedUser, startSessionCache } from "./lib/sessionCache";
+import { initTelegram } from "./lib/telegram";
 
 // Restore a returning user's cached data before the first render, so pages
 // open with it instead of skeletons (a synchronous localStorage read).
 const cachedUser = tokenStorage.getAccessToken() ? readCachedUser() : null;
 if (!cachedUser) clearSessionCache();
-const sessionReady = cachedUser ? startSessionCache(cachedUser) : Promise.resolve();
+const sessionReady = Promise.all([
+  cachedUser ? startSessionCache(cachedUser) : Promise.resolve(),
+  // Inside Telegram: load the Mini App SDK before the router touches the URL.
+  initTelegram(),
+]);
 
 // Opt-in (dev only): its floating button sits on top of the student panel's
 // bottom nav / chest button. Enable with localStorage.setItem("rq-devtools", "1").

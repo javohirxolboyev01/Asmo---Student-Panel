@@ -13,8 +13,28 @@ if (jwtSecret && jwtSecret.length < 32) {
   console.warn("[config] JWT_SECRET is shorter than 32 characters; use a longer random value.");
 }
 
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN?.trim() || "";
+// Public https address of this app (the Mini App URL and webhook host).
+// Railway sets RAILWAY_PUBLIC_DOMAIN by itself, so usually nothing to set.
+const publicAppUrl = (
+  process.env.PUBLIC_APP_URL?.trim() ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : "")
+).replace(/\/+$/, "");
+
 export const config = {
   isProduction,
+  telegram: {
+    botToken: telegramBotToken,
+    /** Optional; otherwise read from Telegram's getMe at startup. */
+    botUsername: process.env.TELEGRAM_BOT_USERNAME?.trim().replace(/^@/, "") || "",
+    publicAppUrl,
+    /**
+     * With a bot configured, students can only sign in through the Telegram
+     * Mini App (TELEGRAM_STUDENT_ONLY=0 turns that off). Without a bot token
+     * nothing changes, so deploying this before the bot exists is safe.
+     */
+    studentOnly: !!telegramBotToken && process.env.TELEGRAM_STUDENT_ONLY !== "0",
+  },
   port: Number(process.env.PORT ?? 4000),
   jwtSecret: jwtSecret || DEV_JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "15m",

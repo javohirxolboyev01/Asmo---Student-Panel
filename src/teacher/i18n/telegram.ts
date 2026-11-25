@@ -1,0 +1,82 @@
+// Telegram link: the teacher gives a student a one-time code for the bot.
+import type { TeacherDict } from "./index";
+
+const dict: TeacherDict = {
+  uz: {
+    "us.tg.action": "Telegram",
+    "us.tg.title": "Telegram orqali ulash",
+    "us.tg.statusLabel": "Holat",
+    "us.tg.linked": "ulangan",
+    "us.tg.linkedAs": "ulangan ({{username}})",
+    "us.tg.notLinked": "ulanmagan",
+    "us.tg.explain":
+      "O'quvchi ilovani faqat Telegram bot orqali ochadi. Kod yarating va o'quvchiga bering: u kodni botga yuboradi, keyin ilova bot ichida ochiladi.",
+    "us.tg.codeHint": "Bu kodni {{name}}ga bering. U kodni botga yuborishi kerak.",
+    "us.tg.expires": "Amal qiladi: {{date}} gacha, bir marta",
+    "us.tg.bot": "Bot: {{bot}}",
+    "us.tg.copyCode": "Kodni nusxalash",
+    "us.tg.copyMessage": "Xabarni nusxalash",
+    "us.tg.copied": "Nusxalandi",
+    "us.tg.shareText": "Asmo ilovasi: {{bot}} botiga kiring va shu kodni yuboring: {{code}}\n{{link}}",
+    "us.tg.makeCode": "Kod yaratish",
+    "us.tg.newCode": "Yangi kod yaratish",
+    "us.tg.oldCodeNote": "Yangi kod yaratilsa, avvalgi ishlatilmagan kod bekor bo'ladi.",
+    "us.tg.unlink": "Uzish",
+    "us.tg.unlinkConfirm": "{{name}} Telegramdan uzilsinmi? U yangi kod olmaguncha ilovaga kira olmaydi.",
+    "us.tg.unlinked": "Telegram uzildi",
+    "us.tg.notConfigured":
+      "Telegram bot hali sozlanmagan. Serverga TELEGRAM_BOT_TOKEN qo'shilgach, shu yerda kod yaratish mumkin bo'ladi.",
+  },
+  ru: {
+    "us.tg.action": "Telegram",
+    "us.tg.title": "Привязка Telegram",
+    "us.tg.statusLabel": "Статус",
+    "us.tg.linked": "привязан",
+    "us.tg.linkedAs": "привязан ({{username}})",
+    "us.tg.notLinked": "не привязан",
+    "us.tg.explain":
+      "Ученик открывает приложение только через Telegram-бота. Создайте код и передайте ученику: он отправит код боту, и приложение откроется внутри бота.",
+    "us.tg.codeHint": "Передайте этот код ученику ({{name}}). Его нужно отправить боту.",
+    "us.tg.expires": "Действует до {{date}}, один раз",
+    "us.tg.bot": "Бот: {{bot}}",
+    "us.tg.copyCode": "Копировать код",
+    "us.tg.copyMessage": "Копировать сообщение",
+    "us.tg.copied": "Скопировано",
+    "us.tg.shareText": "Приложение Asmo: откройте бота {{bot}} и отправьте код: {{code}}\n{{link}}",
+    "us.tg.makeCode": "Создать код",
+    "us.tg.newCode": "Создать новый код",
+    "us.tg.oldCodeNote": "Новый код отменяет прежний неиспользованный код.",
+    "us.tg.unlink": "Отвязать",
+    "us.tg.unlinkConfirm": "Отвязать Telegram ученика {{name}}? Он не сможет войти, пока не получит новый код.",
+    "us.tg.unlinked": "Telegram отвязан",
+    "us.tg.notConfigured":
+      "Telegram-бот ещё не настроен. Когда на сервер добавят TELEGRAM_BOT_TOKEN, здесь можно будет создавать коды.",
+  },
+  en: {
+    "us.tg.action": "Telegram",
+    "us.tg.title": "Link Telegram",
+    "us.tg.statusLabel": "Status",
+    "us.tg.linked": "linked",
+    "us.tg.linkedAs": "linked ({{username}})",
+    "us.tg.notLinked": "not linked",
+    "us.tg.explain":
+      "Students open the app only through the Telegram bot. Make a code and give it to the student: they send it to the bot, then the app opens inside the bot.",
+    "us.tg.codeHint": "Give this code to {{name}}. They send it to the bot.",
+    "us.tg.expires": "Valid until {{date}}, once",
+    "us.tg.bot": "Bot: {{bot}}",
+    "us.tg.copyCode": "Copy code",
+    "us.tg.copyMessage": "Copy message",
+    "us.tg.copied": "Copied",
+    "us.tg.shareText": "Asmo app: open the bot {{bot}} and send this code: {{code}}\n{{link}}",
+    "us.tg.makeCode": "Make a code",
+    "us.tg.newCode": "Make a new code",
+    "us.tg.oldCodeNote": "A new code cancels the previous unused one.",
+    "us.tg.unlink": "Unlink",
+    "us.tg.unlinkConfirm": "Unlink {{name}}'s Telegram? They can't sign in until they get a new code.",
+    "us.tg.unlinked": "Telegram unlinked",
+    "us.tg.notConfigured":
+      "The Telegram bot isn't set up yet. Once TELEGRAM_BOT_TOKEN is added on the server, codes can be made here.",
+  },
+};
+
+export default dict;

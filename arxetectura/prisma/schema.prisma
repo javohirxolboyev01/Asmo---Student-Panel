@@ -173,13 +173,15 @@ model Purchase {
 }
 
 model RefreshToken {
-  id        String    @id
-  tokenHash String    @unique
-  userId    String
-  expiresAt DateTime
-  revokedAt DateTime?
-  createdAt DateTime  @default(now())
-  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String    @id
+  tokenHash   String    @unique
+  userId      String
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  /// Issued through the Telegram Mini App (students may only use these when Telegram-only is on).
+  viaTelegram Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -224,6 +226,12 @@ model User {
   role              String              @default("STUDENT")
   status            String              @default("ACTIVE")
   coinBalance       Int                 @default(0)
+  /// Telegram user id of the student's linked account (Mini App login).
+  telegramId        String?             @unique
+  telegramUsername  String?
+  /// sha256 of the one-time code a teacher gives the student to link Telegram.
+  linkCodeHash      String?             @unique
+  linkCodeExpiresAt DateTime?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime
   AttendanceRecord  AttendanceRecord[]

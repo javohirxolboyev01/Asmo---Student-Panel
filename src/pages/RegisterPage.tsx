@@ -1,10 +1,11 @@
 // src/pages/RegisterPage.tsx
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { ArrowRight, Info, Lock, Mail, Phone, User } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AuthField, AuthShell, RoleSwitch, type AuthRole } from "./auth/AuthShell";
+import { useAuthOptions } from "@/hooks/useAuthOptions";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -22,6 +23,7 @@ export const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const { data: options } = useAuthOptions();
 
   const isTeacherRole = role === "teacher";
 
@@ -55,6 +57,9 @@ export const RegisterPage = () => {
       // error surfaced via authStore's `error` state
     }
   };
+
+  // Students get accounts from their teacher and use the Telegram bot.
+  if (options?.studentTelegramOnly) return <Navigate to="/login" replace />;
 
   return (
     <AuthShell subtitle={t("auth.createAccount")}>

@@ -5,7 +5,11 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, loginLimit, refreshLimit, registerLimit, requireAuth, validate } from "../../middleware/index.js";
 import { publicUser, userSummary } from "../../utils/serializers.js";
 import { uid } from "../../utils/teacherScope.js";
-import { authenticate, issueAccessToken, issueRefreshToken, register } from "./auth.service.js";
+import { authenticate, issueAccessToken, issueRefreshToken, register, studentNeedsTelegram } from "./auth.service.js";
+import { config } from "../../config.js";
+import { getBotUsername } from "../telegram/telegram.bot.js";
+
+const TELEGRAM_ONLY_MESSAGE = "O'quvchilar ilovani faqat Telegram bot orqali ochadi.";
 
 export const authRouter = Router();
 
@@ -27,7 +31,10 @@ authRouter.post(
   "/auth/register",
   registerLimit,
   validate(authSchema),
-  asyncRoute(async (req: any, res: any) =>
+  asyncRoute(async (req: any, res: any) => {
+    // Students get their account from a teacher and open the app from the bot.
+    if (config.telegram.studentOnly)
+      return res.status(403).json({ error: TELEGRAM_ONLY_MESSAGE, code: "TELEGRAM_ONLY" });
     res.status(201).json(
       await register({
         ...req.body,
@@ -37,8 +44,8 @@ authRouter.post(
         // accounts are created only via the staff-only POST /teachers route.
         role: "student",
       }),
-    ),
-  ),
+    );
+  }),
 );
 
 authRouter.post(
@@ -48,6 +55,8 @@ authRouter.post(
   asyncRoute(async (req: any, res: any) => {
     const result = await authenticate(req.body.email, req.body.password);
     if (!result) return res.status(401).json({ error: "Email or password is incorrect" });
+    if ("telegramOnly" in result)
+      return res.status(403).json({ error: TELEGRAM_ONLY_MESSAGE, code: "TELEGRAM_ONLY" });
     res.json(result);
   }),
 );
@@ -61,6 +70,8 @@ authRouter.post(
       const token = await prisma.refreshToken.findUnique({ where: { tokenHash: hash }, include: { User: true } });
       if (!token || token.revokedAt || token.expiresAt < new Date() || token.User.status !== "ACTIVE")
         return res.status(401).json({ error: "Invalid refresh token" });
+      if (studentNeedsTelegram(token.User.role, token.viaTelegram))
+        return res.status(401).json({ error: TELEGRAM_ONLY_MESSAGE, code: "TELEGRAM_ONLY" });
       // Revoke atomically: of two parallel requests with the same token only one wins.
       const { count } = await prisma.refreshToken.updateMany({
         where: { id: token.id, revokedAt: null },
@@ -69,12 +80,20 @@ authRouter.post(
       if (count === 0) return res.status(401).json({ error: "Invalid refresh token" });
       res.json({
         user: await prisma.user.findUniqueOrThrow({ where: { id: token.userId }, select: publicUser }),
-        accessToken: issueAccessToken(token.User),
-        refreshToken: await issueRefreshToken(token.userId),
+        accessToken: issueAccessToken(token.User, token.viaTelegram),
+        refreshToken: await issueRefreshToken(token.userId, token.viaTelegram),
       });
     } catch {
       res.status(401).json({ error: "Invalid refresh token" });
     }
+  }),
+);
+
+// Public: tells the login screen whether students must use the Telegram bot.
+authRouter.get("/auth/options", (_req, res) =>
+  res.json({
+    studentTelegramOnly: config.telegram.studentOnly,
+    telegramBot: getBotUsername() || null,
   }),
 );
 

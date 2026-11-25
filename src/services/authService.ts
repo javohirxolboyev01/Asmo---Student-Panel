@@ -42,6 +42,17 @@ export const authService = {
     return { ...data, user: normalizeUser(data.user) };
   },
 
+  /** Mini App sign-in with Telegram's signed launch data. */
+  telegramLogin: async (initData: string) => {
+    const data = await apiPost<AuthResponse>("/auth/telegram", { initData }, { skipAuth: true });
+    tokenStorage.setTokens(data.accessToken, data.refreshToken);
+    return { ...data, user: normalizeUser(data.user) };
+  },
+
+  /** Whether students must use the Telegram bot, and the bot's username. */
+  getOptions: () =>
+    apiGet<{ studentTelegramOnly: boolean; telegramBot: string | null }>("/auth/options"),
+
   getMe: async () => {
     const user = await apiGet<User>("/auth/me");
     return normalizeUser(user);

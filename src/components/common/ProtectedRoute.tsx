@@ -3,6 +3,8 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useState } from "react";
 import { AppShellSkeleton } from "@/components/common/Skeleton";
+import { isTelegram } from "@/lib/telegram";
+import { TelegramGate } from "@/pages/TelegramGate";
 
 // Bootstraps the session once (checkAuth) and gates the whole app on it.
 // Use once, at the top of the route tree.
@@ -26,5 +28,7 @@ export const ProtectedRoute = () => {
     return <AppShellSkeleton />;
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  if (isAuthenticated) return <Outlet />;
+  // Inside Telegram there is no login form: explain how to link instead.
+  return isTelegram() ? <TelegramGate /> : <Navigate to="/login" replace />;
 };

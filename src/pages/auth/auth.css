@@ -479,3 +479,8 @@
     animation: none;
   }
 }
+
+/* Link styled as the primary button (e.g. "Open the Telegram bot"). */
+a.au-cta {
+  text-decoration: none;
+}

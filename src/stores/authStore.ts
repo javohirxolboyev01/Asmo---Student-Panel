@@ -4,6 +4,7 @@ import { User } from "@/types/user";
 import { authService } from "@/services/authService";
 import { ApiError, tokenStorage } from "@/services/apiClient";
 import { clearSessionCache, readCachedUser, startSessionCache, writeCachedUser } from "@/lib/sessionCache";
+import { getTelegramInitData, isTelegram } from "@/lib/telegram";
 
 const extractErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback;
@@ -28,6 +29,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  /** Inside Telegram: why the Mini App sign-in failed ("TELEGRAM_NOT_LINKED", "network", …). */
+  telegramError: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
@@ -47,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: !!cachedUser,
   isLoading: false,
   error: null,
+  telegramError: null,
 
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
@@ -83,6 +87,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   checkAuth: async () => {
+    // Inside Telegram the signed launch data is the login, every time the app opens.
+    if (isTelegram()) {
+      set({ isLoading: true, telegramError: null });
+      try {
+        const data = await authService.telegramLogin(getTelegramInitData());
+        await startSessionCache(data.user);
+        set({ user: data.user, isAuthenticated: true });
+      } catch (error) {
+        const rejected = error instanceof ApiError && error.status < 500;
+        if (rejected) {
+          tokenStorage.clear();
+          clearSessionCache();
+          set({ user: null, isAuthenticated: false });
+        }
+        // Offline but signed in from the cached profile: keep going.
+        if (rejected || !get().isAuthenticated)
+          set({ telegramError: error instanceof ApiError ? error.code ?? `HTTP_${error.status}` : "network" });
+      } finally {
+        set({ isLoading: false });
+      }
+      return;
+    }
+
     const token = tokenStorage.getAccessToken();
     if (!token) {
       set({ isAuthenticated: false, user: null });

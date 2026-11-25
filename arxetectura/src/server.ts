@@ -14,6 +14,7 @@ import { prisma } from './lib/prisma.js';
 import { logger } from './lib/logger.js';
 import { errorHandler } from './middleware/index.js';
 import { startMaintenance } from './lib/maintenance.js';
+import { startTelegramBot } from './modules/telegram/telegram.bot.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -34,8 +35,14 @@ app.use(
       directives: {
         // Avatars and product images may be external URLs or data: URLs.
         'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+        // Telegram Mini App SDK.
+        'script-src': ["'self'", 'https://telegram.org'],
+        // Telegram Web shows Mini Apps in an iframe.
+        'frame-ancestors': ["'self'", 'https://web.telegram.org', 'https://*.telegram.org'],
       },
     },
+    // frame-ancestors above replaces X-Frame-Options (which would block Telegram Web).
+    frameguard: false,
   }),
 );
 app.use(cors({ origin: config.corsOrigins, exposedHeaders: ['X-Total-Count', 'X-Request-Id'] }));
@@ -92,6 +99,7 @@ const server = app.listen(config.port, () =>
   logger.info(`Asmo backend listening on http://localhost:${config.port}`),
 );
 const stopMaintenance = startMaintenance();
+const stopTelegramBot = startTelegramBot();
 
 // Graceful shutdown: stop accepting connections, let in-flight requests
 // finish (max 10s), then close the DB pool.
@@ -101,6 +109,7 @@ const shutdown = (signal: string) => {
   shuttingDown = true;
   logger.info(`${signal} received, shutting down`);
   stopMaintenance();
+  stopTelegramBot();
   const force = setTimeout(() => process.exit(1), 10_000);
   force.unref();
   server.close(async () => {

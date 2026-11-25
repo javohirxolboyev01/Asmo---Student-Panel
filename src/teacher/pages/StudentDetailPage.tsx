@@ -3,7 +3,7 @@
 // on the left, coin history and payments on the right.
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, Mail, Pencil, Phone, Plus, Trash2, X } from "lucide-react";
+import { AlertTriangle, Mail, Pencil, Phone, Plus, Send, Trash2, X } from "lucide-react";
 import {
   useStudentDetailQuery,
   useUpdateStudentMutation,
@@ -20,6 +20,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import type { TeacherPayment } from "@/types/teacher";
 import { Avatar, BackButton, EmptyBox, Skel, Tag, groupColor, type Tone } from "../components/ui";
 import { GiveCoinSheet } from "../components/sheets";
+import { TelegramLinkModal } from "../components/TelegramLinkModal";
 import { humanDateTime, humanDay } from "@/lib/humanDate";
 
 const PAYMENT_STATUS: Record<TeacherPayment["status"], { key: string; tone: Tone }> = {
@@ -51,6 +52,7 @@ export const StudentDetailPage = () => {
   const [paymentForm, setPaymentForm] = useState(EMPTY_PAYMENT);
   const [enrollGroupId, setEnrollGroupId] = useState("");
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isTelegramOpen, setIsTelegramOpen] = useState(false);
   const [editForm, setEditForm] = useState({ firstName: "", lastName: "", phone: "", status: "ACTIVE" });
 
   useEffect(() => {
@@ -228,6 +230,12 @@ export const StudentDetailPage = () => {
               {t("us.people.actEmail")}
             </a>
           )}
+          <button type="button" className="u-sd-act" onClick={() => setIsTelegramOpen(true)}>
+            <span className="u-ib gl" aria-hidden="true">
+              <Send className="u-i m" strokeWidth={2} />
+            </span>
+            {t("us.tg.action")}
+          </button>
           <button type="button" className="u-sd-act" onClick={() => setIsEditOpen(true)}>
             <span className="u-ib gl" aria-hidden="true">
               <Pencil className="u-i m" strokeWidth={2} />
@@ -447,6 +455,12 @@ export const StudentDetailPage = () => {
       </div>
 
       <GiveCoinSheet open={isCoinOpen} onClose={() => setIsCoinOpen(false)} studentId={student.id} />
+      <TelegramLinkModal
+        studentId={student.id}
+        studentName={name}
+        isOpen={isTelegramOpen}
+        onClose={() => setIsTelegramOpen(false)}
+      />
 
       <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} title={t("us.people.editStudent")}>
         <form className="grid gap-3.5" onSubmit={handleSaveStudent}>
