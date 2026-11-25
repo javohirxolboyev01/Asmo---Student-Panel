@@ -86,8 +86,12 @@ model Homework {
   deadline    DateTime
   maxScore    Int          @default(100)
   status      String       @default("ACTIVE")
+  /// Telegram "deadline in 2 hours" reminder already sent to non-submitters.
+  reminderSentAt DateTime?
   Lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   Submission  Submission[]
+
+  @@index([reminderSentAt, deadline])
 }
 
 model Lesson {

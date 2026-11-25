@@ -60,40 +60,50 @@ a.sp-attendance-row:hover > span:nth-child(2) {
 .sp-attendance-cnav {
   flex-wrap: wrap;
 }
-.sp-attendance-view-toggle .sp-seg {
-  width: fit-content;
-}
-.sp-attendance-view-toggle .sp-seg button {
-  flex: 0 0 auto;
-  padding: 7px 14px;
-  font-size: 13px;
-}
 
-/* Calendar card header: title + week/month switch on one row, period nav below. */
+/* Calendar card header: title, then a full-width week/month switch, then the
+ * period nav. The switch buttons must not pick up `.sp-cnav button` (40px round
+ * icon buttons) — that is what pushed them out of the card on phones. */
+.sp-attendance-cnav > h2 {
+  min-width: 0;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle {
+  flex-basis: 100%;
+  min-width: 0;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg {
+  display: flex;
+  width: 100%;
+  margin: 2px 0 0;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button {
+  flex: 1 1 0;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 10px;
+  border-radius: 99px;
+  background: none;
+  font-size: 14px;
+}
+.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button.on {
+  background: var(--sp-card);
+}
+.dark .sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button.on {
+  background: var(--sp-elev);
+}
 .sp-attendance-cnav .sp-attendance-nav {
   flex-basis: 100%;
   justify-content: space-between;
   margin-top: 4px;
-}
-.sp-attendance-cnav .sp-attendance-view-toggle {
-  flex-shrink: 0;
-  margin-left: auto;
-}
-.sp-attendance-cnav > h2 {
-  min-width: 0;
-}
-.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg {
-  display: inline-flex;
-  width: auto;
-  margin: 0;
-}
-.sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button {
-  min-width: max-content;
-  min-height: 36px;
 }
 @media (max-width: 380px) {
   .sp-attendance-cell small {
     font-size: 8.5px;
     letter-spacing: 0;
   }
+}
+.sp-panel .sp-attendance-cnav .sp-attendance-view-toggle .sp-seg button:not(.on):hover {
+  background: none;
 }

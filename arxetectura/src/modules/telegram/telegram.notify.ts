@@ -120,6 +120,24 @@ export const homeworkMessage = (
   ].join("\n"),
 });
 
+export const homeworkReminderMessage = (
+  studentId: string,
+  homework: { title: string; deadline: Date },
+  groupName: string,
+): StudentMessage => ({
+  studentId,
+  openApp: true,
+  text: [
+    "⏰ <b>Uyga vazifa muddati tugayapti!</b>",
+    "",
+    `📝 <b>${esc(homework.title)}</b>`,
+    `👥 Guruh: ${esc(groupName)}`,
+    `⏳ Muddat: <b>${fmtDateTime(homework.deadline)}</b> (2 soatdan kam qoldi)`,
+    "",
+    "Siz hali vazifani topshirmadingiz. Iltimos, vaqtida topshiring.",
+  ].join("\n"),
+});
+
 export const gradeMessage = (
   studentId: string,
   homeworkTitle: string,

@@ -55,6 +55,7 @@
   --sp-cyan-soft: rgba(46, 143, 138, 0.13);
 
   --sp-nav: rgba(255, 251, 246, 0.88);
+  --sp-nav-solid: rgba(255, 251, 246, 0.97);
   --sp-nav-on: var(--sp-accent-ink);
   --sp-track: rgba(130, 95, 60, 0.13);
   --sp-overlay: rgba(46, 30, 18, 0.42);
@@ -123,6 +124,7 @@
   --sp-cyan-soft: rgba(76, 183, 176, 0.16);
 
   --sp-nav: rgba(35, 28, 22, 0.88);
+  --sp-nav-solid: rgba(35, 28, 22, 0.97);
   --sp-track: rgba(255, 220, 180, 0.12);
   --sp-overlay: rgba(0, 0, 0, 0.6);
 
@@ -152,10 +154,6 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(1200px 520px at 15% -8%, var(--sp-glow), transparent 65%),
-    linear-gradient(180deg, var(--sp-bg1), var(--sp-bg2));
-  background-attachment: fixed;
   color: var(--sp-ink);
   font-family: var(--sp-font);
   font-size: 16px;
@@ -168,6 +166,24 @@
   -webkit-text-size-adjust: 100%;
   overflow-x: clip; /* clip, not hidden: hidden would break the sticky bar */
   padding-top: env(safe-area-inset-top, 0px);
+}
+/* The page background lives on its own fixed layer. `background-attachment:
+ * fixed` on .sp made phones repaint the whole page on every scroll frame,
+ * which is what made scrolling flicker/jitter. */
+.sp::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 520px at 15% -8%, var(--sp-glow), transparent 65%),
+    linear-gradient(180deg, var(--sp-bg1), var(--sp-bg2));
+}
+html:has(.sp),
+body:has(.sp) {
+  overflow-x: hidden;
+  overscroll-behavior-y: none; /* no rubber-band bounce shaking the sticky bars */
 }
 body:has(.sp) {
   background-color: #fbf5ee;
@@ -2772,4 +2788,17 @@ textarea.sp-in {
 .sp-bal .sp-big {
   display: flex;
   justify-content: center;
+}
+
+/* Touch phones: blurring what scrolls under the sticky top bar, the page nav
+ * bar and the floating tab bar is re-done every scroll frame and makes the
+ * page flicker (worst in Telegram's WebView). Use a near-opaque fill instead. */
+@media (hover: none) and (pointer: coarse) {
+  .sp-hud,
+  .sp-navbar-on,
+  .sp-nav {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--sp-nav-solid);
+  }
 }

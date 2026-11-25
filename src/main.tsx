@@ -33,6 +33,20 @@ const showQueryDevtools = (() => {
   }
 })();
 
+// No page zoom on phones (it's an app, not a document). iOS ignores
+// `user-scalable=no` in the viewport tag, so block its pinch gesture here;
+// double-tap zoom is turned off by `touch-action` in index.css.
+const blockZoom = (e: Event) => e.preventDefault();
+document.addEventListener("gesturestart", blockZoom, { passive: false });
+document.addEventListener("gesturechange", blockZoom, { passive: false });
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+  },
+  { passive: false },
+);
+
 sessionReady.finally(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>

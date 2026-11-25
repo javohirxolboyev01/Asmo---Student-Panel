@@ -5,6 +5,7 @@ import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware
 import { newId } from "../../utils/ids.js";
 import { assertLesson, liveEnrollment } from "../../utils/teacherScope.js";
 import { homeworkMessage, notifyStudents } from "../telegram/telegram.notify.js";
+import { homeworkReminderField } from "../homework/homework.reminders.js";
 
 export const teacherHomeworkRouter = Router();
 
@@ -27,7 +28,7 @@ teacherHomeworkRouter.post(
   ),
   asyncRoute(async (req: any, res: any) => {
     await assertLesson(req, req.body.lessonId);
-    const homework = await prisma.homework.create({ data: { id: newId(), ...req.body } });
+    const homework = await prisma.homework.create({ data: { id: newId(), ...req.body, ...homeworkReminderField(req.body.deadline) } });
     const lesson = await prisma.lesson.findUniqueOrThrow({
       where: { id: homework.lessonId },
       include: { Group: { include: { Enrollment: { where: liveEnrollment, select: { studentId: true } } } } },
