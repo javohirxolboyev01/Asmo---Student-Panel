@@ -17,6 +17,7 @@ import { startMaintenance } from './lib/maintenance.js';
 import { startTelegramBot } from './modules/telegram/telegram.bot.js';
 import { startPaymentWatcher } from './modules/payments/payments.tracking.js';
 import { startHomeworkReminderWatcher } from './modules/homework/homework.reminders.js';
+import { startChatArchiver } from './modules/chat/chat.archive.js';
 
 const app = express();
 app.set('trust proxy', config.trustProxy);
@@ -104,6 +105,7 @@ const stopMaintenance = startMaintenance();
 const stopTelegramBot = startTelegramBot();
 const stopPaymentWatcher = startPaymentWatcher();
 const stopHomeworkReminderWatcher = startHomeworkReminderWatcher();
+const stopChatArchiver = startChatArchiver();
 
 // Graceful shutdown: stop accepting connections, let in-flight requests
 // finish (max 10s), then close the DB pool.
@@ -116,6 +118,7 @@ const shutdown = (signal: string) => {
   stopTelegramBot();
   stopPaymentWatcher();
   stopHomeworkReminderWatcher();
+  stopChatArchiver();
   const force = setTimeout(() => process.exit(1), 10_000);
   force.unref();
   server.close(async () => {

@@ -27,6 +27,7 @@ import { quizzesRouter } from "./modules/quizzes/quizzes.routes.js";
 import { telegramRouter } from "./modules/telegram/telegram.routes.js";
 import {
   teacherAttendanceRouter,
+  teacherChatRouter,
   teacherCoinsRouter,
   teacherDashboardRouter,
   teacherGroupsRouter,
@@ -82,6 +83,7 @@ router.use(teacherSubmissionsRouter);
 router.use(teacherAttendanceRouter);
 router.use(teacherCoinsRouter);
 router.use(teacherPaymentsRouter);
+router.use(teacherChatRouter);
 
 router.use(errorHandler);
 

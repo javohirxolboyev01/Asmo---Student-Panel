@@ -16,11 +16,13 @@ import {
   ShoppingBag,
   User,
   type LucideIcon,
+  MessageCircle,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useConfirm } from "@/hooks/useConfirm";
 import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
+import { useChatUnreadQuery } from "@/hooks/queries/useChat";
 import { AvatarPickerModal } from "@/components/common/AvatarPickerModal";
 import { ROUTES } from "@/constans/route";
 import { toast, getErrorMessage } from "@/lib/toast";
@@ -61,6 +63,7 @@ export const MorePage = () => {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const unread = notifications?.filter((n) => !n.isRead).length ?? 0;
+  const { data: chatUnread = 0 } = useChatUnreadQuery();
   const isTeacher = user?.role === "teacher" || user?.role === "admin";
 
   const handleLogout = async () => {
@@ -89,6 +92,7 @@ export const MorePage = () => {
 
   // Warm icon tiles (white glyph on them), grouped as "Boshqaruv" / "Hisob".
   const manage: MenuItem[] = [
+    { to: "/chat", icon: MessageCircle, color: "#2e8f8a", label: t("us.chat.nav"), hint: t("us.chat.subtitle"), badge: chatUnread },
     { to: "/tests", icon: ListChecks, color: "#8a58a6", label: t("nav.tests"), hint: t("us.more.hint.tests") },
     { to: "/payments", icon: CreditCard, color: "#3f8a5c", label: t("nav.payments"), hint: t("us.more.hint.payments") },
     { to: "/attendance", icon: BarChart3, color: "#d0602f", label: t("nav.attendance"), hint: t("us.more.hint.attendance") },

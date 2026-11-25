@@ -1,7 +1,7 @@
 // src/services/apiClient.ts
 import { isTelegram } from "@/lib/telegram";
 // Fetch-based client for the real Asmo backend (Authorization: Bearer <accessToken>).
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 const ACCESS_TOKEN_KEY = "accessToken";
 const REFRESH_TOKEN_KEY = "refreshToken";

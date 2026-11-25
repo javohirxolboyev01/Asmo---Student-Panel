@@ -10,6 +10,7 @@ import { logger } from "../../lib/logger.js";
 import { prisma } from "../../lib/prisma.js";
 import { tg } from "./telegram.api.js";
 import { looksLikeCode, normalizeCode, redeemLinkCode } from "./telegram.link.js";
+import { receiveFromBot } from "../chat/chat.telegram.js";
 
 let botUsername = config.telegram.botUsername;
 export const getBotUsername = () => botUsername;
@@ -89,11 +90,52 @@ const ASK_CODE = [
   "🔒 Kod faqat siz uchun va bir marta ishlatiladi.",
 ].join("\n");
 
+const sendLinked = (chatId: number, firstName: string) =>
+  sendWithBanner(
+    chatId,
+    [
+      `🎉 <b>Tabriklaymiz, ${escapeHtml(firstName)}!</b>`,
+      "",
+      "Hisobingiz shu Telegramga ulandi ✅",
+      "",
+      "Ilovani istalgan vaqtda oching:",
+      "• pastdagi <b>🚀 Ilovani ochish</b> tugmasi",
+      "• yoki chat menyusidagi <b>📚 Ilova</b> tugmasi",
+      "",
+      "💬 Ustozga savolingiz bo'lsa, shu chatga yozing — xabar ustozga boradi.",
+    ].join("\n"),
+    true,
+  );
+
 async function handleMessage(message: any) {
   const chatId: number = message.chat?.id;
   const from = message.from;
-  if (!from || from.is_bot || message.chat?.type !== "private" || typeof message.text !== "string") return;
-  const text = message.text.trim();
+  if (!from || from.is_bot || message.chat?.type !== "private") return;
+  const rawText = typeof message.text === "string" ? message.text.trim() : "";
+
+  // A linked account (the student or a parent on the same Telegram): anything
+  // that isn't a command goes to the teacher chat. A valid new link code still
+  // re-links (e.g. the teacher made a fresh code for this phone).
+  if (!rawText.startsWith("/")) {
+    const linked = await prisma.user.findFirst({
+      where: { telegramId: String(from.id), role: "STUDENT", status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (linked) {
+      const code = normalizeCode(rawText);
+      if (rawText && looksLikeCode(code)) {
+        const student = await redeemLinkCode(code, { id: from.id, username: from.username });
+        if (student) {
+          logger.info("Telegram re-linked", { userId: student.id });
+          return sendLinked(chatId, student.firstName);
+        }
+      }
+      return receiveFromBot(linked.id, message);
+    }
+  }
+
+  if (typeof message.text !== "string") return;
+  const text = rawText;
 
   const isStart = /^\/start(\s|$)/.test(text);
   // "/start CODE" comes from a t.me/<bot>?start=CODE link.
@@ -107,7 +149,7 @@ async function handleMessage(message: any) {
     if (linked)
       return sendWithBanner(
         chatId,
-        `👋 Salom, <b>${escapeHtml(linked.firstName)}</b>!\n\nDarslar, vazifalar va testlaringiz sizni kutmoqda. Ilovani pastdagi tugma orqali oching 👇`,
+        `👋 Salom, <b>${escapeHtml(linked.firstName)}</b>!\n\nDarslar, vazifalar va testlaringiz sizni kutmoqda. Ilovani pastdagi tugma orqali oching 👇\n\n💬 Ustozga savol bo'lsa, shu chatga yozing.`,
         true,
       );
     return sendWithBanner(chatId, ASK_CODE);
@@ -127,19 +169,7 @@ async function handleMessage(message: any) {
   }
   failures.delete(from.id);
   logger.info("Telegram linked", { userId: student.id });
-  await sendWithBanner(
-    chatId,
-    [
-      `🎉 <b>Tabriklaymiz, ${escapeHtml(student.firstName)}!</b>`,
-      "",
-      "Hisobingiz shu Telegramga ulandi ✅",
-      "",
-      "Ilovani istalgan vaqtda oching:",
-      "• pastdagi <b>🚀 Ilovani ochish</b> tugmasi",
-      "• yoki chat menyusidagi <b>📚 Ilova</b> tugmasi",
-    ].join("\n"),
-    true,
-  );
+  await sendLinked(chatId, student.firstName);
   if (!appUrl()) logger.warn("PUBLIC_APP_URL is not an https URL; the bot cannot show the Mini App button");
 }
 

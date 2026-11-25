@@ -6,3 +6,4 @@ export { teacherSubmissionsRouter } from "./teacherSubmissions.routes.js";
 export { teacherAttendanceRouter } from "./teacherAttendance.routes.js";
 export { teacherCoinsRouter } from "./teacherCoins.routes.js";
 export { teacherPaymentsRouter } from "./teacherPayments.routes.js";
+export { teacherChatRouter } from "./teacherChat.routes.js";

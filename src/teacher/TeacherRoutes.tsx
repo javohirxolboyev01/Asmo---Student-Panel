@@ -31,6 +31,8 @@ const pages = {
   GradingPage: lazyPage(() => import("./pages/GradingPage"), "GradingPage"),
   SubmissionGradePage: lazyPage(() => import("./pages/SubmissionGradePage"), "SubmissionGradePage"),
   MorePage: lazyPage(() => import("./pages/MorePage"), "MorePage"),
+  ChatPage: lazyPage(() => import("./pages/ChatPage"), "ChatPage"),
+  ChatThreadPage: lazyPage(() => import("./pages/ChatThreadPage"), "ChatThreadPage"),
 };
 
 // Warms the cache behind the bottom-nav tabs so their first visit shows data
@@ -73,6 +75,8 @@ export const TeacherRoutes = () => {
         <Route path="submissions/:id" element={<pages.SubmissionGradePage />} />
         {/* Mock "Ko'proq": profile + every secondary page. /profile now lands here. */}
         <Route path="more" element={<pages.MorePage />} />
+        <Route path="chat" element={<pages.ChatPage />} />
+        <Route path="chat/:studentId" element={<pages.ChatThreadPage />} />
         {sharedPanelRoutes}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

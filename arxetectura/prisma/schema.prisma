@@ -257,6 +257,7 @@ model User {
   DailyChest        DailyChest[]
   AvatarPurchase    AvatarPurchase[]
   QuizAttempt       QuizAttempt[]
+  ChatMessage       ChatMessage[]
 }
 
 model WishlistItem {
@@ -392,4 +393,40 @@ model QuizAttempt {
 
   @@unique([quizId, studentId])
   @@index([studentId, finishedAt])
+}
+
+/// Teacher ↔ family chat through the Telegram bot. One thread per student:
+/// whoever uses the student's linked Telegram (the student or a parent) writes
+/// to the bot; staff answer from the teacher panel and the bot delivers it.
+model ChatMessage {
+  id          String   @id
+  studentId   String
+  /// true = came in from the bot (family); false = sent by staff from the panel.
+  fromStudent Boolean
+  /// Staff sender's name at the time of sending (outgoing messages only).
+  senderName  String?
+  /// text | photo | voice | video_note | video
+  kind        String   @default("text")
+  /// Message text, or the caption of a media message (may be empty).
+  text        String
+  /// Media lives on Telegram's servers (Telegram is the file storage): only
+  /// its file_id is kept here; the server fetches the file when it's viewed.
+  fileId      String?
+  /// Seconds, for voice / video messages.
+  duration    Int?
+  /// Copy in the private Telegram archive channel (TELEGRAM_ARCHIVE_CHAT_ID):
+  /// keeps the file alive even if the family deletes their chat, and gives
+  /// staff a readable log. archivedAt is set once handled (copied, or given
+  /// up on); unset rows are picked up by the archiver.
+  archiveMessageId Int?
+  archiveFileId    String?
+  archivedAt       DateTime?
+  /// Incoming messages: seen by staff in the panel.
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  Student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId, createdAt])
+  @@index([fromStudent, isRead])
+  @@index([archivedAt, createdAt])
 }

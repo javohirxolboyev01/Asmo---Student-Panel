@@ -27,6 +27,12 @@ export const config = {
     botToken: telegramBotToken,
     /** Optional; otherwise read from Telegram's getMe at startup. */
     botUsername: process.env.TELEGRAM_BOT_USERNAME?.trim().replace(/^@/, "") || "",
+    /**
+     * Private channel (bot = admin) where every chat message and file is also
+     * posted: an archive on Telegram, so files never need our server's disk.
+     * e.g. -1001234567890. Empty = no archive.
+     */
+    archiveChatId: process.env.TELEGRAM_ARCHIVE_CHAT_ID?.trim() || "",
     publicAppUrl,
     /**
      * With a bot configured, students can only sign in through the Telegram

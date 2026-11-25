@@ -8,12 +8,14 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { TopBarContext, type TopBarState } from "../components/topBar";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Bell, GraduationCap } from "lucide-react";
+import { Bell, GraduationCap, MessageCircle } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
 import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 import { usePendingSubmissionsQuery } from "@/hooks/queries/useSubmissions";
+import { useChatUnreadQuery } from "@/hooks/queries/useChat";
+import { ChatWidget } from "../components/chat/ChatWidget";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { cn } from "@/lib/utils";
 import { Avatar, BackLink, PageSkeleton } from "../components/ui";
@@ -41,6 +43,7 @@ const LEVELS: [RegExp, number][] = [
   [/^\/lessons\/[^/]+$/, 2],
   [/^\/profile\/edit$/, 2],
   [/^\/tests\/[^/]+\/(edit|results)$/, 2],
+  [/^\/chat\/[^/]+$/, 1],
   [/^\/(groups|students|submissions)\/[^/]+$/, 1],
   [/^\/tests\/new$/, 1],
   [/^\/(attendance|shop|teachers|notifications|settings)$/, 1],
@@ -88,6 +91,9 @@ export const TeacherLayout = () => {
   const user = useAuthStore((s) => s.user);
   const { data: notifications } = useNotificationsQuery();
   const { data: pending } = usePendingSubmissionsQuery();
+  const { data: chatUnread = 0 } = useChatUnreadQuery();
+  // An open chat thread fills the screen: no phone tab bar under the composer.
+  const isChatThread = /^\/chat\/[^/]+$/.test(pathname);
   useTrackNavigationHistory();
   useThemeColor();
   const transition = usePageTransition(pathname);
@@ -102,7 +108,8 @@ export const TeacherLayout = () => {
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : "";
   const hasUnread = notifications?.some((n) => !n.isRead) ?? false;
   const pendingCount = pending?.length ?? 0;
-  const badgeOf = (item: TeacherNavItem) => (item.path === "/grading" ? pendingCount : 0);
+  const badgeOf = (item: TeacherNavItem) =>
+    item.path === "/grading" ? pendingCount : item.path === "/chat" ? chatUnread : 0;
 
   const railLink = (item: TeacherNavItem) => {
     const on = isNavActive(item, pathname);
@@ -122,7 +129,7 @@ export const TeacherLayout = () => {
 
   return (
     <div className="us">
-      <div className="u-app">
+      <div className={isChatThread ? "u-app is-chat" : "u-app"}>
         <aside className="u-side" aria-label={t("us.navLabel")}>
           <Link to="/" className="u-logo">
             <span className="u-bm">
@@ -164,12 +171,16 @@ export const TeacherLayout = () => {
                 {bar.title}
               </div>
             ) : null}
+            <Link to="/chat" className="u-bell u-top-chat" aria-label={t("us.chat.nav")}>
+              <MessageCircle className="u-i" strokeWidth={2} aria-hidden="true" />
+              <Badge count={chatUnread} />
+            </Link>
             <Link to="/notifications" className="u-bell" aria-label={t("nav.notifications")}>
               <Bell className="u-i" strokeWidth={2} aria-hidden="true" />
               {hasUnread && <i />}
             </Link>
             {user && (
-              <Link to="/more" aria-label={t("nav.profile")} className="rounded-full">
+              <Link to="/more" aria-label={t("nav.profile")} className="u-top-me rounded-full">
                 <Avatar name={fullName} src={user.avatar} seed={user.id} size="s" />
               </Link>
             )}
@@ -190,6 +201,10 @@ export const TeacherLayout = () => {
         </div>
       </div>
 
+      {/* Laptops: floating chat window (hidden on phones by CSS). */}
+      {!isChatThread && <ChatWidget />}
+
+      {!isChatThread && (
       <nav className="u-bn" aria-label={t("us.navLabel")}>
         {[...teacherMainNav, teacherMoreNav].map((item) => {
           const on = item === teacherMoreNav ? isMoreActiveOnMobile(pathname) : isNavActive(item, pathname);
@@ -204,6 +219,7 @@ export const TeacherLayout = () => {
           );
         })}
       </nav>
+      )}
     </div>
   );
 };

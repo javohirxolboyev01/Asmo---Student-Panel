@@ -29,6 +29,8 @@ export interface StudentSummary {
   status: "active" | "inactive";
   coinBalance: number;
   groups: StudentGroupRef[];
+  /** The student's Telegram is linked (the chat can reach them). */
+  telegramLinked?: boolean;
   attendancePercentage: number;
 }
 

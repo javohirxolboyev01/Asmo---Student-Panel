@@ -3,7 +3,7 @@
 // on the left, coin history and payments on the right.
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, Mail, Pencil, Phone, Plus, Send, Trash2, X } from "lucide-react";
+import { AlertTriangle, Mail, MessageCircle, Pencil, Phone, Plus, Send, Trash2, X } from "lucide-react";
 import {
   useStudentDetailQuery,
   useUpdateStudentMutation,
@@ -233,6 +233,12 @@ export const StudentDetailPage = () => {
               {t("us.people.actEmail")}
             </a>
           )}
+          <Link className="u-sd-act" to={`/chat/${student.id}`}>
+            <span className="u-ib gl" aria-hidden="true">
+              <MessageCircle className="u-i m" strokeWidth={2} />
+            </span>
+            {t("us.chat.action")}
+          </Link>
           <button type="button" className="u-sd-act" onClick={() => setIsTelegramOpen(true)}>
             <span className="u-ib gl" aria-hidden="true">
               <Send className="u-i m" strokeWidth={2} />
