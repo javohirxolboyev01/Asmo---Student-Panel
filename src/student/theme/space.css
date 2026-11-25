@@ -180,9 +180,11 @@
     radial-gradient(1200px 520px at 15% -8%, var(--sp-glow), transparent 65%),
     linear-gradient(180deg, var(--sp-bg1), var(--sp-bg2));
 }
+/* `clip`, not `hidden`: hidden on body (with html also set) turns body into
+ * its own scroll box, which breaks the sticky bars and scroll smoothness. */
 html:has(.sp),
 body:has(.sp) {
-  overflow-x: hidden;
+  overflow-x: clip;
   overscroll-behavior-y: none; /* no rubber-band bounce shaking the sticky bars */
 }
 body:has(.sp) {
@@ -419,10 +421,22 @@ a.sp-pill:active {
   backdrop-filter: saturate(160%) blur(18px);
   border-bottom-color: var(--sp-line);
 }
-.sp-navbar:not(:has(.sp-back)):not(.sp-navbar-on) {
-  min-height: 0;
-  height: 0;
-  overflow: visible;
+/* Pages without a back button: the bar keeps the same 48px box at all times
+ * but takes no layout space (negative margin), so turning it on/off while
+ * scrolling never moves the page. (Changing its height used to push the
+ * content 48px, which re-toggled the bar and made the page flicker.) */
+.sp-navbar:not(:has(.sp-back)) {
+  box-sizing: border-box;
+  height: 48px;
+  min-height: 48px;
+  margin-bottom: -48px;
+  padding-top: 0;
+}
+.sp-navbar:not(.sp-navbar-on) {
+  pointer-events: none;
+}
+.sp-navbar:not(.sp-navbar-on) .sp-back {
+  pointer-events: auto;
 }
 .sp-navbar-side {
   display: flex;
@@ -2800,5 +2814,44 @@ textarea.sp-in {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: var(--sp-nav-solid);
+  }
+}
+
+/* ══════════════════════════ Phones/tablets: header never scrolls ══════════════════════════
+ * The HUD is `fixed` (not `sticky`): in Telegram's WebView a sticky bar can
+ * still drift with the page and during the bounce. Only the content scrolls.
+ * The bar is full-bleed; its inner padding lines it up with the app column.
+ * Kept last in the file so it wins over the breakpoint rules above. */
+@media (max-width: 899px) {
+  .sp-hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: max(16px, calc((100% - 480px) / 2 + 16px));
+    padding-right: max(16px, calc((100% - 480px) / 2 + 16px));
+  }
+  .sp-app {
+    padding-top: var(--sp-hud-h); /* room for the fixed HUD (.sp already adds the safe area) */
+  }
+  /* The page's own bar (title / back button) pins right under the HUD.
+   * (The base `.sp-navbar { top: 0 }` further up used to win and hide it
+   * behind the HUD.) */
+  .sp-navbar {
+    top: calc(var(--sp-hud-h) + env(safe-area-inset-top, 0px));
+  }
+}
+@media (max-width: 360px) {
+  .sp-hud {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+@media (min-width: 640px) and (max-width: 899px) {
+  .sp-hud {
+    padding-left: max(24px, calc((100% - 760px) / 2 + 24px));
+    padding-right: max(24px, calc((100% - 760px) / 2 + 24px));
   }
 }
