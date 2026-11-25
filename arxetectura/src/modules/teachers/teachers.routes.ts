@@ -34,11 +34,11 @@ teachersRouter.get(
   }),
 );
 
-// Creating and removing teacher accounts is admin-only.
+// Teachers can add and remove teacher accounts as well as admins.
 teachersRouter.post(
   "/teachers",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole(...staff),
   validate(
     z.object({
       body: z
@@ -90,17 +90,8 @@ teachersRouter.patch(
     }),
   ),
   asyncRoute(async (req: any, res: any) => {
-    // A TEACHER may only edit their own profile; an ADMIN may edit any.
-    const teacher = await prisma.teacher.findFirst({
-      where: { id: req.params.id, ...(isAdmin(req) ? {} : { userId: uid(req) }) },
-      select: { id: true },
-    });
-    if (!teacher) {
-      const exists = await prisma.teacher.findUnique({ where: { id: req.params.id }, select: { id: true } });
-      return exists
-        ? res.status(403).json({ error: "You can only edit your own profile" })
-        : res.status(404).json({ error: "Teacher not found" });
-    }
+    const teacher = await prisma.teacher.findUnique({ where: { id: req.params.id }, select: { id: true } });
+    if (!teacher) return res.status(404).json({ error: "Teacher not found" });
     res.json(await prisma.teacher.update({ where: { id: teacher.id }, data: req.body }));
   }),
 );
@@ -108,9 +99,20 @@ teachersRouter.patch(
 teachersRouter.delete(
   "/teachers/:id",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
+    const target = await prisma.teacher.findUnique({ where: { id: req.params.id }, select: { userId: true } });
+    if (!target) return res.status(404).json({ error: "Teacher not found" });
+    // Deleting deactivates the login: nobody removes their own account, and an
+    // admin's account can only be removed by an admin.
+    if (target.userId && target.userId === uid(req))
+      return res.status(400).json({ error: "You can't delete your own account" });
+    const targetUser = target.userId
+      ? await prisma.user.findUnique({ where: { id: target.userId }, select: { role: true } })
+      : null;
+    if (targetUser?.role === "ADMIN" && !isAdmin(req))
+      return res.status(403).json({ error: "Only an admin can delete an admin" });
     if (await prisma.group.count({ where: { teacherId: req.params.id } }))
       return res.status(400).json({ error: "Teacher still has groups" });
     // Removing the profile alone left the login working with full staff rights,

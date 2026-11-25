@@ -17,7 +17,6 @@ import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { ProductCatalog } from "@/components/Shop/ProductCatalog";
 import { Toggle } from "../components/ui";
-import { useAuthStore } from "@/stores/authStore";
 
 const EMPTY_PRODUCT_FORM = {
   name: "",
@@ -35,7 +34,6 @@ export const ShopPage = () => {
   const { t } = useTranslation();
   // Products are read-only for teachers: only an admin may create, edit,
   // delete or hide them (the API enforces this too).
-  const isAdmin = useAuthStore((s) => s.user?.role) === "admin";
   const { data: products = [], isLoading, isError, refetch } = useManagedProductsQuery();
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -164,25 +162,13 @@ export const ShopPage = () => {
       isError={isError}
       onRetry={() => refetch()}
       headerActions={
-        isAdmin ? (
-          <button type="button" className="u-btn" onClick={openCreateProduct}>
-            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
-            {t("us.shop.add")}
-          </button>
-        ) : (
-          <span className="text-xs font-semibold" style={{ color: "var(--mu)" }}>
-            {t("us.access.adminOnly")}
-          </span>
-        )
+        <button type="button" className="u-btn" onClick={openCreateProduct}>
+          <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+          {t("us.shop.add")}
+        </button>
       }
       renderProductAction={(product) => {
         const on = product.isActive !== false;
-        if (!isAdmin)
-          return (
-            <div className="flex items-center justify-end gap-2 font-bold" style={{ color: "var(--mu)" }}>
-              {on ? t("us.shop.onSale") : t("us.shop.hidden")}
-            </div>
-          );
         return (
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">

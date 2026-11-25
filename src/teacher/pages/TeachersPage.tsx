@@ -22,8 +22,6 @@ const EMPTY_FORM = { fullName: "", avatar: "", email: "", password: "" };
 export const TeachersPage = () => {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
-  // Adding and removing teachers is admin-only on the server.
-  const isAdmin = me?.role === "admin";
   const { data: teachers = [], isLoading, error, refetch } = useTeachersQuery();
   const createTeacher = useCreateTeacherMutation();
   const updateTeacher = useUpdateTeacherMutation();
@@ -104,12 +102,10 @@ export const TeachersPage = () => {
         title={t("teachers.title")}
         subtitle={t("us.people.teachersSubtitle")}
         right={
-          isAdmin && (
-            <button type="button" className="u-btn" onClick={openCreate}>
-              <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
-              {t("common.add")}
-            </button>
-          )
+          <button type="button" className="u-btn" onClick={openCreate}>
+            <Plus className="u-i m" strokeWidth={2} aria-hidden="true" />
+            {t("common.add")}
+          </button>
         }
       />
 
@@ -141,18 +137,16 @@ export const TeachersPage = () => {
                   </small>
                 </div>
                 {isMe && <Tag tone="pr">{t("us.people.me")}</Tag>}
-                {/* A teacher may only edit their own profile (enforced by the API). */}
-                {(isAdmin || isMe) && (
-                  <button
-                    type="button"
-                    className="u-ib"
-                    aria-label={t("common.edit")}
-                    onClick={() => openEdit(teacher)}
-                  >
-                    <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
-                  </button>
-                )}
-                {isAdmin && (
+                <button
+                  type="button"
+                  className="u-ib"
+                  aria-label={t("common.edit")}
+                  onClick={() => openEdit(teacher)}
+                >
+                  <Pencil className="u-i s" strokeWidth={2} aria-hidden="true" />
+                </button>
+                {/* Deleting your own account would lock you out. */}
+                {!isMe && (
                   <button
                     type="button"
                     className="u-ib"

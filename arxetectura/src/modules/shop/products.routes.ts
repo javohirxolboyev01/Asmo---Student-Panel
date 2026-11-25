@@ -53,7 +53,7 @@ productsRouter.get(
 productsRouter.post(
   "/products",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole(...staff),
   validate(z.object({ body: productData, params: z.object({}), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) =>
     res.status(201).json(await prisma.product.create({ data: { id: newId(), ...req.body } })),
@@ -63,7 +63,7 @@ productsRouter.post(
 productsRouter.patch(
   "/products/:id",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole(...staff),
   validate(z.object({ body: productData.partial(), params: z.object({ id: z.string() }), query: z.object({}) })),
   asyncRoute(async (req: any, res: any) =>
     res.json(await prisma.product.update({ where: { id: req.params.id }, data: req.body })),
@@ -73,7 +73,7 @@ productsRouter.patch(
 productsRouter.delete(
   "/products/:id",
   requireAuth,
-  requireRole("ADMIN"),
+  requireRole(...staff),
   validate(idSchema),
   asyncRoute(async (req: any, res: any) => {
     if (await prisma.purchase.count({ where: { productId: req.params.id } }))
