@@ -5,6 +5,7 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { paymentSummary } from "../../utils/serializers.js";
 import { currentUser, studentScope } from "../../utils/teacherScope.js";
 import { parsePage, setTotalCount } from "../../utils/pagination.js";
+import { afterPaymentChange, dueDateFields } from "./payments.tracking.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -21,6 +22,8 @@ const payUpdate = z.object({
     paymentType: z.enum(["CASH", "CLICK", "PAYME", "BANK", "UZUM"]).optional(),
     description: z.string().nullable().optional(),
     receiptNumber: z.string().nullable().optional(),
+    /** null removes the due date (no reminder / auto-overdue). */
+    dueDate: z.coerce.date().nullable().optional(),
   }),
   params: z.object({ id: z.string().min(1) }),
   query: z.object({}),
@@ -58,14 +61,17 @@ paymentsRouter.patch(
     const payment = await scopedPayment(req, req.params.id);
     if (!payment) return res.status(404).json({ error: "Payment not found" });
     const nextStatus = req.body.status ?? payment.status;
+    const { dueDate, ...fields } = req.body;
     const updated = await prisma.payment.update({
       where: { id: payment.id },
       data: {
-        ...req.body,
+        ...fields,
+        ...(dueDate === undefined ? {} : dueDateFields(dueDate)),
         ...(req.body.amountNumber ? { amount: req.body.amountNumber } : {}),
         paidAt: nextStatus === "PAID" ? (payment.paidAt ?? new Date()) : null,
       },
     });
+    void afterPaymentChange(payment, updated);
     res.json(paymentSummary(updated));
   }),
 );

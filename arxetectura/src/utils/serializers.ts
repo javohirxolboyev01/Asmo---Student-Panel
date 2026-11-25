@@ -62,6 +62,8 @@ export const paymentSummary = (payment: any, includeStudent = false) => ({
   status: lower(payment.status),
   paymentType: lower(payment.paymentType),
   paidAt: payment.paidAt,
+  // Only a due date a teacher actually set (older rows store createdAt there).
+  dueDate: payment.hasDueDate ? payment.dueDate : null,
   teacherName: payment.teacherName,
   description: payment.description,
   receiptNumber: payment.receiptNumber,

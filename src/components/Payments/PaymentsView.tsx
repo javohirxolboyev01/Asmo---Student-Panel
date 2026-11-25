@@ -23,6 +23,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { Button, Input } from "@/components/ui";
 import { getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
+import { formatDue } from "@/lib/dueDate";
 import { EmptyBox, PageHeader, SectionHead, Seg, Skel, Tag, type Tone } from "@/teacher/components/ui";
 
 export interface Payment {
@@ -34,6 +35,8 @@ export interface Payment {
   paymentType: "cash" | "click" | "payme" | "bank" | "uzum";
   date: string;
   time: string;
+  /** Due date set by a teacher (ISO), if any. */
+  dueDate?: string | null;
   teacherName: string;
   description?: string;
   receiptNumber?: string;
@@ -48,6 +51,7 @@ interface RawPayment {
   status: Payment["status"];
   paymentType: Payment["paymentType"];
   paidAt: string | null;
+  dueDate?: string | null;
   teacherName: string;
   description?: string;
   receiptNumber?: string;
@@ -166,6 +170,7 @@ export const PaymentsView = ({
     paymentType: p.paymentType,
     date: formatDate(p.paidAt),
     time: formatTime(p.paidAt),
+    dueDate: p.dueDate ?? null,
     teacherName: p.teacherName,
     description: p.description,
     receiptNumber: p.receiptNumber,
@@ -353,6 +358,11 @@ export const PaymentsView = ({
                           <span className="inline-flex items-center gap-1.5">
                             <Calendar className="u-i s" strokeWidth={2} aria-hidden="true" />
                             {payment.date}, {payment.time}
+                          </span>
+                        )}
+                        {payment.dueDate && (payment.status === "pending" || payment.status === "overdue") && (
+                          <span className={payment.status === "overdue" ? "text-u-er" : undefined}>
+                            {t("us.pay.due", { date: formatDue(payment.dueDate) })}
                           </span>
                         )}
                         <span>#{payment.orderNumber}</span>

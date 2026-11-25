@@ -121,22 +121,28 @@ model Notification {
 }
 
 model Payment {
-  id            String    @id
-  studentId     String
-  amount        Int
-  orderNumber   Int       @default(1)
-  amountNumber  Int       @default(0)
-  status        String    @default("PENDING")
-  paymentType   String
-  description   String?
-  teacherName   String    @default("")
-  receiptNumber String?
-  paidAt        DateTime?
-  dueDate       DateTime
-  createdAt     DateTime  @default(now())
-  User          User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  id                String    @id
+  studentId         String
+  amount            Int
+  orderNumber       Int       @default(1)
+  amountNumber      Int       @default(0)
+  status            String    @default("PENDING")
+  paymentType       String
+  description       String?
+  teacherName       String    @default("")
+  receiptNumber     String?
+  paidAt            DateTime?
+  dueDate           DateTime
+  /// True when a teacher set a real due date (older rows store createdAt there).
+  hasDueDate        Boolean   @default(false)
+  /// Telegram "pays tomorrow" reminder / "overdue" notice already sent.
+  reminderSentAt    DateTime?
+  overdueNotifiedAt DateTime?
+  createdAt         DateTime  @default(now())
+  User              User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId, createdAt])
+  @@index([status, hasDueDate, dueDate])
 }
 
 model Product {

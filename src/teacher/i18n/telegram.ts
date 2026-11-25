@@ -3,6 +3,9 @@ import type { TeacherDict } from "./index";
 
 const dict: TeacherDict = {
   uz: {
+    "us.pay.dueDate": "To'lov muddati (ixtiyoriy)",
+    "us.pay.dueHint": "Muddatdan 1 kun oldin Telegramga eslatma boradi; o'tib ketsa, to'lov avtomatik «kechikkan» bo'ladi.",
+    "us.pay.due": "Muddat: {{date}}",
     "us.tg.action": "Telegram",
     "us.tg.title": "Telegram orqali ulash",
     "us.tg.statusLabel": "Holat",
@@ -28,6 +31,9 @@ const dict: TeacherDict = {
       "Telegram bot hali sozlanmagan. Serverga TELEGRAM_BOT_TOKEN qo'shilgach, shu yerda kod yaratish mumkin bo'ladi.",
   },
   ru: {
+    "us.pay.dueDate": "Срок оплаты (необязательно)",
+    "us.pay.dueHint": "За 1 день до срока в Telegram придёт напоминание; после срока оплата станет «просроченной» автоматически.",
+    "us.pay.due": "Срок: {{date}}",
     "us.tg.action": "Telegram",
     "us.tg.title": "Привязка Telegram",
     "us.tg.statusLabel": "Статус",
@@ -53,6 +59,9 @@ const dict: TeacherDict = {
       "Telegram-бот ещё не настроен. Когда на сервер добавят TELEGRAM_BOT_TOKEN, здесь можно будет создавать коды.",
   },
   en: {
+    "us.pay.dueDate": "Due date (optional)",
+    "us.pay.dueHint": "A Telegram reminder goes out a day before; after the date the payment becomes overdue automatically.",
+    "us.pay.due": "Due: {{date}}",
     "us.tg.action": "Telegram",
     "us.tg.title": "Link Telegram",
     "us.tg.statusLabel": "Status",

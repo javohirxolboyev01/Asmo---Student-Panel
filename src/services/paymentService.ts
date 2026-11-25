@@ -23,13 +23,28 @@ export const paymentService = {
 
   updatePayment: async (
     id: string,
-    payload: Partial<{ amountNumber: number; status: string; paymentType: string; description: string; receiptNumber: string }>,
+    payload: Partial<{
+      amountNumber: number;
+      status: string;
+      paymentType: string;
+      description: string;
+      receiptNumber: string;
+      /** null removes the due date. */
+      dueDate: string | null;
+    }>,
   ) => apiPatch(`/payments/${id}`, payload),
 
   deletePayment: async (id: string) => apiDelete(`/payments/${id}`),
 
   addPayment: async (
     studentId: string,
-    payload: { amountNumber: number; status?: string; paymentType: string; description?: string; receiptNumber?: string },
+    payload: {
+      amountNumber: number;
+      status?: string;
+      paymentType: string;
+      description?: string;
+      receiptNumber?: string;
+      dueDate?: string;
+    },
   ) => apiPost(`/students/${studentId}/payments`, payload),
 };

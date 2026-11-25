@@ -89,6 +89,8 @@ export interface TeacherPayment {
   status: "paid" | "pending" | "overdue" | "cancelled";
   paymentType: string;
   paidAt: string | null;
+  /** Due date set by a teacher, if any. */
+  dueDate?: string | null;
   teacherName: string;
   description?: string;
   receiptNumber?: string;

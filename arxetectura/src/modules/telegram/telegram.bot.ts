@@ -21,7 +21,7 @@ export const webhookSecret = () =>
 const appUrl = () => (config.telegram.publicAppUrl.startsWith("https://") ? config.telegram.publicAppUrl : "");
 
 // style "success" paints the button green (Bot API 9.4+; older apps show the default look).
-const openAppMarkup = () =>
+export const openAppMarkup = () =>
   appUrl()
     ? { inline_keyboard: [[{ text: "🚀 Ilovani ochish", style: "success", web_app: { url: appUrl() } }]] }
     : undefined;
@@ -56,7 +56,7 @@ const sendWithBanner = async (chatId: number, caption: string, withAppButton = f
   }
 };
 
-const escapeHtml = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+export const escapeHtml = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
 
 // Wrong codes per Telegram user: 8 per 15 minutes (codes are 8 chars of 32 symbols).
 const failures = new Map<number, { count: number; resetAt: number }>();

@@ -6,6 +6,7 @@ import { publicUser, submissionSummary } from "../../utils/serializers.js";
 import { gradeBody } from "../../utils/schemas.js";
 import { groupScope, assertSubmission } from "../../utils/teacherScope.js";
 import { newId } from "../../utils/ids.js";
+import { gradeMessage, notifyStudents } from "../telegram/telegram.notify.js";
 
 const staff = ["TEACHER", "ADMIN"];
 const submissionInclude = {
@@ -63,6 +64,10 @@ submissionsRouter.patch(
       where: { id: sub.id },
       data: { score: req.body.score, feedback: req.body.feedback, status: "GRADED", gradedAt: new Date() },
     });
+    if (sub.status !== "GRADED" || sub.score !== updated.score || sub.feedback !== updated.feedback)
+      notifyStudents([
+        gradeMessage(sub.studentId, sub.Homework.title, req.body.score, sub.Homework.maxScore, req.body.feedback),
+      ]);
     await prisma.notification.create({
       data: {
         id: newId(),

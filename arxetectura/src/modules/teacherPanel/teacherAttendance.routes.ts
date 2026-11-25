@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
 import { groupScope, liveEnrollment } from "../../utils/teacherScope.js";
+import { notifyAttendance } from "../telegram/telegram.notify.js";
 
 export const teacherAttendanceRouter = Router();
 
@@ -29,12 +30,15 @@ teacherAttendanceRouter.put(
       },
     });
     if (!lesson) return res.status(404).json({ error: "Lesson or student not found" });
-    res.json(
-      await prisma.attendanceRecord.upsert({
-        where: { lessonId_studentId: { lessonId: lesson.id, studentId: req.params.studentId } },
-        update: req.body,
-        create: { id: newId(), lessonId: lesson.id, studentId: req.params.studentId, ...req.body },
-      }),
-    );
+    const where = { lessonId_studentId: { lessonId: lesson.id, studentId: req.params.studentId } };
+    const before = await prisma.attendanceRecord.findUnique({ where, select: { status: true } });
+    const record = await prisma.attendanceRecord.upsert({
+      where,
+      update: req.body,
+      create: { id: newId(), lessonId: lesson.id, studentId: req.params.studentId, ...req.body },
+    });
+    if (before?.status !== record.status)
+      void notifyAttendance(lesson.id, [{ studentId: record.studentId, status: record.status }]);
+    res.json(record);
   }),
 );

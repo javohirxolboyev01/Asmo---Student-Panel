@@ -22,6 +22,7 @@ import { Avatar, BackButton, EmptyBox, Skel, Tag, groupColor, type Tone } from "
 import { GiveCoinSheet } from "../components/sheets";
 import { TelegramLinkModal } from "../components/TelegramLinkModal";
 import { humanDateTime, humanDay } from "@/lib/humanDate";
+import { dueInputToIso, formatDue, todayInput } from "@/lib/dueDate";
 
 const PAYMENT_STATUS: Record<TeacherPayment["status"], { key: string; tone: Tone }> = {
   paid: { key: "payments.statusPaid", tone: "ok" },
@@ -31,7 +32,7 @@ const PAYMENT_STATUS: Record<TeacherPayment["status"], { key: string; tone: Tone
 };
 const PAYMENT_TYPES = ["CASH", "CLICK", "PAYME", "BANK", "UZUM"];
 const PAYMENT_TYPE_KEYS: Record<string, string> = { CASH: "payments.typeCash", BANK: "payments.typeBank" };
-const EMPTY_PAYMENT = { amountNumber: "", paymentType: "CASH", status: "PENDING", description: "" };
+const EMPTY_PAYMENT = { amountNumber: "", paymentType: "CASH", status: "PENDING", description: "", dueDate: "" };
 const money = (n: number) => new Intl.NumberFormat("ru-RU").format(n);
 
 export const StudentDetailPage = () => {
@@ -112,6 +113,7 @@ export const StudentDetailPage = () => {
           paymentType: paymentForm.paymentType,
           status: paymentForm.status,
           description: paymentForm.description || undefined,
+          dueDate: paymentForm.status === "PAID" ? undefined : dueInputToIso(paymentForm.dueDate),
         },
       });
       setIsPaymentOpen(false);
@@ -439,7 +441,16 @@ export const StudentDetailPage = () => {
                       <div className="g">
                         <b>{t("us.people.sum", { n: money(p.amountNumber) })}</b>
                         <small className="block break-words">
-                          {[p.description, type, p.paidAt ? humanDay(p.paidAt, t) : null].filter(Boolean).join(" · ")}
+                          {[
+                            p.description,
+                            type,
+                            p.paidAt ? humanDay(p.paidAt, t) : null,
+                            p.dueDate && (p.status === "pending" || p.status === "overdue")
+                              ? t("us.pay.due", { date: formatDue(p.dueDate) })
+                              : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ")}
                         </small>
                       </div>
                       <Tag tone={st.tone} className="flex-none">
@@ -535,6 +546,18 @@ export const StudentDetailPage = () => {
               </option>
             ))}
           </Select>
+          {paymentForm.status !== "PAID" && paymentForm.status !== "CANCELLED" && (
+            <div className="grid gap-1.5">
+              <Input
+                label={t("us.pay.dueDate")}
+                type="date"
+                min={todayInput()}
+                value={paymentForm.dueDate}
+                onChange={(e) => setPaymentForm({ ...paymentForm, dueDate: e.target.value })}
+              />
+              <p className="text-[12.5px] font-semibold text-u-mu">{t("us.pay.dueHint")}</p>
+            </div>
+          )}
           <Input
             label={t("us.people.note")}
             value={paymentForm.description}

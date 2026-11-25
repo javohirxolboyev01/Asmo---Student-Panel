@@ -9,6 +9,7 @@ import { uid, assertStudent, studentScope, liveEnrollment } from "../../utils/te
 import { register } from "../auth/auth.service.js";
 import { parsePage, setTotalCount } from "../../utils/pagination.js";
 import type { Prisma } from "@prisma/client";
+import { afterPaymentChange, dueDateFields } from "../payments/payments.tracking.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -246,6 +247,8 @@ const payCreate = z.object({
     status: z.enum(["PAID", "PENDING", "OVERDUE", "CANCELLED"]).optional(),
     description: z.string().optional(),
     receiptNumber: z.string().optional(),
+    /** Optional due date: a reminder a day before, then automatically overdue. */
+    dueDate: z.coerce.date().optional(),
   }),
   params: z.object({ id: z.string() }),
   query: z.object({}),
@@ -273,10 +276,12 @@ studentsRouter.post(
         description: req.body.description,
         receiptNumber: req.body.receiptNumber,
         dueDate: new Date(),
+        ...dueDateFields(req.body.dueDate),
         teacherName: teacher?.fullName ?? `${(actor as any).firstName} ${(actor as any).lastName}`,
         paidAt: status === "PAID" ? new Date() : null,
       },
     });
+    void afterPaymentChange(null, payment);
     res.status(201).json(paymentSummary(payment));
   }),
 );

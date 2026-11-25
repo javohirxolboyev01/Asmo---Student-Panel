@@ -5,6 +5,7 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { publicUser } from "../../utils/serializers.js";
 import { gradeBody } from "../../utils/schemas.js";
 import { groupScope } from "../../utils/teacherScope.js";
+import { gradeMessage, notifyStudents } from "../telegram/telegram.notify.js";
 
 export const teacherSubmissionsRouter = Router();
 
@@ -62,11 +63,12 @@ teacherSubmissionsRouter.patch(
     if (!submission) return res.status(404).json({ error: "Submission not found" });
     const homework = await prisma.homework.findUniqueOrThrow({ where: { id: submission.homeworkId } });
     if (req.body.score > homework.maxScore) return res.status(400).json({ error: "Score cannot exceed maxScore" });
-    res.json(
-      await prisma.submission.update({
-        where: { id: submission.id },
-        data: { score: req.body.score, feedback: req.body.feedback, status: "GRADED", gradedAt: new Date() },
-      }),
-    );
+    const updated = await prisma.submission.update({
+      where: { id: submission.id },
+      data: { score: req.body.score, feedback: req.body.feedback, status: "GRADED", gradedAt: new Date() },
+    });
+    if (submission.status !== "GRADED" || submission.score !== updated.score || submission.feedback !== updated.feedback)
+      notifyStudents([gradeMessage(submission.studentId, homework.title, req.body.score, homework.maxScore, req.body.feedback)]);
+    res.json(updated);
   }),
 );

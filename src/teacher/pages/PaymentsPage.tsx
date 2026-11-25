@@ -14,6 +14,7 @@ import { Button, Input, Select } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { PaymentsView, paymentTypeConfig, statusConfig, type Payment } from "@/components/Payments/PaymentsView";
+import { dueInputToIso, isoToDueInput, todayInput } from "@/lib/dueDate";
 
 const PAYMENT_TYPES = ["CASH", "CLICK", "PAYME", "BANK", "UZUM"] as const;
 const PAYMENT_STATUSES = ["PENDING", "PAID", "OVERDUE", "CANCELLED"] as const;
@@ -25,6 +26,8 @@ interface PaymentForm {
   status: string;
   description: string;
   receiptNumber: string;
+  /** yyyy-mm-dd or "". */
+  dueDate: string;
 }
 
 const EMPTY_FORM: PaymentForm = {
@@ -34,6 +37,7 @@ const EMPTY_FORM: PaymentForm = {
   status: "PENDING",
   description: "",
   receiptNumber: "",
+  dueDate: "",
 };
 
 export const PaymentsPage = () => {
@@ -73,6 +77,7 @@ export const PaymentsPage = () => {
       status: payment.status.toUpperCase(),
       description: payment.description ?? "",
       receiptNumber: payment.receiptNumber ?? "",
+      dueDate: isoToDueInput(payment.dueDate),
     });
     setFormError(null);
     setIsPaymentModalOpen(true);
@@ -104,6 +109,10 @@ export const PaymentsPage = () => {
             status: paymentForm.status,
             description: paymentForm.description.trim(),
             receiptNumber: paymentForm.receiptNumber.trim(),
+            // Only sent when changed, so saving doesn't re-arm the reminder.
+            ...(paymentForm.dueDate !== isoToDueInput(editing.dueDate)
+              ? { dueDate: dueInputToIso(paymentForm.dueDate) ?? null }
+              : {}),
           },
         });
         toast.success(t("common.updateSuccess"));
@@ -116,6 +125,7 @@ export const PaymentsPage = () => {
             status: paymentForm.status,
             description: paymentForm.description.trim() || undefined,
             receiptNumber: paymentForm.receiptNumber.trim() || undefined,
+            dueDate: paymentForm.status === "PAID" ? undefined : dueInputToIso(paymentForm.dueDate),
           },
         });
         setPaymentForm(EMPTY_FORM);
@@ -237,6 +247,18 @@ export const PaymentsPage = () => {
               ))}
             </Select>
           </div>
+          {paymentForm.status !== "PAID" && paymentForm.status !== "CANCELLED" && (
+            <div className="grid gap-1.5">
+              <Input
+                label={t("us.pay.dueDate")}
+                type="date"
+                min={editing ? undefined : todayInput()}
+                value={paymentForm.dueDate}
+                onChange={set("dueDate")}
+              />
+              <p className="text-[12.5px] font-semibold text-u-mu">{t("us.pay.dueHint")}</p>
+            </div>
+          )}
           <Input label={t("us.manage.payNote")} type="text" value={paymentForm.description} onChange={set("description")} />
           <Input
             label={t("us.manage.payReceipt")}

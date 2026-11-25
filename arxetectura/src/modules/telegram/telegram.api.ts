@@ -7,8 +7,11 @@ export class TelegramApiError extends Error {
   }
 }
 
+// Overridable only for local tests (a fake Telegram server).
+const API_BASE = (process.env.TELEGRAM_API_BASE || "https://api.telegram.org").replace(/\/+$/, "");
+
 export async function tg<T = any>(method: string, params: Record<string, unknown> = {}, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(`https://api.telegram.org/bot${config.telegram.botToken}/${method}`, {
+  const res = await fetch(`${API_BASE}/bot${config.telegram.botToken}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),

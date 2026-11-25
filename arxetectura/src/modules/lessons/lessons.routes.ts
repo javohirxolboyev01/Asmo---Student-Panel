@@ -5,6 +5,7 @@ import { asyncRoute, idSchema, requireAuth, requireRole, validate } from "../../
 import { lower } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
 import { currentUser, assertLesson, groupScope, liveEnrollment } from "../../utils/teacherScope.js";
+import { homeworkMessage, notifyAttendance, notifyStudents } from "../telegram/telegram.notify.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -166,6 +167,7 @@ lessonsRouter.post(
         relatedId: lesson.id,
       })),
     });
+    notifyStudents(lesson.Group.Enrollment.map((e) => homeworkMessage(e.studentId, homework, lesson.Group.name)));
     res.status(201).json(homework);
   }),
 );
@@ -201,6 +203,15 @@ lessonsRouter.post(
       ).map((e) => e.studentId),
     );
     const records = req.body.records.filter((r: any) => enrolled.has(r.userId));
+    // Only new or changed marks are sent to Telegram (re-saving sends nothing).
+    const before = new Map(
+      (
+        await prisma.attendanceRecord.findMany({
+          where: { lessonId: lesson.id, studentId: { in: records.map((r: any) => r.userId) } },
+          select: { studentId: true, status: true },
+        })
+      ).map((r) => [r.studentId, r.status]),
+    );
     await prisma.$transaction(
       records.map((record: any) =>
         prisma.attendanceRecord.upsert({
@@ -210,6 +221,8 @@ lessonsRouter.post(
         }),
       ),
     );
+    const changed = records.filter((r: any) => before.get(r.userId) !== r.status);
+    if (changed.length) void notifyAttendance(lesson.id, changed.map((r: any) => ({ studentId: r.userId, status: r.status })));
     res.json({ message: "Attendance updated" });
   }),
 );

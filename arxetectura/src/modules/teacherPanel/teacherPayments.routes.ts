@@ -6,6 +6,7 @@ import { publicUser } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
 import { paymentData } from "../../utils/schemas.js";
 import { assertStudent, studentScope } from "../../utils/teacherScope.js";
+import { afterPaymentChange, dueDateFields } from "../payments/payments.tracking.js";
 
 export const teacherPaymentsRouter = Router();
 
@@ -50,9 +51,10 @@ teacherPaymentsRouter.post(
   asyncRoute(async (req: any, res: any) => {
     await assertStudent(req, req.body.studentId);
     const payment = await prisma.payment.create({
-      data: { id: newId(), ...req.body },
+      data: { id: newId(), ...req.body, ...dueDateFields(req.body.dueDate) },
       include: { User: { select: publicUser } },
     });
+    void afterPaymentChange(null, payment);
     res.status(201).json(payment);
   }),
 );
@@ -65,9 +67,13 @@ teacherPaymentsRouter.patch(
   asyncRoute(async (req: any, res: any) => {
     const payment = await scopedPayment(req, req.params.id);
     if (!payment) return res.status(404).json({ error: "Payment not found" });
-    res.json(
-      await prisma.payment.update({ where: { id: payment.id }, data: req.body, include: { User: { select: publicUser } } }),
-    );
+    const updated = await prisma.payment.update({
+      where: { id: payment.id },
+      data: { ...req.body, ...(req.body.dueDate ? dueDateFields(req.body.dueDate) : {}) },
+      include: { User: { select: publicUser } },
+    });
+    void afterPaymentChange(payment, updated);
+    res.json(updated);
   }),
 );
 
