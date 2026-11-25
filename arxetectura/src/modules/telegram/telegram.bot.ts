@@ -20,8 +20,11 @@ export const webhookSecret = () =>
 
 const appUrl = () => (config.telegram.publicAppUrl.startsWith("https://") ? config.telegram.publicAppUrl : "");
 
+// style "success" paints the button green (Bot API 9.4+; older apps show the default look).
 const openAppMarkup = () =>
-  appUrl() ? { inline_keyboard: [[{ text: "📚 Ilovani ochish", web_app: { url: appUrl() } }]] } : undefined;
+  appUrl()
+    ? { inline_keyboard: [[{ text: "🚀 Ilovani ochish", style: "success", web_app: { url: appUrl() } }]] }
+    : undefined;
 
 const send = (chatId: number, text: string, withAppButton = false) =>
   tg("sendMessage", {
@@ -30,6 +33,28 @@ const send = (chatId: number, text: string, withAppButton = false) =>
     parse_mode: "HTML",
     ...(withAppButton && openAppMarkup() ? { reply_markup: openAppMarkup() } : {}),
   });
+
+// The welcome banner (public/bot-banner.jpg). After the first upload Telegram
+// gives a file_id, which is reused so the image isn't fetched again each time.
+let bannerFileId = "";
+const sendWithBanner = async (chatId: number, caption: string, withAppButton = false) => {
+  const photo = bannerFileId || (appUrl() ? `${appUrl()}/bot-banner.jpg` : "");
+  if (!photo) return send(chatId, caption, withAppButton);
+  try {
+    const sent = await tg<{ photo?: { file_id: string }[] }>("sendPhoto", {
+      chat_id: chatId,
+      photo,
+      caption,
+      parse_mode: "HTML",
+      ...(withAppButton && openAppMarkup() ? { reply_markup: openAppMarkup() } : {}),
+    });
+    bannerFileId = sent.photo?.at(-1)?.file_id ?? bannerFileId;
+  } catch {
+    // Image unreachable (e.g. mid-deploy): the text alone still does the job.
+    bannerFileId = "";
+    await send(chatId, caption, withAppButton);
+  }
+};
 
 const escapeHtml = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
 
@@ -51,8 +76,18 @@ setInterval(() => {
   for (const [k, v] of failures) if (v.resetAt <= now) failures.delete(k);
 }, 60_000).unref();
 
-const ASK_CODE =
-  "Assalomu alaykum! 👋\n\nUstozingiz bergan <b>8 belgili kodni</b> shu yerga yuboring (masalan: <code>ABCD-EFGH</code>). Kod tasdiqlangach, ilova shu bot ichida ochiladi.";
+const ASK_CODE = [
+  "👋 <b>Assalomu alaykum!</b>",
+  "",
+  "Bu — <b>Asmo Learning</b> o'quvchilar ilovasi: darslar, uyga vazifalar, testlar va coinlar bir joyda.",
+  "",
+  "<b>Qanday boshlash kerak:</b>",
+  "1️⃣ Ustozingizdan <b>8 belgili kod</b> oling",
+  "2️⃣ Kodni shu chatga yuboring, masalan: <code>ABCD-EFGH</code>",
+  "3️⃣ <b>🚀 Ilovani ochish</b> tugmasini bosing",
+  "",
+  "🔒 Kod faqat siz uchun va bir marta ishlatiladi.",
+].join("\n");
 
 async function handleMessage(message: any) {
   const chatId: number = message.chat?.id;
@@ -70,12 +105,16 @@ async function handleMessage(message: any) {
       select: { firstName: true },
     });
     if (linked)
-      return send(chatId, `Salom, <b>${escapeHtml(linked.firstName)}</b>! Ilovani pastdagi tugma orqali oching. 👇`, true);
-    return send(chatId, ASK_CODE);
+      return sendWithBanner(
+        chatId,
+        `👋 Salom, <b>${escapeHtml(linked.firstName)}</b>!\n\nDarslar, vazifalar va testlaringiz sizni kutmoqda. Ilovani pastdagi tugma orqali oching 👇`,
+        true,
+      );
+    return sendWithBanner(chatId, ASK_CODE);
   }
 
   if (tooManyFailures(from.id))
-    return send(chatId, "Juda ko'p noto'g'ri urinish. 15 daqiqadan keyin qayta urinib ko'ring.");
+    return send(chatId, "⏳ Juda ko'p noto'g'ri urinish. 15 daqiqadan keyin qayta urinib ko'ring.");
 
   const code = normalizeCode(payload);
   const student = looksLikeCode(code) ? await redeemLinkCode(code, { id: from.id, username: from.username }) : null;
@@ -83,14 +122,22 @@ async function handleMessage(message: any) {
     recordFailure(from.id);
     return send(
       chatId,
-      "❌ Kod noto'g'ri yoki muddati o'tgan.\n\nKodni tekshirib qayta yuboring yoki ustozingizdan yangi kod so'rang.",
+      "😕 <b>Kod topilmadi</b>\n\nKod noto'g'ri yoki muddati o'tgan. Tekshirib qayta yuboring yoki ustozingizdan yangi kod so'rang.",
     );
   }
   failures.delete(from.id);
   logger.info("Telegram linked", { userId: student.id });
-  await send(
+  await sendWithBanner(
     chatId,
-    `✅ Tayyor, <b>${escapeHtml(student.firstName)}</b>! Hisobingiz shu Telegramga ulandi.\n\nEndi ilovani pastdagi tugma yoki chat menyusidagi <b>Asmo</b> tugmasi orqali oching.`,
+    [
+      `🎉 <b>Tabriklaymiz, ${escapeHtml(student.firstName)}!</b>`,
+      "",
+      "Hisobingiz shu Telegramga ulandi ✅",
+      "",
+      "Ilovani istalgan vaqtda oching:",
+      "• pastdagi <b>🚀 Ilovani ochish</b> tugmasi",
+      "• yoki chat menyusidagi <b>📚 Ilova</b> tugmasi",
+    ].join("\n"),
     true,
   );
   if (!appUrl()) logger.warn("PUBLIC_APP_URL is not an https URL; the bot cannot show the Mini App button");
@@ -108,9 +155,17 @@ export async function handleUpdate(update: any) {
 async function configureBot() {
   const me = await tg<{ username: string }>("getMe");
   botUsername = me.username;
-  await tg("setMyCommands", { commands: [{ command: "start", description: "Ilovani ochish / kod yuborish" }] });
+  await tg("setMyCommands", { commands: [{ command: "start", description: "🚀 Ilovani ochish / kod yuborish" }] });
+  // Shown in an empty chat before "Start", and on the bot's profile.
+  await tg("setMyDescription", {
+    description:
+      "📚 Asmo Learning — o'quvchilar ilovasi.\n\nDarslar, uyga vazifalar, testlar, coinlar va reyting — hammasi Telegram ichida.\n\n▶️ «Start» ni bosing va ustozingiz bergan kodni yuboring.",
+  });
+  await tg("setMyShortDescription", {
+    short_description: "Asmo Learning o'quvchilar ilovasi: darslar, testlar, coinlar va reyting 📚",
+  });
   if (appUrl())
-    await tg("setChatMenuButton", { menu_button: { type: "web_app", text: "Asmo", web_app: { url: appUrl() } } });
+    await tg("setChatMenuButton", { menu_button: { type: "web_app", text: "📚 Ilova", web_app: { url: appUrl() } } });
 }
 
 /** Starts the bot (webhook or opt-in polling). Returns a stop function. */
