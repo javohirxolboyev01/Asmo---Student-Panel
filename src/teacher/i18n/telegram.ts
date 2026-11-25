@@ -3,6 +3,8 @@ import type { TeacherDict } from "./index";
 
 const dict: TeacherDict = {
   uz: {
+    "us.tg.cardTitle": "O'quvchiga kirish kodi",
+    "us.tg.cardSub": "Telegram bot uchun bir martalik kod yarating va o'quvchiga bering.",
     "us.pay.dueDate": "To'lov muddati (ixtiyoriy)",
     "us.pay.dueHint": "Muddatdan 1 kun oldin Telegramga eslatma boradi; o'tib ketsa, to'lov avtomatik «kechikkan» bo'ladi.",
     "us.pay.due": "Muddat: {{date}}",
@@ -31,6 +33,8 @@ const dict: TeacherDict = {
       "Telegram bot hali sozlanmagan. Serverga TELEGRAM_BOT_TOKEN qo'shilgach, shu yerda kod yaratish mumkin bo'ladi.",
   },
   ru: {
+    "us.tg.cardTitle": "Код входа для ученика",
+    "us.tg.cardSub": "Создайте одноразовый код для Telegram-бота и передайте ученику.",
     "us.pay.dueDate": "Срок оплаты (необязательно)",
     "us.pay.dueHint": "За 1 день до срока в Telegram придёт напоминание; после срока оплата станет «просроченной» автоматически.",
     "us.pay.due": "Срок: {{date}}",
@@ -59,6 +63,8 @@ const dict: TeacherDict = {
       "Telegram-бот ещё не настроен. Когда на сервер добавят TELEGRAM_BOT_TOKEN, здесь можно будет создавать коды.",
   },
   en: {
+    "us.tg.cardTitle": "Student login code",
+    "us.tg.cardSub": "Make a one-time code for the Telegram bot and give it to the student.",
     "us.pay.dueDate": "Due date (optional)",
     "us.pay.dueHint": "A Telegram reminder goes out a day before; after the date the payment becomes overdue automatically.",
     "us.pay.due": "Due: {{date}}",

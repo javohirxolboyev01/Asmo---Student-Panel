@@ -21,6 +21,7 @@ import type { TeacherPayment } from "@/types/teacher";
 import { Avatar, BackButton, EmptyBox, Skel, Tag, groupColor, type Tone } from "../components/ui";
 import { GiveCoinSheet } from "../components/sheets";
 import { TelegramLinkModal } from "../components/TelegramLinkModal";
+import { StudentCodeCard } from "../components/StudentCodeCard";
 import { humanDateTime, humanDay } from "@/lib/humanDate";
 import { dueInputToIso, formatDue, todayInput } from "@/lib/dueDate";
 
@@ -270,6 +271,9 @@ export const StudentDetailPage = () => {
 
       <div className="u-two e u-sec">
         <div className="u-stack">
+          {/* Telegram login code — its own card above Groups */}
+          <StudentCodeCard studentId={student.id} studentName={name} />
+
           {/* Groups */}
           <div className="u-card">
             <h2 className="mb-3">{t("us.people.group")}</h2>

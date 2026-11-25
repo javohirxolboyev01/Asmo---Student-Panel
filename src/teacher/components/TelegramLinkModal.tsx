@@ -11,7 +11,7 @@ import { useConfirm } from "@/hooks/useConfirm";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { humanDateTime } from "@/lib/humanDate";
 
-interface TelegramStatus {
+export interface TelegramStatus {
   enabled: boolean;
   linked: boolean;
   username: string | null;
@@ -25,7 +25,8 @@ interface LinkCode {
   link: string | null;
 }
 
-const statusKey = (studentId: string) => ["students", "telegram", studentId] as const;
+export const telegramStatusKey = (studentId: string) => ["students", "telegram", studentId] as const;
+const statusKey = telegramStatusKey;
 
 const CopyButton = ({ text, label }: { text: string; label: string }) => {
   const { t } = useTranslation();
