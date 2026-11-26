@@ -56,11 +56,17 @@ app.use(cors({ origin: config.corsOrigins, exposedHeaders: ['X-Total-Count', 'X-
 app.use(compression());
 app.use(express.json({ limit: '3mb' }));
 morgan.token('rid', (_req, res) => (res as express.Response).locals.requestId);
+// Background polls (chat badge / open thread / notifications) hit the server
+// every few seconds per open tab: log them only when they fail.
+const POLL_PATHS = /^\/api\/(teacher\/chats\/unread|teacher\/chats\/[^/]+\?after=|notifications(\?|$))/;
 app.use(
   morgan(
     config.isProduction
       ? ':remote-addr :rid ":method :url" :status :res[content-length] - :response-time ms'
       : 'dev',
+    {
+      skip: (req, res) => req.method === 'GET' && res.statusCode < 400 && POLL_PATHS.test(req.originalUrl),
+    },
   ),
 );
 app.use('/api', apiRouter);

@@ -1,5 +1,9 @@
 // src/hooks/queries/useChat.ts — teacher ↔ family chat (through the Telegram bot).
-// No websockets: the open thread polls every 5s, the list/badge less often.
+// No websockets, and polls kept cheap for the server: the open thread asks
+// every 5s only for messages after the last one it has; the badge asks every
+// 15s for the unread count + newest message time, and the thread list is
+// refetched only when that time changes (it doesn't poll on its own).
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { API_URL, ApiError, apiGet, apiPost, tokenStorage } from "@/services/apiClient";
 
@@ -47,26 +51,63 @@ export const useChatThreadsQuery = () =>
   useQuery({
     queryKey: keys.list,
     queryFn: () => apiGet<ChatThreadSummary[]>("/teacher/chats"),
-    refetchInterval: 10_000,
   });
 
-export const useChatUnreadQuery = () =>
-  useQuery({
+export const useChatUnreadQuery = () => {
+  const queryClient = useQueryClient();
+  return useQuery({
     queryKey: keys.unread,
-    queryFn: () => apiGet<{ count: number }>("/teacher/chats/unread"),
-    refetchInterval: 20_000,
+    queryFn: async () => {
+      const prev = queryClient.getQueryData<{ count: number; latestAt: string | null }>(keys.unread);
+      const next = await apiGet<{ count: number; latestAt: string | null }>("/teacher/chats/unread");
+      // Something new somewhere: refresh the thread list (only if it's in use).
+      if (prev && prev.latestAt !== next.latestAt)
+        void queryClient.invalidateQueries({ queryKey: keys.list, refetchType: "active" });
+      return next;
+    },
+    refetchInterval: 15_000,
     select: (d) => d.count,
   });
+};
+
+/** Threads that had their full load since they were (re)opened. */
+const loadedFull = new Set<string>();
 
 export const useChatThreadQuery = (studentId: string | undefined) => {
   const queryClient = useQueryClient();
+  // The first fetch after opening a thread is a full one (fresh header, read
+  // marks); the 5s polls after it only ask for what came after the last message.
+  useEffect(() => {
+    if (studentId) loadedFull.delete(studentId);
+  }, [studentId]);
   return useQuery({
     queryKey: keys.thread(studentId ?? ""),
     queryFn: async () => {
+      const key = keys.thread(studentId ?? "");
+      const prev = queryClient.getQueryData<ChatThread>(key);
+      const last = prev?.messages[prev.messages.length - 1];
+      if (prev && last && studentId && loadedFull.has(studentId)) {
+        const { messages, complete } = await apiGet<{ messages: ChatMessage[]; complete: boolean }>(
+          `/teacher/chats/${studentId}?after=${encodeURIComponent(last.createdAt)}`,
+        );
+        if (complete) {
+          const known = new Set(prev.messages.map((m) => m.id));
+          const fresh = messages.filter((m) => !known.has(m.id));
+          if (fresh.length === 0) return prev; // same object: nothing re-renders
+          if (fresh.some((m) => m.fromStudent)) {
+            // They were just marked read on the server.
+            void queryClient.invalidateQueries({ queryKey: keys.unread });
+            void queryClient.invalidateQueries({ queryKey: keys.list, refetchType: "active" });
+          }
+          return { ...prev, messages: [...prev.messages, ...fresh] };
+        }
+        // Too much arrived at once: fall through to a full reload.
+      }
       const data = await apiGet<ChatThread>(`/teacher/chats/${studentId}`);
+      if (studentId) loadedFull.add(studentId);
       // Opening a thread marks it read on the server: refresh the badges.
       void queryClient.invalidateQueries({ queryKey: keys.unread });
-      void queryClient.invalidateQueries({ queryKey: keys.list });
+      void queryClient.invalidateQueries({ queryKey: keys.list, refetchType: "active" });
       return data;
     },
     enabled: Boolean(studentId),

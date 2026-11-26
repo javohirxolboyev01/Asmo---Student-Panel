@@ -79,29 +79,56 @@ teacherChatRouter.get(
   }),
 );
 
-/** Unread incoming messages across the caller's students (nav badge). */
+/** Unread incoming messages across the caller's students (nav badge) + newest message time. */
 teacherChatRouter.get(
   "/teacher/chats/unread",
   ...staff,
   asyncRoute(async (req: any, res: any) => {
-    const count = await prisma.chatMessage.count({
-      where: { fromStudent: true, isRead: false, Student: { role: "STUDENT", ...(await studentScope(req)) } },
-    });
-    res.json({ count });
+    const Student = { role: "STUDENT", ...(await studentScope(req)) };
+    const [count, latest] = await Promise.all([
+      prisma.chatMessage.count({ where: { fromStudent: true, isRead: false, Student } }),
+      prisma.chatMessage.aggregate({ where: { Student }, _max: { createdAt: true } }),
+    ]);
+    // latestAt lets the panel refetch the thread list only when something changed.
+    res.json({ count, latestAt: latest._max.createdAt });
   }),
 );
 
 const studentParam = z.object({ studentId: z.string().min(1) });
 
-/** One thread (latest 300 messages, oldest first); marks incoming ones read. */
+const THREAD_LIMIT = 300;
+const afterQuery = z.object({ after: z.string().datetime({ offset: true }).optional() }).passthrough();
+
+/**
+ * One thread (latest 300 messages, oldest first); marks incoming ones read.
+ * `?after=<createdAt>` is the cheap poll: only messages from that moment on
+ * (the panel drops ids it already has), without the student header.
+ */
 teacherChatRouter.get(
   "/teacher/chats/:studentId",
   ...staff,
-  validate(z.object({ body: noBody, params: studentParam, query: z.object({}).passthrough() })),
+  validate(z.object({ body: noBody, params: studentParam, query: afterQuery })),
   asyncRoute(async (req: any, res: any) => {
     const student = await assertStudent(req, req.params.studentId);
+    const after = req.query.after ? new Date(String(req.query.after)) : null;
+
+    if (after) {
+      const messages = await prisma.chatMessage.findMany({
+        where: { studentId: student.id, createdAt: { gte: after } },
+        orderBy: { createdAt: "asc" },
+        take: THREAD_LIMIT,
+      });
+      // Writes only when something new and unread actually came in.
+      if (messages.some((m) => m.fromStudent && !m.isRead))
+        await prisma.chatMessage.updateMany({
+          where: { studentId: student.id, fromStudent: true, isRead: false },
+          data: { isRead: true },
+        });
+      return res.json({ messages: messages.map(toMessage), complete: messages.length < THREAD_LIMIT });
+    }
+
     const [messages, groups] = await Promise.all([
-      prisma.chatMessage.findMany({ where: { studentId: student.id }, orderBy: { createdAt: "desc" }, take: 300 }),
+      prisma.chatMessage.findMany({ where: { studentId: student.id }, orderBy: { createdAt: "desc" }, take: THREAD_LIMIT }),
       prisma.group.findMany({
         where: { Enrollment: { some: { studentId: student.id, status: { not: "DROPPED" } } } },
         select: { id: true, name: true },
@@ -264,6 +291,21 @@ const FALLBACK_TYPE: Record<string, string> = {
   video: "video/mp4",
 };
 
+// Telegram's download paths stay valid for at least an hour: remembering them
+// saves a getFile round trip every time a file is opened again.
+const PATH_TTL_MS = 50 * 60_000;
+const filePaths = new Map<string, { path: string; at: number }>();
+const cachedPath = (fileId: string) => {
+  const hit = filePaths.get(fileId);
+  if (hit && Date.now() - hit.at < PATH_TTL_MS) return hit.path;
+  filePaths.delete(fileId);
+  return undefined;
+};
+const rememberPath = (fileId: string, path: string) => {
+  if (filePaths.size >= 1000) filePaths.delete(filePaths.keys().next().value!);
+  filePaths.set(fileId, { path, at: Date.now() });
+};
+
 /**
  * A message's photo / voice / video, streamed from Telegram's storage (the
  * download URL holds the bot token, so it never reaches the browser). Bots can
@@ -287,12 +329,15 @@ teacherChatRouter.get(
     });
     if (!message?.fileId || !config.telegram.botToken) return res.status(404).json({ error: "Not found" });
     // The original first; if it's gone (the family deleted the chat), the archive channel's copy.
-    let filePath: string | undefined;
-    for (const fileId of [message.fileId, message.archiveFileId]) {
+    let filePath: string | undefined = cachedPath(message.fileId);
+    for (const fileId of filePath ? [] : [message.fileId, message.archiveFileId]) {
       if (!fileId) continue;
       try {
         filePath = (await tg<{ file_path?: string }>("getFile", { file_id: fileId })).file_path;
-        if (filePath) break;
+        if (filePath) {
+          rememberPath(message.fileId, filePath);
+          break;
+        }
       } catch (error) {
         // "file is too big" (over 20 MB) or an expired id: try the next copy.
         if (!(error instanceof TelegramApiError)) throw error;
@@ -300,12 +345,16 @@ teacherChatRouter.get(
     }
     if (!filePath) return res.status(404).json({ error: "File unavailable", code: "FILE_UNAVAILABLE" });
     const upstream = await fetch(tgFileUrl(filePath));
-    if (!upstream.ok || !upstream.body) return res.status(502).json({ error: "Telegram file unavailable" });
+    if (!upstream.ok || !upstream.body) {
+      filePaths.delete(message.fileId); // the link may have expired: ask Telegram again next time
+      return res.status(502).json({ error: "Telegram file unavailable" });
+    }
     const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
     res.setHeader("Content-Type", CONTENT_TYPES[ext] ?? FALLBACK_TYPE[message.kind] ?? "application/octet-stream");
     const length = upstream.headers.get("content-length");
     if (length) res.setHeader("Content-Length", length);
-    res.setHeader("Cache-Control", "private, max-age=86400");
+    // A message's file never changes: the browser keeps it (private, per user).
+    res.setHeader("Cache-Control", "private, max-age=31536000, immutable");
     Readable.fromWeb(upstream.body as any).pipe(res);
   }),
 );
