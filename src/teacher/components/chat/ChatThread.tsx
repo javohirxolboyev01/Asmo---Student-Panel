@@ -25,6 +25,7 @@ import { ChatMedia } from "./ChatMedia";
 import { Composer } from "./Composer";
 import { GalleryContext } from "./gallery";
 import { MediaViewer, type ViewerItem } from "./MediaViewer";
+import { PlayerBar } from "./PlayerBar";
 import "../../theme/chat-tg.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -83,6 +84,7 @@ const Bubble = ({
   first,
   last,
   name,
+  sender,
   onRetry,
   onDrop,
 }: {
@@ -93,6 +95,8 @@ const Bubble = ({
   last: boolean;
   /** Another staff member's message: their name on top, like in a Telegram group. */
   name: string | null;
+  /** "Siz" or the sender's name (player bar). */
+  sender: string;
   onRetry?: () => void;
   onDrop?: () => void;
 }) => {
@@ -115,12 +119,12 @@ const Bubble = ({
     .join(" ");
 
   let body: ReactNode;
-  if (round) body = <ChatMedia studentId={studentId} message={m} meta={meta} />;
+  if (round) body = <ChatMedia studentId={studentId} message={m} meta={meta} title={sender} />;
   else
     body = (
       <div className="tg-bubble">
         {first && name && <b className="tg-name">{name}</b>}
-        {m.hasFile && <ChatMedia studentId={studentId} message={m} meta={meta} />}
+        {m.hasFile && <ChatMedia studentId={studentId} message={m} meta={meta} title={sender} />}
         {m.text ? (
           <div className="tg-text">
             {m.text}
@@ -354,6 +358,8 @@ export const ChatThread = ({
         </Link>
       </div>
 
+      <PlayerBar />
+
       <GalleryContext.Provider value={gallery}>
         <div className="tg-list" ref={listRef} onScroll={onScroll}>
           <div className="tg-feed" ref={feedRef}>
@@ -382,6 +388,7 @@ export const ChatThread = ({
                       first={!sameGroup(prev, m)}
                       last={!sameGroup(m, next)}
                       name={otherStaff}
+                      sender={m.fromStudent ? name : otherStaff || t("us.chat.you")}
                       onRetry={m.pending ? () => void deliver(m.pending!) : undefined}
                       onDrop={m.pending ? () => drop(m.id) : undefined}
                     />

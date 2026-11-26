@@ -3,12 +3,22 @@
 // (muted loop in the feed, tap for sound + progress ring), photo and video
 // (edge-to-edge, open full screen). Files live on Telegram; the server streams
 // them (staff token required), so they're fetched as blobs and cached per tab.
-import { useContext, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import { Pause, Play, VolumeX, X } from "lucide-react";
 import { API_URL, tokenStorage } from "@/services/apiClient";
 import { chatMediaCache, type ChatMessage } from "@/hooks/queries/useChat";
 import { useTranslation } from "@/hooks/useTranslation";
 import { GalleryContext } from "./gallery";
+import { forgetTrack, playTrack, registerStarter, togglePlay, useMediaClock, usePlayer } from "./player";
 
 export const formatDuration = (seconds: number | null | undefined) => {
   const s = Math.max(0, Math.round(seconds ?? 0));
@@ -44,18 +54,6 @@ export const useMediaUrl = (studentId: string, messageId: string) => {
     };
   }, [studentId, messageId]);
   return { url, failed };
-};
-
-// ── One sound at a time (a new voice / round video pauses the previous one) ──
-
-type Player = { pause: () => void };
-let focused: Player | null = null;
-const takeFocus = (p: Player) => {
-  if (focused && focused !== p) focused.pause();
-  focused = p;
-};
-const releaseFocus = (p: Player) => {
-  if (focused === p) focused = null;
 };
 
 // ── "Listened" marks for incoming voice / round videos (blue dot until played) ──
@@ -145,59 +143,65 @@ export const Spinner = () => (
 
 // ── Voice message ──
 
-const VoiceMessage = ({ studentId, message, meta }: { studentId: string; message: ChatMessage; meta: ReactNode }) => {
+const VoiceMessage = ({
+  studentId,
+  message,
+  meta,
+  title,
+}: {
+  studentId: string;
+  message: ChatMessage;
+  meta: ReactNode;
+  title: string;
+}) => {
   const { t } = useTranslation();
   const { url, failed } = useMediaUrl(studentId, message.id);
   const [played, markPlayed] = usePlayed(message.id);
-  const audio = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [time, setTime] = useState(0);
+  const [el, setEl] = useState<HTMLAudioElement | null>(null);
+  const playing = usePlayer((s) => s.track?.id === message.id && s.playing);
+  const time = useMediaClock(el, playing);
   const known = message.duration ?? 0;
   const [length, setLength] = useState(known);
   const bars = Math.min(46, Math.max(20, Math.round(16 + known * 1.3)));
   const peaks = usePeaks(message.id, url, bars);
-  const player = useRef<Player>({ pause: () => audio.current?.pause() });
 
-  useEffect(() => () => releaseFocus(player.current), []);
+  const start = useCallback(
+    (fromStart: boolean) => {
+      if (!el) return;
+      if (fromStart) el.currentTime = 0;
+      playTrack({ id: message.id, kind: "voice", title, el, length: known, stop: () => el.pause() });
+      if (message.fromStudent) markPlayed();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [el, message.id, title, known, message.fromStudent, played],
+  );
+  useEffect(() => registerStarter(message.id, () => start(true)), [message.id, start]);
+  useEffect(() => () => forgetTrack(message.id), [message.id]);
 
   const toggle = () => {
-    const a = audio.current;
-    if (!a || !url) return;
-    if (a.paused) {
-      takeFocus(player.current);
-      void a.play();
-      if (message.fromStudent) markPlayed();
-    } else a.pause();
+    if (!el) return;
+    if (playing) el.pause();
+    else start(false);
   };
 
   const seek = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const a = audio.current;
-    if (!a || !url || !(length > 0)) return;
+    if (!el || !(length > 0)) return;
     const box = e.currentTarget.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (e.clientX - box.left) / box.width));
-    a.currentTime = ratio * length;
-    setTime(a.currentTime);
+    el.currentTime = Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)) * length;
   };
 
   const progress = length > 0 ? Math.min(1, time / length) : 0;
   const shown = playing || time > 0 ? time : length;
 
   return (
-    <div className="tg-voice">
+    <div className="tg-voice" data-play-id={message.id}>
       {url && (
         <audio
-          ref={audio}
+          ref={setEl}
           src={url}
           preload="metadata"
           onLoadedMetadata={(e) => Number.isFinite(e.currentTarget.duration) && setLength(e.currentTarget.duration)}
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
-          onEnded={() => {
-            setPlaying(false);
-            setTime(0);
-            releaseFocus(player.current);
-          }}
+          onEnded={(e) => (e.currentTarget.currentTime = 0)}
         />
       )}
       <button
@@ -211,10 +215,14 @@ const VoiceMessage = ({ studentId, message, meta }: { studentId: string; message
           <X className="tg-ic" strokeWidth={2.6} />
         ) : !url ? (
           <Spinner />
-        ) : playing ? (
-          <Pause className="tg-ic" fill="currentColor" strokeWidth={0} />
         ) : (
-          <Play className="tg-ic play" fill="currentColor" strokeWidth={0} />
+          <span key={playing ? "pause" : "play"} className="tg-swap">
+            {playing ? (
+              <Pause className="tg-ic" fill="currentColor" strokeWidth={0} />
+            ) : (
+              <Play className="tg-ic play" fill="currentColor" strokeWidth={0} />
+            )}
+          </span>
         )}
       </button>
       <div className="tg-voice-main">
@@ -232,13 +240,11 @@ const VoiceMessage = ({ studentId, message, meta }: { studentId: string; message
           }}
           onPointerMove={(e) => e.buttons === 1 && seek(e)}
         >
-          {peaks.map((p, i) => (
-            <i
-              key={i}
-              className={(i + 0.5) / peaks.length <= progress ? "on" : undefined}
-              style={{ height: `${Math.round(p * 100)}%` }}
-            />
-          ))}
+          {peaks.map((p, i) => {
+            // Bars fill smoothly: the one under the playhead is partly coloured.
+            const fill = Math.min(1, Math.max(0, progress * peaks.length - i));
+            return <i key={i} style={{ height: `${Math.round(p * 100)}%`, "--fill": fill } as CSSProperties} />;
+          })}
         </div>
         <div className="tg-voice-foot">
           <span className="tg-voice-len">
@@ -254,81 +260,79 @@ const VoiceMessage = ({ studentId, message, meta }: { studentId: string; message
 
 // ── Round video ──
 
-const VideoNote = ({ studentId, message, meta }: { studentId: string; message: ChatMessage; meta: ReactNode }) => {
+const VideoNote = ({
+  studentId,
+  message,
+  meta,
+  title,
+}: {
+  studentId: string;
+  message: ChatMessage;
+  meta: ReactNode;
+  title: string;
+}) => {
   const { t } = useTranslation();
   const { url, failed } = useMediaUrl(studentId, message.id);
   const [played, markPlayed] = usePlayed(message.id);
-  const ref = useRef<HTMLVideoElement>(null);
-  // idle = muted loop in the feed; active = playing with sound (or paused by a tap).
-  const [active, setActive] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [time, setTime] = useState(0);
-  const player = useRef<Player>({ pause: () => ref.current?.pause() });
+  const [el, setEl] = useState<HTMLVideoElement | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  // idle = muted loop in the feed; active = the player's track (playing or paused).
+  const active = usePlayer((s) => s.track?.id === message.id);
+  const playing = usePlayer((s) => s.track?.id === message.id && s.playing);
+  const time = useMediaClock(el, playing);
+  const length = message.duration ?? 0;
 
-  const backToIdle = () => {
-    const v = ref.current;
-    setActive(false);
-    setPaused(false);
-    setTime(0);
-    releaseFocus(player.current);
-    if (!v) return;
+  const idle = useCallback((v: HTMLVideoElement) => {
     v.muted = true;
     v.loop = true;
+    v.playbackRate = 1;
     v.currentTime = 0;
     void v.play().catch(() => undefined);
-  };
+  }, []);
+
+  const start = useCallback(() => {
+    if (!el) return;
+    el.loop = false;
+    el.currentTime = 0;
+    playTrack({ id: message.id, kind: "video_note", title, el, length, stop: () => idle(el) });
+    if (message.fromStudent) markPlayed();
+    // Grows to the big size: keep it in view once it has.
+    window.setTimeout(() => box.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 320);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [el, message.id, title, length, idle, message.fromStudent, played]);
+  useEffect(() => registerStarter(message.id, start), [message.id, start]);
+  useEffect(() => () => forgetTrack(message.id), [message.id]);
+
+  // Finished (or the player moved on): back to the silent loop.
+  const wasActive = useRef(false);
+  useEffect(() => {
+    if (wasActive.current && !active && el) idle(el);
+    wasActive.current = active;
+  }, [active, el, idle]);
 
   // Muted loop while on screen, like in Telegram.
   useEffect(() => {
-    const v = ref.current;
-    if (!v || !url) return;
+    if (!el || active) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const io = new IntersectionObserver(([entry]) => {
-      if (reduce || active) return;
-      if (entry.isIntersecting) void v.play().catch(() => undefined);
-      else v.pause();
+      if (reduce) return;
+      if (entry.isIntersecting) void el.play().catch(() => undefined);
+      else el.pause();
     });
-    io.observe(v);
+    io.observe(el);
     return () => io.disconnect();
-  }, [url, active]);
-
-  useEffect(() => {
-    const p = player.current;
-    // Another sound took over: stop this one and go back to the silent loop.
-    p.pause = () => backToIdle();
-    return () => releaseFocus(p);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [el, active]);
 
   const tap = () => {
-    const v = ref.current;
-    if (!v || !url) return;
-    if (!active) {
-      takeFocus(player.current);
-      setActive(true);
-      setPaused(false);
-      v.loop = false;
-      v.muted = false;
-      v.currentTime = 0;
-      void v.play().catch(() => undefined);
-      if (message.fromStudent) markPlayed();
-      return;
-    }
-    if (v.paused) {
-      takeFocus(player.current);
-      setPaused(false);
-      void v.play().catch(() => undefined);
-    } else {
-      setPaused(true);
-      v.pause();
-    }
+    if (!el) return;
+    if (!active) start();
+    else togglePlay();
   };
 
-  const length = message.duration ?? 0;
   const progress = active && length > 0 ? Math.min(1, time / length) : 0;
 
   return (
-    <div className={active ? "tg-round big" : "tg-round"}>
+    <div ref={box} className={active ? "tg-round big" : "tg-round"} data-play-id={message.id}>
       <button
         type="button"
         className="tg-round-btn"
@@ -337,25 +341,14 @@ const VideoNote = ({ studentId, message, meta }: { studentId: string; message: C
         disabled={!url}
       >
         {url ? (
-          <video
-            ref={ref}
-            src={url}
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onTimeUpdate={(e) => active && setTime(e.currentTarget.currentTime)}
-            onEnded={backToIdle}
-          />
+          <video ref={setEl} src={url} muted loop playsInline preload="auto" />
         ) : (
           <span className="tg-round-load">{failed ? <X className="tg-ic" strokeWidth={2.4} /> : <Spinner />}</span>
         )}
-        {active && (
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <circle cx="50" cy="50" r="48.5" pathLength="1" strokeDasharray={`${progress} 1`} />
-          </svg>
-        )}
-        {active && paused && (
+        <svg viewBox="0 0 100 100" aria-hidden="true" className={active ? "on" : undefined}>
+          <circle cx="50" cy="50" r="48.5" pathLength="1" strokeDasharray={`${progress} 1`} />
+        </svg>
+        {active && !playing && (
           <span className="tg-round-play">
             <Play className="tg-ic play" fill="currentColor" strokeWidth={0} />
           </span>
@@ -424,16 +417,19 @@ export const ChatMedia = ({
   studentId,
   message,
   meta,
+  title,
 }: {
   studentId: string;
   message: ChatMessage;
   meta: ReactNode;
+  /** Who sent it, for the player bar ("Siz" or a name). */
+  title: string;
 }) => {
   switch (message.kind) {
     case "voice":
-      return <VoiceMessage studentId={studentId} message={message} meta={meta} />;
+      return <VoiceMessage studentId={studentId} message={message} meta={meta} title={title} />;
     case "video_note":
-      return <VideoNote studentId={studentId} message={message} meta={meta} />;
+      return <VideoNote studentId={studentId} message={message} meta={meta} title={title} />;
     case "photo":
     case "video":
       return <Visual studentId={studentId} message={message} overlayMeta={message.text ? null : meta} />;

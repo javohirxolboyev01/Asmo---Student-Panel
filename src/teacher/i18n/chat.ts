@@ -3,6 +3,12 @@ import type { TeacherDict } from "./index";
 
 const dict: TeacherDict = {
   uz: {
+    "us.chat.player": "Pleer",
+    "us.chat.player.voice": "ovozli xabar",
+    "us.chat.player.videoNote": "video xabar",
+    "us.chat.speed": "Tezlik",
+    "us.chat.mute": "Ovozni o'chirish",
+    "us.chat.unmute": "Ovozni yoqish",
     "us.chat.zoomIn": "Kattalashtirish",
     "us.chat.zoomOut": "Kichraytirish",
     "us.chat.prev": "Oldingi",
@@ -54,6 +60,12 @@ const dict: TeacherDict = {
     "us.chat.action": "Xabar",
   },
   ru: {
+    "us.chat.player": "Плеер",
+    "us.chat.player.voice": "голосовое сообщение",
+    "us.chat.player.videoNote": "видеосообщение",
+    "us.chat.speed": "Скорость",
+    "us.chat.mute": "Выключить звук",
+    "us.chat.unmute": "Включить звук",
     "us.chat.zoomIn": "Увеличить",
     "us.chat.zoomOut": "Уменьшить",
     "us.chat.prev": "Предыдущее",
@@ -105,6 +117,12 @@ const dict: TeacherDict = {
     "us.chat.action": "Написать",
   },
   en: {
+    "us.chat.player": "Player",
+    "us.chat.player.voice": "voice message",
+    "us.chat.player.videoNote": "video message",
+    "us.chat.speed": "Speed",
+    "us.chat.mute": "Mute",
+    "us.chat.unmute": "Unmute",
     "us.chat.zoomIn": "Zoom in",
     "us.chat.zoomOut": "Zoom out",
     "us.chat.prev": "Previous",
