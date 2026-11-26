@@ -12,7 +12,9 @@ export const avatarSchema = z.preprocess(
     .refine(
       (value) =>
         value === null ||
-        /^https?:\/\/|^data:image\/[a-z0-9.+-]+;base64,|^\/avatars\/(boy|girl)-\d{2}\.svg$/.test(value),
+        /^https?:\/\/|^data:image\/[a-z0-9.+-]+;base64,|^\/avatars\/(boy|girl)-\d{2}\.svg$|^\/api\/files\/[a-f0-9]{32}(\.[a-z0-9]{1,8})?$/.test(
+          value,
+        ),
       "Avatar must be an http(s) URL or supported image data URL",
     )
     // SVG avatars only come from PUT /avatar/character, which checks the drawing

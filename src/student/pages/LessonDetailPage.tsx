@@ -12,6 +12,7 @@ import {
 } from "@/hooks/queries/useLessons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
+import { ApiError } from "@/services/apiClient";
 import { queryKeys } from "@/lib/queryClient";
 import { isOverdue } from "@/utilist/calculateDeadline";
 import { formatDateTime } from "@/utilist/formatData";
@@ -127,7 +128,6 @@ export const LessonDetailPage = () => {
   } | null>(null);
   const [sentOpen, setSentOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const prefilledFor = useRef<string | null>(null);
   const { hash } = useLocation();
   const hasHomework = !!data?.homework;
   const jumpedFor = useRef<string | null>(null);
@@ -143,16 +143,6 @@ export const LessonDetailPage = () => {
     return () => window.clearTimeout(timer);
   }, [hash, hasHomework, id]);
 
-  // Prefill the editor with the existing (ungraded) answer once per submission,
-  // so a background refetch never overwrites what the student is typing.
-  useEffect(() => {
-    const s = data?.submission;
-    if (s && s.status !== "graded" && prefilledFor.current !== s.id) {
-      prefilledFor.current = s.id;
-      setContent(s.content ?? "");
-    }
-  }, [data]);
-
   const handleSubmit = () => {
     if (!data?.homework || !content.trim() || !id || submitHomework.isPending)
       return;
@@ -162,6 +152,7 @@ export const LessonDetailPage = () => {
         homeworkId: data.homework.id,
         content,
         attachmentUrl: attachment?.dataUrl,
+        attachmentName: attachment?.name,
       },
       {
         onSuccess: () => {
@@ -177,7 +168,10 @@ export const LessonDetailPage = () => {
         onError: (err) =>
           setMessage({
             type: "error",
-            text: getErrorMessage(err, t("lessonDetail.submitError")),
+            text:
+              err instanceof ApiError && err.code === "ALREADY_SUBMITTED"
+                ? t("space.groups.alreadySent")
+                : getErrorMessage(err, t("lessonDetail.submitError")),
           }),
       },
     );
@@ -246,8 +240,9 @@ export const LessonDetailPage = () => {
     : { to: "/groups", label: t("groups.title") };
   const graded = submission?.status === "graded";
   const overdue = homework ? isOverdue(homework.deadline) : false;
+  // One answer per homework: once it's sent it can't be changed.
   const canSubmit =
-    !!homework && homework.status === "active" && !overdue && !graded;
+    !!homework && homework.status === "active" && !overdue && !graded && !submission;
   const pending = submitHomework.isPending;
   const state = hwStateOf(homework, submission, true);
   const when = lessonWhen(lesson.lessonDate);
@@ -439,20 +434,16 @@ export const LessonDetailPage = () => {
                 </div>
               )}
 
-              {/* Submit / resubmit */}
+              {/* Submit (only before the first answer: it can't be changed later) */}
               {canSubmit && (
                 <div className="sp-groups-block">
                   <label className="sp-fl" htmlFor="sp-hw-answer">
                     <span className="sp-hwc-label">
-                      {submission
-                        ? t("lessonDetail.editTitle")
-                        : t("lessonDetail.submitTitle")}
+                      {t("lessonDetail.submitTitle")}
                     </span>
                   </label>
                   <small className="sp-groups-meta !mt-0.5">
-                    {submission
-                      ? t("space.groups.resubmitHint")
-                      : t("space.groups.answerHint")}
+                    {t("space.groups.answerHint")} {t("space.groups.finalHint")}
                   </small>
                   <textarea
                     id="sp-hw-answer"
@@ -489,11 +480,6 @@ export const LessonDetailPage = () => {
                           <CircleX aria-hidden="true" />
                         </button>
                       </div>
-                      {submission?.attachmentUrl && (
-                        <small className="sp-groups-meta">
-                          {t("space.groups.replaceFile")}
-                        </small>
-                      )}
                     </div>
                   )}
 
@@ -514,9 +500,7 @@ export const LessonDetailPage = () => {
                       disabled={!content.trim() || pending}
                     >
                       {pending ? <Spinner /> : <Send aria-hidden="true" />}{" "}
-                      {submission
-                        ? t("lessonDetail.resubmit")
-                        : t("lessonDetail.submit")}
+                      {t("lessonDetail.submit")}
                     </button>
                   </div>
                   {message && (

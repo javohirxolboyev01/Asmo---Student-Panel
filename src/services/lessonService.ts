@@ -111,7 +111,7 @@ export const lessonService = {
     };
   },
 
-  submitHomework: async (homeworkId: string, content: string, attachmentUrl?: string) => {
-    return apiPost(`/homework/${homeworkId}/submit`, { content, attachmentUrl });
+  submitHomework: async (homeworkId: string, content: string, attachmentUrl?: string, attachmentName?: string) => {
+    return apiPost(`/homework/${homeworkId}/submit`, { content, attachmentUrl, attachmentName });
   },
 };

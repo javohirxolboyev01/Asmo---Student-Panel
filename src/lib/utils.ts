@@ -14,5 +14,6 @@ export function getAvatarUrl(avatar: string | null | undefined, seed: string) {
 // Ba'zi maydonlar (avatar, mahsulot rasmi) emoji/initsial YOKI to'liq rasm URL bo'lishi mumkin —
 // UI qaysi holatda <img> render qilishni shu bilan aniqlaydi.
 export function isImageUrl(value: string | null | undefined): value is string {
-  return typeof value === "string" && /^(https?:)?\/\//.test(value);
+  // http(s) links, or photos kept on Telegram and served at /api/files/<id>.<ext>.
+  return typeof value === "string" && (/^(https?:)?\/\//.test(value) || /^\/api\/files\/[a-f0-9]{32}/.test(value));
 }

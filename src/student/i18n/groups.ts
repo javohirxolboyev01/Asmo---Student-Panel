@@ -65,6 +65,8 @@ const dict: StudentDict = {
     "space.groups.maxScore": "Eng yuqori ball: {{n}}",
     "space.groups.resubmitHint": "Baho qo'yilguncha javobni o'zgartirib, qayta yuborishingiz mumkin.",
     "space.groups.answerHint": "Javobni yozing. Kerak bo'lsa, 2 MB gacha fayl yoki rasm biriktiring.",
+    "space.groups.finalHint": "Yuborilgan javobni keyin o'zgartirib bo'lmaydi.",
+    "space.groups.alreadySent": "Bu vazifaga javob allaqachon yuborilgan — uni o'zgartirib bo'lmaydi.",
   },
   ru: {
     "space.groups.emptyActive": "Нет активных групп",
@@ -129,6 +131,8 @@ const dict: StudentDict = {
     "space.groups.maxScore": "Максимум баллов: {{n}}",
     "space.groups.resubmitHint": "Пока нет оценки, ответ можно изменить и отправить заново.",
     "space.groups.answerHint": "Напишите ответ. Если нужно, прикрепите файл или фото до 2 МБ.",
+    "space.groups.finalHint": "Отправленный ответ потом изменить нельзя.",
+    "space.groups.alreadySent": "Ответ на это задание уже отправлен — изменить его нельзя.",
   },
   en: {
     "space.groups.emptyActive": "No active groups",
@@ -193,6 +197,8 @@ const dict: StudentDict = {
     "space.groups.maxScore": "Max score: {{n}}",
     "space.groups.resubmitHint": "Until it's graded you can change your answer and send it again.",
     "space.groups.answerHint": "Write your answer. Attach a file or photo up to 2 MB if needed.",
+    "space.groups.finalHint": "Once sent, the answer can't be changed.",
+    "space.groups.alreadySent": "This homework is already submitted — it can't be changed.",
   },
 };
 

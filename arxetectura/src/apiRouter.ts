@@ -25,6 +25,7 @@ import { missionsRouter } from "./modules/missions/missions.routes.js";
 import { avatarRouter } from "./modules/avatar/avatar.routes.js";
 import { quizzesRouter } from "./modules/quizzes/quizzes.routes.js";
 import { telegramRouter } from "./modules/telegram/telegram.routes.js";
+import { filesRouter } from "./modules/files/files.store.js";
 import {
   teacherAttendanceRouter,
   teacherChatRouter,
@@ -51,6 +52,8 @@ router.get("/health/ready", async (_req, res) => {
   }
 });
 
+// Stored files (homework attachments, photos) live on Telegram; public by unguessable link.
+router.use(filesRouter);
 router.use(authRouter);
 router.use(telegramRouter);
 router.use(profileRouter);

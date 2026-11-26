@@ -430,3 +430,21 @@ model ChatMessage {
   @@index([fromStudent, isRead])
   @@index([archivedAt, createdAt])
 }
+
+/// A file kept on Telegram (the archive channel is the file storage): students'
+/// homework attachments and profile photos. Only Telegram's file_id is stored;
+/// GET /api/files/:id streams it. The id is random and unguessable — the link
+/// itself is the permission (like a private link), so <img src> works.
+model StoredFile {
+  id        String   @id
+  fileId    String
+  /// homework | avatar
+  kind      String
+  ownerId   String?
+  mime      String
+  name      String?
+  size      Int
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}

@@ -115,7 +115,7 @@ async function photoToAvatar(file: File): Promise<string> {
 
 /** A photo (not drawn character) avatar the editor can show and keep. */
 const isPhotoAvatar = (v: string | null | undefined): v is string =>
-  !!v && (/^data:image\/(?!svg)/i.test(v) || /^https?:\/\//i.test(v));
+  !!v && (/^data:image\/(?!svg)/i.test(v) || /^https?:\/\//i.test(v) || /^\/api\/files\//.test(v));
 
 const Svg = ({ html, className }: { html: string; className?: string }) => (
   <span className={className} dangerouslySetInnerHTML={{ __html: html }} />

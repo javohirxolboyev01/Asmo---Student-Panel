@@ -6,6 +6,8 @@ import { asyncRoute, requireAuth, validate } from "../../middleware/index.js";
 import { publicUser } from "../../utils/serializers.js";
 import { uid } from "../../utils/teacherScope.js";
 import { avatarSchema } from "../../utils/schemas.js";
+import { fileCaption, storeDataUrl } from "../files/files.store.js";
+import { logger } from "../../lib/logger.js";
 
 export const profileRouter = Router();
 
@@ -43,7 +45,25 @@ profileRouter.patch(
   requireAuth,
   validate(profileSchema),
   asyncRoute(async (req: any, res: any) => {
-    const user = await prisma.user.update({ where: { id: uid(req) }, data: req.body, select: publicUser });
+    const data = { ...req.body };
+    // A photo avatar goes to the Telegram archive channel; only its link is kept.
+    if (typeof data.avatar === "string" && data.avatar.startsWith("data:image/")) {
+      const me = await prisma.user.findUniqueOrThrow({
+        where: { id: uid(req) },
+        select: { firstName: true, lastName: true, role: true },
+      });
+      try {
+        data.avatar = await storeDataUrl(data.avatar, {
+          kind: "avatar",
+          ownerId: uid(req),
+          caption: fileCaption("🖼 Profil rasmi", [`${me.firstName} ${me.lastName}`, me.role]),
+        });
+      } catch (error) {
+        logger.warn("Avatar upload to Telegram failed", { error });
+        return res.status(502).json({ error: "The photo couldn't be saved, try again", code: "FILE_STORE_FAILED" });
+      }
+    }
+    const user = await prisma.user.update({ where: { id: uid(req) }, data, select: publicUser });
     res.json(user);
   }),
 );

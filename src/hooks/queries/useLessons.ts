@@ -18,12 +18,15 @@ export const useSubmitHomeworkMutation = (lessonId: string) => {
       homeworkId,
       content,
       attachmentUrl,
+      attachmentName,
     }: {
       homeworkId: string;
       content: string;
       attachmentUrl?: string;
-    }) => lessonService.submitHomework(homeworkId, content, attachmentUrl),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.lesson(lessonId) }),
+      attachmentName?: string;
+    }) => lessonService.submitHomework(homeworkId, content, attachmentUrl, attachmentName),
+    // On error too: "already submitted" (another device) should show the saved answer.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.lesson(lessonId) }),
   });
 };
 
