@@ -38,6 +38,10 @@ app.use(
       directives: {
         // Avatars and product images may be external URLs or data: URLs.
         'img-src': ["'self'", 'data:', 'blob:', 'https:'],
+        // Chat voice messages / videos are fetched with the staff token and
+        // played from blob: URLs (also read back to draw the voice waveform).
+        'media-src': ["'self'", 'blob:'],
+        'connect-src': ["'self'", 'blob:'],
         // Telegram Mini App SDK.
         'script-src': ["'self'", 'https://telegram.org'],
         // Telegram Web shows Mini Apps in an iframe.

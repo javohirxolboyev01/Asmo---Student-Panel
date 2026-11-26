@@ -9,11 +9,12 @@ import { AlertTriangle, Search, Users } from "lucide-react";
 import { useChatThreadsQuery, type ChatMessage } from "@/hooks/queries/useChat";
 import { useStudentsQuery } from "@/hooks/queries/useStudents";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button, Input } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { getErrorMessage } from "@/lib/toast";
 import { dayDiff, humanDay } from "@/lib/humanDate";
 import { Avatar, EmptyBox, Skel } from "../ui";
 import { chatPreview } from "./ChatMedia";
+import "../../theme/chat-tg.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -34,40 +35,57 @@ interface Row {
   unread: number;
 }
 
+/** Media kinds read like Telegram's previews: the kind in the accent colour. */
+const Preview = ({ m }: { m: ChatMessage }) => {
+  const { t } = useTranslation();
+  if (m.kind === "text") return <>{m.text}</>;
+  const label = chatPreview({ kind: m.kind, text: "" }, t);
+  return (
+    <>
+      <span className="tg-row-kind">{label}</span>
+      {m.text && <>, {m.text}</>}
+    </>
+  );
+};
+
 const ChatRow = ({ row, onOpen }: { row: Row; onOpen?: (studentId: string) => void }) => {
   const { t } = useTranslation();
   const body = (
     <>
-      <Avatar name={row.name} src={row.avatar} seed={row.id} />
-      <div className="g">
-        <div className="flex items-baseline justify-between gap-2">
-          <b className="truncate">{row.name}</b>
-          {row.last && <small className="u-sub !m-0 flex-none">{shortWhen(row.last.createdAt, t)}</small>}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          {row.last ? (
-            <span className={row.unread > 0 ? "u-chat-pv on" : "u-chat-pv"}>
-              {!row.last.fromStudent && <>{t("us.chat.you")}: </>}
-              {chatPreview(row.last, t)}
-            </span>
-          ) : (
-            <span className="u-chat-pv">{row.groups || t("us.chat.noMessages")}</span>
+      <Avatar name={row.name} src={row.avatar} seed={row.id} className="tg-row-av" />
+      <div className="tg-row-main">
+        <div className="tg-row-top">
+          <b>{row.name}</b>
+          {row.last && (
+            <small className="tg-row-time">
+              {!row.last.fromStudent && (
+                <svg className="tg-tick" viewBox="0 0 16 16" aria-label={t("us.chat.you")}>
+                  <path d="M3 8.6l3.2 3.1L13 4.6" />
+                </svg>
+              )}
+              {shortWhen(row.last.createdAt, t)}
+            </small>
           )}
+        </div>
+        <div className="tg-row-bottom">
+          <span className="tg-row-pv">
+            {row.last ? <Preview m={row.last} /> : row.groups || t("us.chat.noMessages")}
+          </span>
           {row.unread > 0 ? (
-            <span className="u-chat-n">{row.unread > 99 ? "99+" : row.unread}</span>
+            <span className="tg-row-badge">{row.unread > 99 ? "99+" : row.unread}</span>
           ) : (
-            !row.telegramLinked && <span className="u-chat-off-tag">{t("us.chat.unlinkedTag")}</span>
+            !row.telegramLinked && <span className="tg-row-off">{t("us.chat.unlinkedTag")}</span>
           )}
         </div>
       </div>
     </>
   );
   return onOpen ? (
-    <button type="button" className="u-row" onClick={() => onOpen(row.id)}>
+    <button type="button" className="tg-row" onClick={() => onOpen(row.id)}>
       {body}
     </button>
   ) : (
-    <Link to={`/chat/${row.id}`} className="u-row">
+    <Link to={`/chat/${row.id}`} className="tg-row">
       {body}
     </Link>
   );
@@ -130,21 +148,21 @@ export const ChatList = ({ onOpen }: { onOpen?: (studentId: string) => void }) =
   const error = threadsQuery.error ?? studentsQuery.error;
 
   return (
-    <>
-      <div className="mb-3">
-        <Input
+    <div className="tg-chats">
+      <label className="tg-search">
+        <Search className="tg-ic s" strokeWidth={2.2} aria-hidden="true" />
+        <input
           type="search"
           placeholder={t("us.chat.search")}
           aria-label={t("us.chat.search")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          leftIcon={<Search className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden="true" />}
         />
-      </div>
+      </label>
       {isLoading ? (
-        <div className="u-stack">
-          {Array.from({ length: 5 }, (_, i) => (
-            <Skel key={i} className="h-[68px] rounded-[18px]" />
+        <div className="grid gap-1 p-2">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skel key={i} className="h-[66px] rounded-[12px]" />
           ))}
         </div>
       ) : error ? (
@@ -166,12 +184,12 @@ export const ChatList = ({ onOpen }: { onOpen?: (studentId: string) => void }) =
       ) : shown.length === 0 ? (
         <EmptyBox icon={Users} title={t("us.chat.noStudents")} />
       ) : (
-        <div className="u-stack !gap-2">
+        <div className="tg-rows">
           {shown.map((row) => (
             <ChatRow key={row.id} row={row} onOpen={onOpen} />
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 };

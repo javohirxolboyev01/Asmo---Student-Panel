@@ -1733,29 +1733,6 @@ a.u-chip:active {
 
 /* ══════════ Chat (teacher ↔ family via the Telegram bot) ══════════ */
 /* Thread list */
-.u-chat-pv {
-  min-width: 0;
-  overflow: hidden;
-  color: var(--mu);
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.u-chat-pv.on {
-  color: var(--tx);
-  font-weight: 700;
-}
-.u-chat-n {
-  flex: none;
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: 99px;
-  background: var(--pr);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
 
 /* Thread page: the phone tab bar is hidden and the page fills the screen. */
 .u-app.is-chat {
@@ -1882,12 +1859,3 @@ a.u-chip:active {
   }
 }
 
-.u-chat-off-tag {
-  flex: none;
-  padding: 1px 8px;
-  border-radius: 99px;
-  background: var(--sf2);
-  color: var(--mu);
-  font-size: 11.5px;
-  font-weight: 700;
-}
