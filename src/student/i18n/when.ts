@@ -1,9 +1,19 @@
 // Human dates ("Bugun 14:00", "Kecha", "3 kun qoldi") used by lib/humanDate.ts
-// in both panels. All dictionaries are merged into one, so teacher pages can use these too.
+// in both panels, plus the shared date / time / select pickers (picker.*). All dictionaries are merged into one, so teacher pages can use these too.
 import type { StudentDict } from "./index";
 
 const dict: StudentDict = {
   uz: {
+    "picker.months": "Yanvar,Fevral,Mart,Aprel,May,Iyun,Iyul,Avgust,Sentabr,Oktabr,Noyabr,Dekabr",
+    "picker.weekdays": "Du,Se,Ch,Pa,Ju,Sh,Ya",
+    "picker.prevMonth": "Oldingi oy",
+    "picker.nextMonth": "Keyingi oy",
+    "picker.hours": "Soat",
+    "picker.minutes": "Daqiqa",
+    "picker.clear": "Tozalash",
+    "picker.done": "Tayyor",
+    "picker.search": "Qidirish",
+    "picker.noResults": "Hech narsa topilmadi",
     "notes.coins": "Coin balansingiz o'zgardi",
     "notes.graded": "Uy vazifangiz baholandi",
     "notes.submission": "Yangi uy vazifasi topshirildi",
@@ -20,6 +30,16 @@ const dict: StudentDict = {
     "unit.lessons": "dars",
   },
   ru: {
+    "picker.months": "Январь,Февраль,Март,Апрель,Май,Июнь,Июль,Август,Сентябрь,Октябрь,Ноябрь,Декабрь",
+    "picker.weekdays": "Пн,Вт,Ср,Чт,Пт,Сб,Вс",
+    "picker.prevMonth": "Предыдущий месяц",
+    "picker.nextMonth": "Следующий месяц",
+    "picker.hours": "Часы",
+    "picker.minutes": "Минуты",
+    "picker.clear": "Очистить",
+    "picker.done": "Готово",
+    "picker.search": "Поиск",
+    "picker.noResults": "Ничего не найдено",
     "notes.coins": "Баланс коинов изменился",
     "notes.graded": "Домашнее задание оценено",
     "notes.submission": "Сдано новое домашнее задание",
@@ -36,6 +56,16 @@ const dict: StudentDict = {
     "unit.lessons": "уроков",
   },
   en: {
+    "picker.months": "January,February,March,April,May,June,July,August,September,October,November,December",
+    "picker.weekdays": "Mo,Tu,We,Th,Fr,Sa,Su",
+    "picker.prevMonth": "Previous month",
+    "picker.nextMonth": "Next month",
+    "picker.hours": "Hours",
+    "picker.minutes": "Minutes",
+    "picker.clear": "Clear",
+    "picker.done": "Done",
+    "picker.search": "Search",
+    "picker.noResults": "Nothing found",
     "notes.coins": "Your coin balance changed",
     "notes.graded": "Your homework was graded",
     "notes.submission": "New homework submitted",

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Modal } from "@/components/common/Modal";
-import { Button, Input, Select, Textarea } from "@/components/ui";
+import { Button, Input, Select, Textarea, DateTimeField } from "@/components/ui";
 import {
   useSubmissionDetailQuery,
   useGradeSubmissionMutation,
@@ -495,9 +495,8 @@ export const AddLessonSheet = ({
             aria-invalid={!!fieldErrors.topic}
             required
           />
-          <Input
+          <DateTimeField
             label={t("us.lesson.dateTime")}
-            type="datetime-local"
             value={form.lessonDate}
             onChange={set("lessonDate")}
             error={fieldErrors.lessonDate}
@@ -529,9 +528,9 @@ export const AddLessonSheet = ({
           />
           {form.hw.trim() && (
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3.5">
-              <Input
+              <DateTimeField
+                defaultTime="20:00"
                 label={t("us.lesson.due")}
-                type="datetime-local"
                 value={form.due}
                 onChange={set("due")}
                 error={fieldErrors.due}

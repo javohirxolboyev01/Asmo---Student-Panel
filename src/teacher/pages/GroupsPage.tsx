@@ -12,7 +12,7 @@ import {
 import { useTeachersQuery } from "@/hooks/queries/useTeachers";
 import { useTranslation } from "@/hooks/useTranslation";
 import { Modal } from "@/components/common/Modal";
-import { Button, Input, Select } from "@/components/ui";
+import { Button, Input, Select, TimeField } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { GroupsView } from "@/components/Groups/GroupsView";
@@ -185,9 +185,8 @@ export const GroupsPage = () => {
             onChange={set("scheduleDays")}
           />
           <div className="grid grid-cols-2 gap-3">
-            <Input
+            <TimeField
               label={t("groups.scheduleTime")}
-              type="time"
               value={groupForm.scheduleTime}
               onChange={set("scheduleTime")}
             />

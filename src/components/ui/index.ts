@@ -6,3 +6,5 @@ export * from "./Textarea";
 export * from "./Select";
 export * from "./Checkbox";
 export * from "./Dropdown";
+export * from "./Popover";
+export * from "./DateTime";

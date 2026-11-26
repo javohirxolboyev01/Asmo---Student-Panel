@@ -32,7 +32,7 @@ import type { LessonRosterEntry } from "@/types/teacher";
 import { queryKeys } from "@/lib/queryClient";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn, isImageUrl } from "@/lib/utils";
-import { Button, Input, Textarea } from "@/components/ui";
+import { Button, Input, Textarea, DateTimeField } from "@/components/ui";
 import {
   Avatar,
   BackButton,
@@ -572,8 +572,8 @@ export const LessonDetailPage = () => {
                     value={homeworkForm.maxScore}
                     onChange={setHw("maxScore")}
                   />
-                  <Input
-                    type="datetime-local"
+                  <DateTimeField
+                    defaultTime="20:00"
                     label={t("lessonDetail.deadlineFormLabel")}
                     value={homeworkForm.deadline}
                     onChange={setHw("deadline")}

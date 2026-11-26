@@ -10,7 +10,7 @@ import {
 import { useStudentsQuery } from "@/hooks/queries/useStudents";
 import { Modal } from "@/components/common/Modal";
 import { useTranslation } from "@/hooks/useTranslation";
-import { Button, Input, Select } from "@/components/ui";
+import { Button, Input, Select, DateField } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
 import { PaymentsView, paymentTypeConfig, statusConfig, type Payment } from "@/components/Payments/PaymentsView";
@@ -249,9 +249,8 @@ export const PaymentsPage = () => {
           </div>
           {paymentForm.status !== "PAID" && paymentForm.status !== "CANCELLED" && (
             <div className="grid gap-1.5">
-              <Input
+              <DateField
                 label={t("us.pay.dueDate")}
-                type="date"
                 min={editing ? undefined : todayInput()}
                 value={paymentForm.dueDate}
                 onChange={set("dueDate")}

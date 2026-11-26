@@ -13,7 +13,7 @@ import { useGroupsQuery, useEnrollStudentMutation, useUnenrollStudentMutation } 
 import { useAddPaymentMutation } from "@/hooks/queries/usePayments";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Modal } from "@/components/common/Modal";
-import { Button, Input, Select } from "@/components/ui";
+import { Button, Input, Select, DateField } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -558,9 +558,8 @@ export const StudentDetailPage = () => {
           </Select>
           {paymentForm.status !== "PAID" && paymentForm.status !== "CANCELLED" && (
             <div className="grid gap-1.5">
-              <Input
+              <DateField
                 label={t("us.pay.dueDate")}
-                type="date"
                 min={todayInput()}
                 value={paymentForm.dueDate}
                 onChange={(e) => setPaymentForm({ ...paymentForm, dueDate: e.target.value })}

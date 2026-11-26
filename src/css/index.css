@@ -428,3 +428,271 @@ input[type="search"].u-field {
     animation: overlay-in 0.15s ease-out;
   }
 }
+
+/* ══════════ Shared pickers (Select, DateField, TimeField, DateTimeField) ══════════ */
+.u-field.is-open {
+  border-color: rgb(var(--u-prf2));
+  box-shadow: 0 0 0 4px rgb(var(--u-prf2) / 0.16);
+}
+.u-popover {
+  color: rgb(var(--u-tx));
+}
+
+/* Calendar */
+.u-cal {
+  width: 100%;
+  min-width: 0;
+}
+.u-cal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.u-cal-head b {
+  font-size: 15.5px;
+  font-weight: 800;
+}
+.u-cal-nav {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: rgb(var(--u-mu));
+  transition: background-color 0.15s, color 0.15s;
+}
+.u-cal-nav:hover:not(:disabled) {
+  background: rgb(var(--u-sf2));
+  color: rgb(var(--u-tx));
+}
+.u-cal-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.u-cal-week,
+.u-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.u-cal-week span {
+  padding: 4px 0;
+  color: rgb(var(--u-mu));
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.u-cal-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-height: 36px;
+  border-radius: 12px;
+  color: rgb(var(--u-tx));
+  font-size: 14.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.12s, color 0.12s;
+}
+.u-cal-day:hover:not(:disabled):not(.sel) {
+  background: rgb(var(--u-sf2));
+}
+.u-cal-day:focus-visible {
+  outline: 2px solid rgb(var(--u-prf2));
+  outline-offset: -2px;
+}
+.u-cal-day.out {
+  color: rgb(var(--u-mu) / 0.6);
+}
+.u-cal-day.today:not(.sel) {
+  color: rgb(var(--u-pr));
+}
+.u-cal-day.today:not(.sel)::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.u-cal-day.sel {
+  background: rgb(var(--u-prf));
+  color: #fff;
+}
+.u-cal-day:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+/* Time columns */
+.u-time {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.u-time-labels {
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr;
+  color: rgb(var(--u-mu));
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.u-time-labels span:last-child {
+  grid-column: 3;
+}
+.u-time-cols {
+  display: grid;
+  grid-template-columns: 1fr 14px 1fr;
+  align-items: center;
+  height: 236px;
+}
+.u-time-sep {
+  text-align: center;
+  font-size: 18px;
+  color: rgb(var(--u-mu));
+}
+.u-time-col {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 2px;
+}
+.u-time-col::-webkit-scrollbar {
+  display: none;
+}
+.u-time-opt {
+  min-height: 38px;
+  border-radius: 10px;
+  color: rgb(var(--u-tx));
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.12s;
+}
+.u-time-opt:hover:not(.sel) {
+  background: rgb(var(--u-sf2));
+}
+.u-time-opt.sel {
+  background: rgb(var(--u-prf));
+  color: #fff;
+}
+
+/* Date + time side by side (stacked on phones) */
+.u-dt {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 560px) {
+  .u-dt {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+  .u-dt .u-time-cols {
+    height: 100%;
+    min-height: 240px;
+    max-height: 290px;
+  }
+  .u-dt .u-time {
+    grid-template-rows: auto 1fr;
+    padding-left: 12px;
+    border-left: 1px solid rgb(var(--u-ln));
+  }
+}
+@media (max-width: 559px) {
+  .u-dt .u-time-cols {
+    height: 150px;
+  }
+}
+
+.u-pick-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(var(--u-ln));
+}
+.u-pick-link {
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: rgb(var(--u-pr));
+  font-size: 14.5px;
+  font-weight: 800;
+  transition: background-color 0.15s;
+}
+.u-pick-link:hover {
+  background: rgb(var(--u-prt));
+}
+.u-pick-link.muted {
+  color: rgb(var(--u-mu));
+}
+.u-pick-link.muted:hover {
+  background: rgb(var(--u-sf2));
+}
+.u-pick-btn {
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: rgb(var(--u-prf));
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 800;
+  transition: opacity 0.15s, transform 0.12s;
+}
+.u-pick-btn:disabled {
+  opacity: 0.45;
+}
+.u-pick-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Pickers on phones: a bottom sheet like the app's other sheets */
+.u-pick-sheet {
+  position: absolute;
+  inset: auto 0 0;
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  border-radius: 28px 28px 0 0;
+  animation: u-pick-up 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.u-pick-grab {
+  display: block;
+  width: 40px;
+  height: 5px;
+  margin: 0 auto 10px;
+  border-radius: 99px;
+  background: rgb(var(--u-mu) / 0.3);
+}
+.u-pick-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 800;
+}
+.u-pick-sheet .u-cal-day {
+  min-height: 42px;
+}
+.u-pick-sheet .u-pick-btn,
+.u-pick-sheet .u-pick-link {
+  min-height: 44px;
+}
+@keyframes u-pick-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
