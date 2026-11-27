@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ChevronLeft, CircleX, Search, WifiOff, type LucideIcon } from "lucide-react";
 import { useGoBack } from "@/hooks/useNavigationHistory";
+import { useTelegramBack } from "@/hooks/useTelegram";
 
 // ── Page header ──
 
@@ -272,6 +273,21 @@ export const Switch = ({
 
 // ── Modal ──
 
+let locks = 0;
+/**
+ * While a sheet is open the page behind it doesn't scroll (a swipe on the
+ * sheet used to drag the page underneath on phones). Counted for stacked sheets.
+ */
+export const useScrollLock = (active: boolean) => {
+  useEffect(() => {
+    if (!active) return;
+    if (locks++ === 0) document.documentElement.classList.add("sp-lock");
+    return () => {
+      if (--locks === 0) document.documentElement.classList.remove("sp-lock");
+    };
+  }, [active]);
+};
+
 export const Modal = ({
   open,
   onClose,
@@ -294,6 +310,9 @@ export const Modal = ({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+  // Telegram's back button closes the sheet first, like a phone app.
+  useTelegramBack(onClose, open);
+  useScrollLock(open);
 
   if (!open) return null;
   // Portal into the themed root so the `.sp` tokens still apply.

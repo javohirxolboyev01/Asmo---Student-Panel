@@ -9,9 +9,12 @@
   line-height: 1;
   flex-shrink: 0;
 }
-.sp-gc:hover,
-.sp-groups-lesson:hover {
-  border-color: var(--sp-lime-ink);
+/* Mouse only: on touch screens :hover sticks to the last tapped item. */
+@media (hover: hover) {
+  .sp-gc:hover,
+  .sp-groups-lesson:hover {
+    border-color: var(--sp-lime-ink);
+  }
 }
 .sp-gc .sp-t > b {
   overflow-wrap: anywhere;

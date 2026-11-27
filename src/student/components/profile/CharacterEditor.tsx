@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTelegramBack } from "@/hooks/useTelegram";
 import { useAvatarItemsQuery, usePurchaseAvatarItemMutation } from "@/hooks/queries/useAvatarItems";
 import { getErrorMessage } from "@/lib/toast";
 import {
@@ -286,6 +287,8 @@ export const CharacterEditor = ({ avatar, onClose, onToast }: Props) => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+  // Telegram's back button acts like Escape: closes the purchase box, then the editor.
+  useTelegramBack(() => escRef.current());
 
   // ── Actions ──
   const pick = (key: Category | "hc", v: number) => {

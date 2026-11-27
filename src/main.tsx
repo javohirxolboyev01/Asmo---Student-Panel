@@ -12,6 +12,7 @@ import { initPWA } from "./lib/pwa";
 import { tokenStorage } from "./services/apiClient";
 import { clearSessionCache, readCachedUser, startSessionCache } from "./lib/sessionCache";
 import { initTelegram } from "./lib/telegram";
+import { startViewportTracking } from "./lib/viewport";
 
 // Restore a returning user's cached data before the first render, so pages
 // open with it instead of skeletons (a synchronous localStorage read).
@@ -41,6 +42,9 @@ const showQueryDevtools = (() => {
 const blockZoom = (e: Event) => e.preventDefault();
 document.addEventListener("gesturestart", blockZoom, { passive: false });
 document.addEventListener("gesturechange", blockZoom, { passive: false });
+
+// Phone keyboard: hides the tab bar, keeps sheets and the focused field visible.
+startViewportTracking();
 
 sessionReady.finally(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(

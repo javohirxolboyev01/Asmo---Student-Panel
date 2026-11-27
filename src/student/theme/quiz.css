@@ -204,8 +204,11 @@
   overflow-wrap: anywhere;
   transition: border-color 0.15s ease, transform 0.1s ease;
 }
-.sp-quiz-opt:hover {
-  border-color: var(--sp-lime-ink);
+/* Mouse only: on touch screens :hover sticks to the last tapped item. */
+@media (hover: hover) {
+  .sp-quiz-opt:hover {
+    border-color: var(--sp-lime-ink);
+  }
 }
 .sp-quiz-opt:active {
   transform: scale(0.99);

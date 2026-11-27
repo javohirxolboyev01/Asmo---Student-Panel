@@ -374,6 +374,9 @@
     max-width: calc(100vw - 12px);
     height: calc(100vh - 12px);
     max-height: calc(100vh - 12px);
+    /* The visible height: 100vh runs under Safari's / Telegram's bottom bar. */
+    height: calc(100dvh - 12px);
+    max-height: calc(100dvh - 12px);
     border-radius: 22px;
     border: 1px solid var(--ce-line);
     padding: 10px 12px calc(14px + env(safe-area-inset-bottom, 0px));

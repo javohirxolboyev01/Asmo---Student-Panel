@@ -16,6 +16,7 @@ import {
   useSubmitQuizMutation,
 } from "@/hooks/queries/useQuizzes";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useClosingConfirmation } from "@/hooks/useTelegram";
 import { ApiError } from "@/services/apiClient";
 import { quizService } from "@/services/quizService";
 import { getErrorMessage } from "@/lib/toast";
@@ -338,6 +339,8 @@ const Runner = ({ play }: { play: QuizPlay }) => {
   ).length;
   const isLast = index === questions.length - 1;
   const busy = submit.isPending;
+  // Telegram asks before closing the app mid-test.
+  useClosingConfirmation(!submit.isSuccess);
 
   if (!question)
     return (

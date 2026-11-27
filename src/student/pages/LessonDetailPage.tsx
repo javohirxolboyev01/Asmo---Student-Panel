@@ -11,6 +11,8 @@ import {
   useSubmitHomeworkMutation,
 } from "@/hooks/queries/useLessons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useClosingConfirmation } from "@/hooks/useTelegram";
+import { openExternal } from "@/lib/telegram";
 import { getErrorMessage } from "@/lib/toast";
 import { ApiError } from "@/services/apiClient";
 import { queryKeys } from "@/lib/queryClient";
@@ -79,6 +81,10 @@ const Attachment = ({ url, label }: { url: string; label: string }) => {
         {...(isData
           ? { download: `attachment.${ext}` }
           : { target: "_blank", rel: "noopener noreferrer" })}
+        onClick={(e) => {
+          // Inside Telegram a new-tab link may do nothing: open it in Telegram's browser.
+          if (!isData && openExternal(url)) e.preventDefault();
+        }}
       >
         <Paperclip className="sp-ii" aria-hidden="true" />
         <span>{label}</span>
@@ -128,6 +134,8 @@ export const LessonDetailPage = () => {
   } | null>(null);
   const [sentOpen, setSentOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Telegram asks before closing the app with an answer typed but not sent.
+  useClosingConfirmation(Boolean(content.trim() || attachment) && !submitHomework.isPending);
   const { hash } = useLocation();
   const hasHomework = !!data?.homework;
   const jumpedFor = useRef<string | null>(null);
@@ -159,6 +167,7 @@ export const LessonDetailPage = () => {
           // Drops it from the dashboard's "homework to do" list.
           void queryClient.invalidateQueries({ queryKey: queryKeys.dashboard, exact: true });
           setAttachment(null);
+          setContent("");
           setMessage({
             type: "success",
             text: t("lessonDetail.submitSuccess"),

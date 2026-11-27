@@ -12,7 +12,9 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { CoinGlyph } from "../components/icons";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
+import { useGoBack, useTrackNavigationHistory } from "@/hooks/useNavigationHistory";
+import { useTelegramBack } from "@/hooks/useTelegram";
+import { haptic, isTelegram, setTelegramColors } from "@/lib/telegram";
 import { useDashboardQuery } from "@/hooks/queries/useDashboard";
 import { useNotificationsQuery } from "@/hooks/queries/useNotifications";
 import { useMissionsTodayQuery } from "@/hooks/queries/useMissions";
@@ -147,6 +149,8 @@ const useThemeColor = () => {
     }
     const before = meta.content;
     meta.content = theme === "dark" ? "#17120e" : "#fbf5ee";
+    // Telegram's own header and background match the page too.
+    setTelegramColors(meta.content);
     return () => {
       if (created) meta?.remove();
       else if (meta) meta.content = before;
@@ -154,11 +158,43 @@ const useThemeColor = () => {
   }, [theme]);
 };
 
+/**
+ * Telegram only: a short haptic tick on taps, like a native app — a light
+ * tap for buttons, a selection tick for tabs, segments, switches and options.
+ */
+const useTelegramHaptics = () => {
+  useEffect(() => {
+    if (!isTelegram()) return;
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest?.("button, a, [role=button], [role=tab], [role=switch]");
+      if (!el || (el as HTMLButtonElement).disabled || el.getAttribute("aria-disabled") === "true") return;
+      if (!el.closest(".sp")) return;
+      if (el.matches(".sp-nav a, .sp-seg button, [role=tab], [role=switch], [role=radio], .sp-quiz-opts button"))
+        haptic.select();
+      else haptic.tap();
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+};
+
+/**
+ * Telegram's back button (and Android's hardware back inside Telegram) goes
+ * back a page instead of closing the app; on a tab it is hidden and
+ * Telegram shows "Close".
+ */
+const useTelegramPageBack = (pathname: string) => {
+  const goBack = useGoBack("/");
+  useTelegramBack(goBack, !isTab(pathname));
+};
+
 export const StudentLayout = () => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   useTrackNavigationHistory();
   useThemeColor();
+  useTelegramHaptics();
+  useTelegramPageBack(pathname);
   const transition = usePageTransition(pathname);
 
   // New page → start at the top.

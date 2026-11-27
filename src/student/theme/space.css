@@ -289,8 +289,11 @@ body:has(.sp) {
     0 0 0 5px var(--sp-sun-soft);
   transition: transform 0.2s var(--sp-ease);
 }
-.sp-ava:hover {
-  transform: scale(1.04);
+/* Mouse only: on touch screens :hover sticks to the last tapped item. */
+@media (hover: hover) {
+  .sp-ava:hover {
+    transform: scale(1.04);
+  }
 }
 .sp-ava img {
   width: 100%;
@@ -1863,8 +1866,11 @@ textarea.sp-in {
     transform 0.25s var(--sp-ease),
     background 0.2s;
 }
-.sp-cap:not(:disabled):hover {
-  transform: translateY(-3px);
+/* Mouse only: on touch screens :hover sticks to the last tapped item. */
+@media (hover: hover) {
+  .sp-cap:not(:disabled):hover {
+    transform: translateY(-3px);
+  }
 }
 .sp-cap span {
   display: block;
@@ -2854,4 +2860,66 @@ textarea.sp-in {
     padding-left: max(24px, calc((100% - 760px) / 2 + 24px));
     padding-right: max(24px, calc((100% - 760px) / 2 + 24px));
   }
+}
+
+/* ══════════════════════════ Phones: keyboard, sheets, taps ══════════════════════════
+ * lib/viewport.ts sets `html.kb-open` while the keyboard is up and
+ * --vvh / --vv-top to the part of the screen that's still visible. */
+
+/* A focused field scrolled into view lands below the pinned top bar
+ * (and above the tab bar), not under them. */
+@media (max-width: 899px) {
+  html:has(.sp) {
+    scroll-padding-top: calc(124px + env(safe-area-inset-top, 0px));
+    scroll-padding-bottom: 96px;
+  }
+  /* The tab bar would otherwise ride on top of the keyboard, covering the
+   * field and its send button. */
+  html.kb-open .sp-nav {
+    display: none;
+  }
+  html.kb-open .sp-app {
+    padding-bottom: 24px;
+  }
+}
+
+/* Sheets and dialogs fit in the visible area above the keyboard, so their
+ * fields and buttons are never hidden under it (iOS and Telegram on iOS
+ * slide the keyboard over the page instead of shrinking it). */
+html.kb-open .sp-modal {
+  top: var(--vv-top, 0px);
+  bottom: auto;
+  height: var(--vvh, 100%);
+}
+html.kb-open .sp-mb {
+  max-height: calc(var(--vvh, 100dvh) - 24px);
+}
+@media (max-width: 639px) {
+  html.kb-open .sp-sheet {
+    max-height: calc(var(--vvh, 100dvh) - 8px);
+    padding-bottom: 14px !important; /* the keyboard covers the home-indicator area */
+  }
+}
+
+/* An open sheet: the page behind it stays put, and scrolling inside the
+ * sheet never drags the page (or Telegram's window) along. */
+html.sp-lock,
+html.sp-lock body {
+  overflow: hidden;
+}
+.sp-modal,
+.sp-mb {
+  overscroll-behavior: contain;
+}
+
+/* Long-press on a button, tab or picture shouldn't pop up the browser's
+ * link / image menu — it's an app. Text in cards stays selectable. */
+.sp a,
+.sp button,
+.sp img,
+.sp-nav {
+  -webkit-touch-callout: none;
+}
+.sp img {
+  -webkit-user-drag: none;
 }
