@@ -3,7 +3,7 @@
 // then the homework card — status + deadline countdown, the result (score and
 // teacher's comment), the task, your answer and the submit form — then what
 // the lesson was about.
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -40,6 +40,7 @@ import {
 import {
   EmptyState,
   ErrorState,
+  ImageViewer,
   Modal,
   PageHeader,
   Skel,
@@ -56,25 +57,88 @@ import {
 import "../theme/groups.css";
 
 const MAX_ATTACHMENT_BYTES = 2 * 1024 * 1024;
+/** Phone photos are usually 3–8 MB: they're shrunk on the device before sending. */
+const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
+/** Fits the backend's attachment limit (2.9M chars) with room to spare. */
+const MAX_DATA_URL = 2_700_000;
 const MAX_CONTENT = 10000; // backend limit for submission text
 
-/** Attachment link: data: URLs can't be opened in a new tab, so download them. */
-const Attachment = ({ url, label }: { url: string; label: string }) => {
+const isImageUrl = (url: string) =>
+  url.startsWith("data:image/") || /\.(png|jpe?g|gif|webp)(\?|$)/i.test(url);
+
+const readAsDataUrl = (file: Blob) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+/**
+ * A photo → JPEG data URL, longest side ≤ 2000px and small enough to send.
+ * Returns null when the browser can't decode it (e.g. HEIC outside Safari).
+ */
+async function shrinkPhoto(file: File): Promise<string | null> {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = reject;
+      i.src = url;
+    }).catch(() => null);
+    if (!img || !img.naturalWidth || !img.naturalHeight) return null;
+    for (const side of [2000, 1600, 1280]) {
+      const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.naturalWidth * scale);
+      canvas.height = Math.round(img.naturalHeight * scale);
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return null;
+      ctx.fillStyle = "#fff"; // transparent PNGs get a white page, not black
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      for (const q of [0.85, 0.72, 0.6]) {
+        const data = canvas.toDataURL("image/jpeg", q);
+        if (data.length <= MAX_DATA_URL) return data;
+      }
+    }
+    return null;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** Attachment: a photo opens in the app's viewer; other files download / open. */
+const Attachment = ({
+  url,
+  label,
+  onOpenImage,
+}: {
+  url: string;
+  label: string;
+  onOpenImage: (url: string) => void;
+}) => {
   const isData = url.startsWith("data:");
   const mime = isData ? url.slice(5, url.indexOf(";")) : "";
   const ext = mime.split("/")[1]?.split("+")[0] || "bin";
-  const isImage =
-    mime.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(url);
+  if (isImageUrl(url)) {
+    return (
+      <div className="sp-ld-file">
+        <button
+          type="button"
+          className="sp-ld-photo"
+          onClick={() => onOpenImage(url)}
+          aria-label={label}
+        >
+          <img src={url} alt={label} className="sp-groups-preview" loading="lazy" />
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="sp-ld-file">
-      {isImage && (
-        <img
-          src={url}
-          alt={label}
-          className="sp-groups-preview"
-          loading="lazy"
-        />
-      )}
       <a
         href={url}
         className="sp-groups-file"
@@ -133,6 +197,9 @@ export const LessonDetailPage = () => {
     text: string;
   } | null>(null);
   const [sentOpen, setSentOpen] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const closeViewer = useCallback(() => setViewing(null), []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   // Telegram asks before closing the app with an answer typed but not sent.
   useClosingConfirmation(Boolean(content.trim() || attachment) && !submitHomework.isPending);
@@ -152,13 +219,14 @@ export const LessonDetailPage = () => {
   }, [hash, hasHomework, id]);
 
   const handleSubmit = () => {
-    if (!data?.homework || !content.trim() || !id || submitHomework.isPending)
-      return;
+    if (!data?.homework || !id || submitHomework.isPending || preparing) return;
+    // A file alone is a full answer; the comment is optional.
+    if (!content.trim() && !attachment) return;
     setMessage(null);
     submitHomework.mutate(
       {
         homeworkId: data.homework.id,
-        content,
+        content: content.trim(),
         attachmentUrl: attachment?.dataUrl,
         attachmentName: attachment?.name,
       },
@@ -186,22 +254,36 @@ export const LessonDetailPage = () => {
     );
   };
 
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > MAX_ATTACHMENT_BYTES) {
+    const tooLarge = () =>
       setMessage({ type: "error", text: t("lessonDetail.attachmentTooLarge") });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setMessage(null);
-      setAttachment({ name: file.name, dataUrl: reader.result as string });
-    };
-    reader.onerror = () =>
+    // Photos (not GIFs: they'd lose their animation) are shrunk on the phone.
+    const isPhoto =
+      (file.type.startsWith("image/") && file.type !== "image/gif" && file.type !== "image/svg+xml") ||
+      /\.(jpe?g|png|webp|heic|heif)$/i.test(file.name);
+    if (file.size > (isPhoto ? MAX_PHOTO_BYTES : MAX_ATTACHMENT_BYTES)) return tooLarge();
+    setMessage(null);
+    setPreparing(true);
+    try {
+      let dataUrl: string | null = null;
+      let name = file.name || "file";
+      if (isPhoto) {
+        dataUrl = await shrinkPhoto(file);
+        if (dataUrl) name = `${name.replace(/\.[^.]+$/, "") || "photo"}.jpg`;
+      }
+      if (!dataUrl) {
+        if (file.size > MAX_ATTACHMENT_BYTES) return tooLarge();
+        dataUrl = await readAsDataUrl(file);
+      }
+      setAttachment({ name, dataUrl });
+    } catch {
       setMessage({ type: "error", text: t("common.error") });
-    reader.readAsDataURL(file);
+    } finally {
+      setPreparing(false);
+    }
   };
 
   if (isLoading) {
@@ -253,6 +335,7 @@ export const LessonDetailPage = () => {
   const canSubmit =
     !!homework && homework.status === "active" && !overdue && !graded && !submission;
   const pending = submitHomework.isPending;
+  const canSend = Boolean(content.trim() || attachment) && !pending && !preparing;
   const state = hwStateOf(homework, submission, true);
   const when = lessonWhen(lesson.lessonDate);
   const lessonStatus =
@@ -425,7 +508,9 @@ export const LessonDetailPage = () => {
                   <small className="sp-hwc-label">
                     {t("lessonDetail.yourAnswerTitle")}
                   </small>
-                  <p className="sp-groups-answer">{submission.content}</p>
+                  {submission.content.trim() && (
+                    <p className="sp-groups-answer">{submission.content}</p>
+                  )}
                   {submission.submittedAt && (
                     <small className="sp-groups-meta">
                       <InlineIcon icon={CircleCheck} />{" "}
@@ -438,6 +523,7 @@ export const LessonDetailPage = () => {
                     <Attachment
                       url={submission.attachmentUrl}
                       label={t("lessonDetail.attachmentLabel")}
+                      onOpenImage={setViewing}
                     />
                   )}
                 </div>
@@ -477,6 +563,20 @@ export const LessonDetailPage = () => {
                   />
                   {attachment && (
                     <div>
+                      {isImageUrl(attachment.dataUrl) && (
+                        <button
+                          type="button"
+                          className="sp-ld-photo"
+                          onClick={() => setViewing(attachment.dataUrl)}
+                          aria-label={attachment.name}
+                        >
+                          <img
+                            src={attachment.dataUrl}
+                            alt={attachment.name}
+                            className="sp-groups-preview"
+                          />
+                        </button>
+                      )}
                       <div className="sp-groups-file">
                         <Paperclip className="sp-ii" aria-hidden="true" />
                         <span>{attachment.name}</span>
@@ -497,16 +597,16 @@ export const LessonDetailPage = () => {
                       type="button"
                       className="sp-cta sp-ghost"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={pending}
+                      disabled={pending || preparing}
                     >
-                      <Paperclip aria-hidden="true" />{" "}
+                      {preparing ? <Spinner /> : <Paperclip aria-hidden="true" />}{" "}
                       {t("lessonDetail.uploadFile")}
                     </button>
                     <button
                       type="button"
                       className="sp-cta sp-hwc-send"
                       onClick={handleSubmit}
-                      disabled={!content.trim() || pending}
+                      disabled={!canSend}
                     >
                       {pending ? <Spinner /> : <Send aria-hidden="true" />}{" "}
                       {t("lessonDetail.submit")}
@@ -549,6 +649,12 @@ export const LessonDetailPage = () => {
           </aside>
         )}
       </div>
+
+      <ImageViewer
+        src={viewing}
+        alt={t("lessonDetail.attachmentLabel")}
+        onClose={closeViewer}
+      />
 
       <Modal
         open={sentOpen}

@@ -332,6 +332,51 @@ export const Modal = ({
   );
 };
 
+// ── Image viewer ──
+
+/**
+ * Full-screen photo viewer inside the app (no new tab / download): tap the
+ * backdrop, the ✕, Escape or Telegram's back button to close it.
+ */
+export const ImageViewer = ({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string | null;
+  alt: string;
+  onClose: () => void;
+}) => {
+  const { t } = useTranslation();
+  const open = Boolean(src);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+  useTelegramBack(onClose, open);
+  useScrollLock(open);
+
+  if (!src) return null;
+  const host = document.querySelector(".sp") ?? document.body;
+  return createPortal(
+    <div
+      className="sp-viewer"
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <button type="button" className="sp-viewer-x" onClick={onClose} aria-label={t("common.close")}>
+        <CircleX aria-hidden="true" />
+      </button>
+      <img src={src} alt={alt} onClick={onClose} />
+    </div>,
+    host,
+  );
+};
+
 // ── Effects ──
 
 // Small SVG glyphs for the reward burst (Lucide "gem" / "star" paths).

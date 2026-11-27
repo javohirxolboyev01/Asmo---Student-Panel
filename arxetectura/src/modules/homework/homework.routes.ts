@@ -18,7 +18,8 @@ homeworkRouter.post(
   validate(
     idSchema.extend({
       body: z.object({
-        content: z.string().min(1).max(10000),
+        // Optional when a file is attached (a photo of the work is an answer on its own).
+        content: z.string().max(10000).default(""),
         // Optional file: an http(s) link or a data: URL (client caps files at 2MB ≈ 2.8MB base64,
         // within express.json's 3mb limit). A data: URL is moved to the Telegram archive channel.
         attachmentUrl: z
@@ -31,6 +32,9 @@ homeworkRouter.post(
           .optional(),
         /** Original file name, for the download. */
         attachmentName: z.string().max(200).optional(),
+      }).refine((b) => b.content.trim() || b.attachmentUrl, {
+        message: "Write an answer or attach a file",
+        path: ["content"],
       }),
     }),
   ),
@@ -78,7 +82,7 @@ homeworkRouter.post(
           id: newId(),
           homeworkId: homework.id,
           studentId: uid(req),
-          content: req.body.content,
+          content: req.body.content.trim(),
           attachmentUrl,
         },
       });

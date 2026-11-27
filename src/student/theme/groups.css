@@ -663,3 +663,13 @@ a.sp-groups-file {
 #homework.sp-hwc {
   scroll-margin-top: calc(var(--sp-hud-h, 0px) + env(safe-area-inset-top, 0px) + 64px);
 }
+/* Tappable photo: opens the in-app viewer */
+.sp-ld-photo {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+  max-width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
