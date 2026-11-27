@@ -8,6 +8,19 @@ import {
   SubmissionWithContext,
   WeeklyAttendanceData,
 } from "@/types/teacher";
+
+/**
+ * Date pickers give wall-clock values ("2026-11-27T14:00") with no zone. Sent
+ * like that, the server reads them in ITS zone (UTC on Railway) and a 14:00
+ * lesson becomes 19:00. Converted here, in the teacher's own zone, to a real
+ * instant. Values that already carry a zone pass through untouched.
+ */
+const withZone = <T extends Record<string, unknown>>(payload: T, key: string): T => {
+  const value = payload[key];
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(value)) return payload;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? payload : { ...payload, [key]: date.toISOString() };
+};
 import { Group } from "@/types/group";
 
 interface GroupWritePayload {
@@ -58,22 +71,22 @@ export const teacherService = {
 
   // ── Lessons ──
   createLesson: async (groupId: string, payload: { topic: string; description?: string; lessonDate: string }) =>
-    apiPost(`/groups/${groupId}/lessons`, payload),
+    apiPost(`/groups/${groupId}/lessons`, withZone(payload, "lessonDate")),
   updateLesson: async (
     id: string,
     payload: Partial<{ topic: string; description: string; lessonDate: string; status: string }>,
-  ) => apiPatch(`/lessons/${id}`, payload),
+  ) => apiPatch(`/lessons/${id}`, withZone(payload, "lessonDate")),
   deleteLesson: async (id: string) => apiDelete(`/lessons/${id}`),
 
   // ── Homework ──
   createHomework: async (
     lessonId: string,
     payload: { title: string; description: string; maxScore?: number; deadline: string },
-  ) => apiPost(`/lessons/${lessonId}/homework`, payload),
+  ) => apiPost(`/lessons/${lessonId}/homework`, withZone(payload, "deadline")),
   updateHomework: async (
     id: string,
     payload: Partial<{ title: string; description: string; maxScore: number; deadline: string; status: string }>,
-  ) => apiPatch(`/homework/${id}`, payload),
+  ) => apiPatch(`/homework/${id}`, withZone(payload, "deadline")),
   deleteHomework: async (id: string) => apiDelete(`/homework/${id}`),
   gradeSubmission: async (submissionId: string, payload: { score: number; feedback?: string }) =>
     apiPatch(`/submissions/${submissionId}/grade`, payload),

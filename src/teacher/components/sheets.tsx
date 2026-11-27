@@ -363,11 +363,14 @@ export const AddLessonSheet = ({
   open,
   onClose,
   groupId,
+  lessonDate,
   onCreated,
 }: {
   open: boolean;
   onClose: () => void;
   groupId?: string;
+  /** Prefilled start ("YYYY-MM-DDTHH:mm", local), e.g. the group's scheduled time today. */
+  lessonDate?: string;
   onCreated?: (lessonId: string) => void;
 }) => {
   const { t } = useTranslation();
@@ -395,14 +398,14 @@ export const AddLessonSheet = ({
       groupId: groupId ?? "",
       topic: "",
       description: "",
-      lessonDate: nowLocal(),
+      lessonDate: lessonDate ?? nowLocal(),
       hw: "",
       due: "",
       max: "100",
     });
     setError(null);
     setFieldErrors({});
-  }, [open, groupId]);
+  }, [open, groupId, lessonDate]);
 
   const targetGroup = groupId ?? (form.groupId || activeGroups[0]?.id || "");
   const set =

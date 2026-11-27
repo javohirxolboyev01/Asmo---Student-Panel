@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth } from "../../middleware/index.js";
-import { userSummary } from "../../utils/serializers.js";
+import { lower, userSummary } from "../../utils/serializers.js";
+import { addDays, tashkentDayStart, tashkentHHMM, tashkentWeekStart } from "../../utils/tashkent.js";
 import { uid, groupScope, liveEnrollment } from "../../utils/teacherScope.js";
 
 export const dashboardRouter = Router();
@@ -101,38 +102,59 @@ dashboardRouter.get(
           id: lesson.id,
           topic: lesson.topic,
           lessonDate: lesson.lessonDate,
-          time: lesson.lessonDate.toISOString().slice(11, 16),
+          time: tashkentHHMM(lesson.lessonDate),
           groupName: lesson.Group.name,
         })),
       });
     }
 
     // Staff: an ADMIN sees every group; a TEACHER only their own groups.
+    // "Today" and "this week" are Tashkent days, whatever zone the server runs in.
+    const now = new Date();
+    const dayStart = tashkentDayStart(now);
+    const dayEnd = addDays(dayStart, 1);
+    const weekStart = tashkentWeekStart(now);
+    const weekEnd = addDays(weekStart, 7);
     const scope = await groupScope(req);
-    const [current, owned, pendingGradingCount, upcoming] = await Promise.all([
+    const [current, owned, pendingGradingCount, upcoming, weekLessons, weekAttendance] = await Promise.all([
       prisma.user.findUniqueOrThrow({ where: { id: userId } }),
       prisma.group.findMany({ where: scope, select: { id: true } }),
       prisma.submission.count({ where: { status: "SUBMITTED", Homework: { Lesson: { Group: scope } } } }),
       prisma.lesson.findMany({
-        where: { lessonDate: { gte: new Date() }, status: "PLANNED", Group: scope },
+        where: { lessonDate: { gte: now }, status: "PLANNED", Group: scope },
         orderBy: { lessonDate: "asc" },
         take: 5,
         include: { Group: { select: { name: true } } },
       }),
-    ]);
-    const ownedIds = owned.map((x) => x.id);
-    const [studentsCount, todayLessonsCount] = await Promise.all([
-      prisma.enrollment.count({ where: { groupId: { in: ownedIds }, ...liveEnrollment } }),
-      prisma.lesson.count({
-        where: {
-          groupId: { in: ownedIds },
-          lessonDate: {
-            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setHours(24, 0, 0, 0)),
-          },
+      // Every lesson of this week (Mon–Sun), whatever its status: the week strip
+      // and today's list are built from these plus the groups' weekly schedules.
+      prisma.lesson.findMany({
+        where: { lessonDate: { gte: weekStart, lt: weekEnd }, Group: scope },
+        orderBy: { lessonDate: "asc" },
+        take: 300,
+        select: {
+          id: true,
+          topic: true,
+          lessonDate: true,
+          status: true,
+          groupId: true,
+          Group: { select: { name: true } },
+          _count: { select: { AttendanceRecord: true } },
         },
       }),
+      prisma.attendanceRecord.groupBy({
+        by: ["status"],
+        where: { Lesson: { lessonDate: { gte: weekStart, lt: weekEnd }, Group: scope } },
+        _count: { _all: true },
+      }),
     ]);
+    const ownedIds = owned.map((x) => x.id);
+    const studentsCount = await prisma.enrollment.count({ where: { groupId: { in: ownedIds }, ...liveEnrollment } });
+    const todayLessonsCount = weekLessons.filter(
+      (l) => l.lessonDate >= dayStart && l.lessonDate < dayEnd && l.status !== "CANCELLED",
+    ).length;
+    const marked = weekAttendance.reduce((sum, row) => sum + row._count._all, 0);
+    const present = weekAttendance.find((row) => row.status === "PRESENT")?._count._all ?? 0;
 
     res.json({
       user: userSummary(current),
@@ -141,13 +163,26 @@ dashboardRouter.get(
         studentsCount,
         todayLessonsCount,
         pendingGradingCount,
+        weekLessonsDone: weekLessons.filter((l) => l.status === "COMPLETED").length,
+        weekLessonsTotal: weekLessons.filter((l) => l.status !== "CANCELLED").length,
+        /** Share of this week's attendance marks that are PRESENT; null = nothing marked yet. */
+        weekAttendancePercent: marked ? Math.round((present / marked) * 100) : null,
       },
       upcomingLessons: upcoming.map((lesson) => ({
         id: lesson.id,
         topic: lesson.topic,
         lessonDate: lesson.lessonDate,
-        time: lesson.lessonDate.toISOString().slice(11, 16),
+        time: tashkentHHMM(lesson.lessonDate),
         groupName: lesson.Group.name,
+      })),
+      weekLessons: weekLessons.map((lesson) => ({
+        id: lesson.id,
+        topic: lesson.topic,
+        lessonDate: lesson.lessonDate,
+        status: lower(lesson.status),
+        groupId: lesson.groupId,
+        groupName: lesson.Group.name,
+        attendanceMarked: lesson._count.AttendanceRecord,
       })),
     });
   }),

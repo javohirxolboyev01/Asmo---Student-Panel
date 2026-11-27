@@ -112,31 +112,101 @@ export function parseQuizText(text: string): ParsedQuestion[] {
   });
 }
 
-/** Prompt the teacher copies into ChatGPT / Gemini; its answer pastes straight back in. */
-export const quizAiPrompt = (lang: "uz" | "ru" | "en") =>
-  ({
-    uz: `«[MAVZU]» mavzusi bo'yicha [10] ta test savoli tuz. Har bir savolda 4 ta variant bo'lsin, faqat bittasi to'g'ri. Javobni aynan quyidagi formatda yoz, boshqa hech narsa qo'shma:
+export type QuizLang = "uz" | "ru" | "en";
+export type QuizDifficulty = "easy" | "medium" | "hard" | "mixed";
 
-1. Savol matni?
-A) Variant
-B) Variant
-C) Variant
-D) Variant
-Javob: B`,
-    ru: `Составь [10] тестовых вопросов по теме «[ТЕМА]». В каждом вопросе 4 варианта, верный только один. Ответ пиши строго в этом формате, ничего больше не добавляй:
+export interface QuizAiRequest {
+  /** What the questions are about (may be empty when `material` is given). */
+  topic: string;
+  /** Exactly how many questions to ask for. */
+  count: number;
+  /** Options per question, 2–MAX_OPTIONS. */
+  optionCount: number;
+  difficulty: QuizDifficulty;
+  /** Language the questions themselves are written in. */
+  lang: QuizLang;
+  /** Optional lesson text or sample questions the AI must base the test on. */
+  material?: string;
+}
 
-1. Текст вопроса?
-A) Вариант
-B) Вариант
-C) Вариант
-D) Вариант
-Javob: B`,
-    en: `Write [10] multiple-choice questions on "[TOPIC]". Each question has 4 options and exactly one correct answer. Reply in exactly this format and add nothing else:
+/** Longest material put into a prompt (AI chat links and inputs have limits). */
+export const MAX_MATERIAL = 6000;
 
-1. Question text?
-A) Option
-B) Option
-C) Option
-D) Option
-Javob: B`,
-  })[lang];
+const PROMPT_TEXT = {
+  uz: {
+    role: "Sen tajribali o'qituvchisan.",
+    task: (topic: string, n: number) =>
+      topic ? `«${topic}» mavzusi bo'yicha AYNAN ${n} ta test savoli tuz.` : `AYNAN ${n} ta test savoli tuz.`,
+    rules: "Talablar:",
+    options: (n: number, last: string) => `Har bir savolda ${n} ta variant (A–${last}) bo'lsin, faqat bittasi to'g'ri.`,
+    level: { easy: "Qiyinlik: oson.", medium: "Qiyinlik: o'rta.", hard: "Qiyinlik: qiyin.", mixed: "Qiyinlik: aralash (oson, o'rta va qiyin savollar)." },
+    spread: "To'g'ri javoblar turli harflarda bo'lsin (hammasi A emas). Savollar takrorlanmasin.",
+    material: "Savollarni FAQAT quyidagi materialga asoslanib tuz (bu dars matni yoki namuna savollar bo'lishi mumkin — namuna bo'lsa, uslubini saqla, lekin aynan ko'chirma):",
+    format: "Javobni AYNAN quyidagi formatda yoz. Kirish so'zi, izoh, sarlavha yoki markdown (**, #) qo'shma:",
+    q: "Savol matni?",
+    o: "Variant",
+    answer: "Javob",
+    lang: "Savollar o'zbek tilida (lotin yozuvida) bo'lsin.",
+  },
+  ru: {
+    role: "Ты опытный преподаватель.",
+    task: (topic: string, n: number) =>
+      topic ? `Составь РОВНО ${n} тестовых вопросов по теме «${topic}».` : `Составь РОВНО ${n} тестовых вопросов.`,
+    rules: "Требования:",
+    options: (n: number, last: string) => `В каждом вопросе ${n} вариантов (A–${last}), верный только один.`,
+    level: { easy: "Сложность: лёгкая.", medium: "Сложность: средняя.", hard: "Сложность: высокая.", mixed: "Сложность: смешанная (лёгкие, средние и сложные вопросы)." },
+    spread: "Правильные ответы должны быть под разными буквами (не все A). Вопросы не должны повторяться.",
+    material: "Составляй вопросы ТОЛЬКО по материалу ниже (это может быть текст урока или примеры вопросов — если это примеры, сохрани их стиль, но не копируй):",
+    format: "Ответ пиши СТРОГО в этом формате. Без вступления, пояснений, заголовков и markdown (**, #):",
+    q: "Текст вопроса?",
+    o: "Вариант",
+    answer: "Ответ",
+    lang: "Вопросы должны быть на русском языке.",
+  },
+  en: {
+    role: "You are an experienced teacher.",
+    task: (topic: string, n: number) =>
+      topic ? `Write EXACTLY ${n} multiple-choice questions on "${topic}".` : `Write EXACTLY ${n} multiple-choice questions.`,
+    rules: "Requirements:",
+    options: (n: number, last: string) => `Each question has ${n} options (A–${last}) and exactly one correct answer.`,
+    level: { easy: "Difficulty: easy.", medium: "Difficulty: medium.", hard: "Difficulty: hard.", mixed: "Difficulty: mixed (easy, medium and hard questions)." },
+    spread: "Spread the correct answers across different letters (not all A). No repeated questions.",
+    material: "Base the questions ONLY on the material below (lesson text or sample questions — if samples, keep their style but don't copy them):",
+    format: "Reply in EXACTLY this format. No intro, notes, headings or markdown (**, #):",
+    q: "Question text?",
+    o: "Option",
+    answer: "Answer",
+    lang: "Write the questions in English.",
+  },
+} as const;
+
+/**
+ * The prompt the teacher sends to ChatGPT / Gemini / Claude. Everything the
+ * teacher picked is spelled out, and the reply format is the one
+ * parseQuizText reads ("Javob:" / "Ответ:" / "Answer:"), so the answer
+ * pastes straight back in.
+ */
+export function buildQuizAiPrompt(req: QuizAiRequest): string {
+  // Written in the questions' language, so the AI answers in it too.
+  const p = PROMPT_TEXT[req.lang];
+  const n = Math.min(Math.max(req.optionCount, 2), MAX_OPTIONS);
+  const letters = LATIN.slice(0, n).split("");
+  const material = (req.material ?? "").trim().slice(0, MAX_MATERIAL);
+  const example = [`1. ${p.q}`, ...letters.map((l) => `${l}) ${p.o}`), `${p.answer}: ${letters[1]}`].join("\n");
+  return [
+    `${p.role} ${p.task(req.topic.trim(), req.count)}`,
+    "",
+    p.rules,
+    `- ${p.options(n, letters[n - 1]!)}`,
+    `- ${p.level[req.difficulty]}`,
+    `- ${p.spread}`,
+    `- ${p.lang}`,
+    "",
+    p.format,
+    "",
+    example,
+    "",
+    `2. ...`,
+    ...(material ? ["", p.material, '"""', material, '"""'] : []),
+  ].join("\n");
+}

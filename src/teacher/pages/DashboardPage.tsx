@@ -1,10 +1,15 @@
 // src/teacher/pages/DashboardPage.tsx
 // Teacher home, 1:1 with the mock `home` view: greeting hero with the next
-// lesson, "Bugun nima qilaman?" tiles, this week's schedule strip, upcoming
-// lessons, students who need attention and the latest coins.
+// lesson, today's lessons with their times, "Bugun nima qilaman?" tiles, this
+// week's numbers + schedule strip, upcoming lessons, students who need
+// attention and the latest coins.
+//
+// A class is a created lesson, or — on a day the group has no lesson row — the
+// group's weekly schedule ("Dush, Chor" at "14:00"). The server sends a
+// reminder 30 minutes before either kind (lesson.reminders.ts).
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Check, ClipboardCheck, Coins, Moon, Plus, Sun } from "lucide-react";
+import { AlertTriangle, BellRing, CalendarCheck, Check, ClipboardCheck, Coins, Moon, Plus, Sun } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTeacherDashboardQuery } from "@/hooks/queries/useDashboard";
@@ -15,6 +20,7 @@ import { Button } from "@/components/ui";
 import { UpcomingLessons } from "@/components/Dashboard/UpcomingLessons";
 import { getErrorMessage } from "@/lib/toast";
 import type { Group } from "@/types/group";
+import type { DashboardWeekLesson } from "@/types/teacher";
 import { AddLessonSheet } from "../components/sheets";
 import { Avatar, DAY_SHORT, EmptyBox, SectionHead, Skel, Tag, parseScheduleDays } from "../components/ui";
 
@@ -25,30 +31,59 @@ const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDat
 /** Weekday index with Monday = 0 (Sunday = 6). */
 const weekIdx = (d: Date) => (d.getDay() + 6) % 7;
 
+/** How long a class is treated as "in progress" after it starts. */
+const LESSON_MS = 90 * MINUTE;
+const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
 type NextSlot =
   | { kind: "lesson"; id: string; title: string; groupName: string; at: Date }
   | { kind: "schedule"; group: Group; at: Date };
 
-/** Next class from the active groups' weekly schedules (mock `nextLesson`). */
-const nextScheduled = (groups: Group[], now: Date): { group: Group; at: Date } | null => {
+/** A group's weekly start time ("14:00") as [hours, minutes], or null. */
+const scheduleTime = (group: Group): [number, number] | null => {
+  const m = /^(\d{1,2})[:.](\d{2})/.exec(group.schedule?.time ?? "");
+  return m ? [Number(m[1]), Number(m[2])] : null;
+};
+
+/**
+ * Next class from the active groups' weekly schedules (mock `nextLesson`).
+ * Days on which the group already has a lesson row (`covered`) are skipped:
+ * that lesson's own time counts instead.
+ */
+const nextScheduled = (groups: Group[], now: Date, covered: Set<string>): { group: Group; at: Date } | null => {
   let best: { group: Group; at: Date } | null = null;
   for (const group of groups) {
     const days = parseScheduleDays(group.schedule?.days);
-    const time = /^(\d{1,2}):(\d{2})/.exec(group.schedule?.time ?? "");
+    const time = scheduleTime(group);
     if (!days.length || !time) continue;
     for (let k = 0; k < 8; k++) {
       const at = new Date(now);
       at.setDate(now.getDate() + k);
-      if (!days.includes(weekIdx(at))) continue;
-      at.setHours(Number(time[1]), Number(time[2]), 0, 0);
+      if (!days.includes(weekIdx(at)) || covered.has(`${group.id}|${dayKey(at)}`)) continue;
+      at.setHours(time[0], time[1], 0, 0);
       // A class that started over 90 minutes ago is over.
-      if (at.getTime() - now.getTime() < -90 * MINUTE) continue;
+      if (at.getTime() - now.getTime() < -LESSON_MS) continue;
       if (!best || at < best.at) best = { group, at };
       break;
     }
   }
   return best;
 };
+
+/** One row of "Bugungi darslar". */
+interface TodayItem {
+  key: string;
+  at: Date;
+  group: Group | null;
+  groupId: string;
+  groupName: string;
+  /** null = known only from the group's schedule (no lesson row yet). */
+  lesson: DashboardWeekLesson | null;
+}
+
+/** Local "YYYY-MM-DDTHH:mm" for the add-lesson sheet. */
+const localInput = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
 export const DashboardPage = () => {
   const { t } = useTranslation();
@@ -57,7 +92,9 @@ export const DashboardPage = () => {
   const { data: groups = [] } = useGroupsQuery();
   const { data: students, isLoading: studentsLoading } = useStudentsQuery();
   const { data: coins, isLoading: coinsLoading } = useTeacherCoinTransactionsQuery();
-  const [lessonSheet, setLessonSheet] = useState<{ open: boolean; groupId?: string }>({ open: false });
+  const [lessonSheet, setLessonSheet] = useState<{ open: boolean; groupId?: string; lessonDate?: string }>({
+    open: false,
+  });
 
   // Re-render every minute so "N daqiqadan keyin" and the greeting stay fresh.
   const [now, setNow] = useState(() => new Date());
@@ -106,8 +143,52 @@ export const DashboardPage = () => {
   const night = hour < 6 || hour >= 19;
   const firstName = user?.firstName || data.user.firstName;
   const todayIdx = weekIdx(now);
-  const scheduledToday = groupDays.filter((d) => d.includes(todayIdx)).length;
-  const todayCount = data.stats.todayLessonsCount || scheduledToday;
+  const todayKey = dayKey(now);
+
+  // ── This week's classes: lesson rows + scheduled days that have none ──
+  // Older servers don't send weekLessons; upcoming lessons are the best we have then.
+  const weekLessons: DashboardWeekLesson[] =
+    data.weekLessons ??
+    data.upcomingLessons.map((l) => ({
+      ...l,
+      status: "planned" as const,
+      groupId: groups.find((g) => g.name === l.groupName)?.id ?? l.groupName,
+      attendanceMarked: 0,
+    }));
+  const covered = new Set(weekLessons.map((l) => `${l.groupId}|${dayKey(new Date(l.lessonDate))}`));
+  const weekStart = new Date(startOfDay(now) - todayIdx * 24 * 60 * MINUTE);
+  // Classes per day Mon–Sat: lessons (not cancelled) + scheduled groups without a lesson row that day.
+  const perDay = DAY_SHORT.map((_, i) => {
+    const day = new Date(weekStart);
+    day.setDate(weekStart.getDate() + i);
+    const key = dayKey(day);
+    const lessons = weekLessons.filter((l) => l.status !== "cancelled" && dayKey(new Date(l.lessonDate)) === key).length;
+    const scheduled = activeGroups.filter(
+      (g, gi) => groupDays[gi].includes(i) && scheduleTime(g) && !covered.has(`${g.id}|${key}`),
+    ).length;
+    return lessons + scheduled;
+  });
+
+  const todayItems: TodayItem[] = [
+    ...weekLessons
+      .filter((l) => dayKey(new Date(l.lessonDate)) === todayKey)
+      .map((l) => ({
+        key: l.id,
+        at: new Date(l.lessonDate),
+        group: groups.find((g) => g.id === l.groupId) ?? null,
+        groupId: l.groupId,
+        groupName: l.groupName,
+        lesson: l,
+      })),
+    ...activeGroups.flatMap((g, gi) => {
+      const time = scheduleTime(g);
+      if (!time || !groupDays[gi].includes(todayIdx) || covered.has(`${g.id}|${todayKey}`)) return [];
+      const at = new Date(now);
+      at.setHours(time[0], time[1], 0, 0);
+      return [{ key: `s-${g.id}`, at, group: g, groupId: g.id, groupName: g.name, lesson: null }];
+    }),
+  ].sort((a, b) => a.at.getTime() - b.at.getTime());
+  const todayCount = todayItems.filter((i) => i.lesson?.status !== "cancelled").length;
   const pending = data.stats.pendingGradingCount;
   const line =
     todayCount && pending
@@ -118,14 +199,16 @@ export const DashboardPage = () => {
           ? t("us.home.linePending", { m: pending })
           : t("us.home.allGood");
 
+  // Next class: the earlier of the next planned lesson and the next scheduled day.
   const upcoming = data.upcomingLessons;
   const first = upcoming[0];
-  const scheduled = first ? null : nextScheduled(activeGroups, now);
-  const next: NextSlot | null = first
-    ? { kind: "lesson", id: first.id, title: first.topic, groupName: first.groupName, at: new Date(first.lessonDate) }
-    : scheduled
-      ? { kind: "schedule", ...scheduled }
-      : null;
+  const scheduled = nextScheduled(activeGroups, now, covered);
+  const next: NextSlot | null =
+    first && (!scheduled || new Date(first.lessonDate) <= scheduled.at)
+      ? { kind: "lesson", id: first.id, title: first.topic, groupName: first.groupName, at: new Date(first.lessonDate) }
+      : scheduled
+        ? { kind: "schedule", ...scheduled }
+        : null;
 
   const whenText = (at: Date) => {
     const minutes = Math.round((at.getTime() - now.getTime()) / MINUTE);
@@ -145,15 +228,33 @@ export const DashboardPage = () => {
     return `${day}, ${hhmm(at)}${rel ? ` · ${rel}` : ""}`;
   };
 
-  // Attendance tile: straight to today's lesson when there is one.
-  const todayLesson = first && startOfDay(new Date(first.lessonDate)) === startOfDay(now) ? first : null;
+  // Attendance tile: straight to today's current/next lesson when there is one.
+  const todayLesson =
+    todayItems.find((i) => i.lesson && i.lesson.status === "planned" && i.at.getTime() + LESSON_MS > now.getTime())
+      ?.lesson ?? null;
 
-  // ── Week strip ──
-  // Lessons run Monday–Saturday, so the week always shows all six days.
-  const perDay = DAY_SHORT.map((_, i) => groupDays.filter((d) => d.includes(i)).length);
+  /** Status tag of a today row. */
+  const todayState = (item: TodayItem): { tone: "ok" | "er" | "gd" | "pr" | "mu"; text: string } => {
+    const diff = item.at.getTime() - now.getTime();
+    const status = item.lesson?.status;
+    if (status === "cancelled") return { tone: "mu", text: t("us.home.stCancelled") };
+    if (status === "completed") return { tone: "ok", text: t("us.home.stDone") };
+    if (diff <= 0 && diff > -LESSON_MS) return { tone: "er", text: t("us.home.stNow") };
+    if (diff <= 0) return { tone: "gd", text: t("us.home.stOver") };
+    const m = Math.ceil(diff / MINUTE);
+    return { tone: "pr", text: m < 60 ? t("us.home.soonMin", { m }) : t("us.home.soonH", { h: Math.floor(m / 60), m: m % 60 }) };
+  };
+
+  // ── Week numbers ──
+  const weekClasses = perDay.reduce((a, b) => a + b, 0);
+  const weekDone = weekLessons.filter((l) => l.status === "completed").length;
+  const attendancePct = data.stats.weekAttendancePercent;
 
   // ── Attention + coins ──
-  const care = (students ?? []).filter((s) => s.groups.length === 0 || s.attendancePercentage < 50);
+  // A student with no attendance marks yet isn't "low attendance" — there's nothing to judge.
+  const care = (students ?? []).filter(
+    (s) => s.groups.length === 0 || ((s.attendanceMarked ?? 1) > 0 && s.attendancePercentage < 50),
+  );
   const avatarOf = new Map((students ?? []).map((s) => [s.id, s.avatar]));
   const latestCoins = [...(coins ?? [])]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -202,6 +303,77 @@ export const DashboardPage = () => {
         )}
       </section>
 
+      <SectionHead
+        title={t("us.home.todayTitle")}
+        className="u-sec flex-wrap"
+        right={
+          todayItems.length > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-u-mu">
+              <BellRing className="u-i s" strokeWidth={2} aria-hidden="true" />
+              {t("us.home.remindHint")}
+            </span>
+          )
+        }
+      />
+      {todayItems.length === 0 ? (
+        <EmptyBox tone="mu" icon={CalendarCheck} title={t("us.home.todayEmpty")} text={t("us.home.todayEmptySub")} />
+      ) : (
+        <div className="u-cols u-stack">
+          {todayItems.map((item) => {
+            const state = todayState(item);
+            const lesson = item.lesson;
+            const over = item.at.getTime() <= now.getTime();
+            const sub = !lesson
+              ? t("us.home.noTopic")
+              : lesson.status === "cancelled"
+                ? lesson.topic
+                : lesson.attendanceMarked > 0
+                  ? `${lesson.topic} · ${t("us.home.marked", { n: lesson.attendanceMarked })}`
+                  : over
+                    ? `${lesson.topic} · ${t("us.home.noAttendance")}`
+                    : lesson.topic;
+            const body = (
+              <>
+                <span
+                  className="u-db !w-[66px]"
+                  style={
+                    state.tone === "er"
+                      ? { background: "var(--ert)", color: "var(--er)" }
+                      : state.tone === "pr"
+                        ? undefined
+                        : { background: "var(--sf2)", color: "var(--mu)" }
+                  }
+                >
+                  <b className="!text-[19px]">{hhmm(item.at)}</b>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <b className="block truncate text-[17px]">{item.groupName}</b>
+                  <span className="block truncate text-sm text-u-mu">{sub}</span>
+                </div>
+                <div className="flex flex-none flex-col items-end gap-1">
+                  <Tag tone={state.tone}>{state.text}</Tag>
+                  {!lesson && <small className="text-[12px] font-bold text-u-mu">{t("us.home.bySchedule")}</small>}
+                </div>
+              </>
+            );
+            return lesson ? (
+              <Link key={item.key} to={`/lessons/${lesson.id}`} className="u-les">
+                {body}
+              </Link>
+            ) : (
+              <button
+                key={item.key}
+                type="button"
+                className="u-les"
+                onClick={() => setLessonSheet({ open: true, groupId: item.groupId, lessonDate: localInput(item.at) })}
+              >
+                {body}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <SectionHead title={t("us.home.todo")} className="u-sec" />
       <div className="u-tiles">
         {pending > 0 ? (
@@ -246,6 +418,23 @@ export const DashboardPage = () => {
       </div>
 
       <SectionHead title={t("us.home.week")} className="u-sec" />
+      <div className="u-stats3 mb-3">
+        <div>
+          <b>{data.stats.studentsCount}</b>
+          <span>{t("us.home.statStudents")}</span>
+        </div>
+        <div>
+          <b>
+            {weekDone}
+            <small className="text-[15px] text-u-mu">/{Math.max(weekClasses, weekDone)}</small>
+          </b>
+          <span>{t("us.home.statWeekLessons")}</span>
+        </div>
+        <div>
+          <b>{attendancePct == null ? "—" : `${attendancePct}%`}</b>
+          <span>{t("us.home.statAttendance")}</span>
+        </div>
+      </div>
       <div
         className="u-week"
         style={{ gridTemplateColumns: "repeat(6, minmax(0, 1fr))" }}
@@ -263,7 +452,10 @@ export const DashboardPage = () => {
         ))}
       </div>
 
-      <UpcomingLessons className="u-sec" lessons={upcoming} />
+      <UpcomingLessons
+        className="u-sec"
+        lessons={upcoming.filter((l) => dayKey(new Date(l.lessonDate)) !== todayKey)}
+      />
 
       <div className="u-two e u-sec">
         <div className="min-w-0">
@@ -352,6 +544,7 @@ export const DashboardPage = () => {
       <AddLessonSheet
         open={lessonSheet.open}
         groupId={lessonSheet.groupId}
+        lessonDate={lessonSheet.lessonDate}
         onClose={() => setLessonSheet({ open: false })}
       />
     </div>

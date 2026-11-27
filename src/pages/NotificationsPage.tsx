@@ -1,9 +1,10 @@
 // src/pages/NotificationsPage.tsx
 // Mock `notif` view: a stack of message rows (red mail icon when unread).
-// Opening one marks it read; a new-submission message opens the grade sheet.
+// Opening one marks it read; a new-submission message opens the grade sheet,
+// a "lesson starts soon" reminder opens that lesson (or the group).
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertTriangle, Bell, Check, Mail } from "lucide-react";
+import { AlertTriangle, Bell, BellRing, Check, Mail } from "lucide-react";
 import {
   useNotificationsQuery,
   useMarkNotificationAsReadMutation,
@@ -38,6 +39,11 @@ export const NotificationsPage = () => {
       const submissionId = getSubmissionId(notification);
       if (submissionId) setGradeId(submissionId);
       else navigate("/grading");
+    }
+    if (notification.type === "lesson_reminder") {
+      const related = typeof notification.relatedId === "string" ? notification.relatedId : "";
+      if (related.startsWith("group:")) navigate(`/groups/${related.slice(6)}`);
+      else navigate(related ? `/lessons/${related}` : "/groups");
     }
   };
 
@@ -103,7 +109,11 @@ export const NotificationsPage = () => {
                     : { background: "var(--ert)", color: "var(--er)" }
                 }
               >
-                <Mail className="u-i" strokeWidth={2} aria-hidden="true" />
+                {n.type === "lesson_reminder" ? (
+                  <BellRing className="u-i" strokeWidth={2} aria-hidden="true" />
+                ) : (
+                  <Mail className="u-i" strokeWidth={2} aria-hidden="true" />
+                )}
               </span>
               <div className="min-w-0 flex-1">
                 <b className="block break-words">

@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 import { asyncRoute, requireAuth, requireRole, validate } from "../../middleware/index.js";
 import { newId } from "../../utils/ids.js";
 import { assertLesson, teacherGroup } from "../../utils/teacherScope.js";
+import { resetLessonReminder } from "../lessons/lesson.reminders.js";
 
 export const teacherLessonsRouter = Router();
 
@@ -49,6 +50,9 @@ teacherLessonsRouter.patch(
   ),
   asyncRoute(async (req: any, res: any) => {
     const lesson = await assertLesson(req, req.params.id);
-    res.json(await prisma.lesson.update({ where: { id: lesson.id }, data: req.body }));
+    const updated = await prisma.lesson.update({ where: { id: lesson.id }, data: req.body });
+    if (req.body.lessonDate && updated.lessonDate.getTime() !== lesson.lessonDate.getTime())
+      await resetLessonReminder(lesson.id);
+    res.json(updated);
   }),
 );

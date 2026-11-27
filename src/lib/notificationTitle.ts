@@ -9,6 +9,8 @@ const KNOWN: Record<string, string> = {
   "homework graded": "notes.graded",
   "new homework submission": "notes.submission",
   "new homework": "notes.homework",
+  "new test": "notes.quiz",
+  "lesson starts soon": "notes.lessonSoon",
 };
 
 export const notificationTitle = (title: string, t: T) => {

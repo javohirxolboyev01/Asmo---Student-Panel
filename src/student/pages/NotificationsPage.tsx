@@ -15,7 +15,7 @@ import type { Language } from "@/i18n/translations";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getErrorMessage } from "@/lib/toast";
 import { isCoinNotification, notificationTitle } from "@/lib/notificationTitle";
-import { Bell, BellOff, ChevronRight, Gem, CalendarDays, CheckCheck, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
+import { Bell, BellOff, ChevronRight, Gem, CalendarDays, CheckCheck, FileQuestion, Inbox, PencilLine, Star, type LucideIcon } from "lucide-react";
 import { EmptyState, ErrorState, PageHeader, Skel, Spinner } from "../components/ui";
 import { IconTile, type Tint } from "../components/icons";
 
@@ -24,13 +24,14 @@ const TYPE_ICON: Record<string, { icon: LucideIcon; tint: Tint }> = {
   lesson: { icon: CalendarDays, tint: "red" },
   grade: { icon: Star, tint: "yellow" },
   submission: { icon: Inbox, tint: "blue" },
+  quiz: { icon: FileQuestion, tint: "blue" },
   system: { icon: Bell, tint: "gray" },
 };
 
 /**
  * Where tapping a notification goes. Homework/grade notifications carry the
  * lesson id in relatedId (older ones don't → the groups list); coin updates
- * open the coin history.
+ * open the coin history; a new test opens the test.
  */
 const targetOf = (n: Notification): string | null => {
   const related = typeof n.relatedId === "string" && n.relatedId ? n.relatedId : null;
@@ -40,6 +41,8 @@ const targetOf = (n: Notification): string | null => {
     case "grade":
     case "lesson":
       return related ? `/lessons/${related}#homework` : "/groups";
+    case "quiz":
+      return related ? `/quiz/${related}` : "/";
     default:
       return null;
   }

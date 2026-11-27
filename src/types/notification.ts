@@ -3,7 +3,7 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: "homework" | "lesson" | "grade" | "system" | "submission";
+  type: "homework" | "lesson" | "grade" | "system" | "submission" | "quiz" | "lesson_reminder";
   isRead: boolean;
   createdAt: string;
   // Backend hali to'liq hujjatlanmagan — "submission" turidagi xabarnoma qaysi

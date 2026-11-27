@@ -95,6 +95,8 @@ studentsRouter.get(
           groups: u.Enrollment.map((e) => ({ id: e.Group.id, name: e.Group.name })),
           telegramLinked: Boolean(u.telegramId),
           attendancePercentage: stats?.total ? Math.round((stats.present / stats.total) * 100) : 0,
+          /** How many attendance marks the percentage is based on (0 = none yet). */
+          attendanceMarked: stats?.total ?? 0,
         };
       }),
     });

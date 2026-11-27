@@ -17,6 +17,7 @@ import {
   scoreAnswers,
   visibleQuizWhere,
 } from "./quizzes.service.js";
+import { announceQuiz } from "./quizzes.announce.js";
 
 const staff = ["TEACHER", "ADMIN"];
 const isUniqueViolation = (e: unknown) => e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002";
@@ -367,6 +368,7 @@ quizzesRouter.post(
       prisma.quizQuestion.createMany({ data: questionRows(id, questions) }),
     ]);
     res.status(201).json({ id });
+    void announceQuiz(id);
   }),
 );
 
@@ -405,6 +407,7 @@ quizzesRouter.put(
       await tx.quizQuestion.createMany({ data: questionRows(quiz.id, questions) });
     });
     res.json({ id: quiz.id });
+    void announceQuiz(quiz.id);
   }),
 );
 
@@ -420,6 +423,7 @@ quizzesRouter.patch(
     });
     if (!updated.count) throw httpError(404, "Quiz not found");
     res.json({ id: req.params.id, isActive: req.body.isActive });
+    if (req.body.isActive) void announceQuiz(req.params.id);
   }),
 );
 

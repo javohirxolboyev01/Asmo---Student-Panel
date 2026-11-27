@@ -352,6 +352,8 @@ model Quiz {
   coinReward   Int            @default(0)
   passPercent  Int            @default(60)
   isActive     Boolean        @default(true)
+  /// When students were told about the test (set the first time it is active).
+  announcedAt  DateTime?
   createdById  String
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @default(now()) @updatedAt
@@ -447,4 +449,15 @@ model StoredFile {
   createdAt DateTime @default(now())
 
   @@index([ownerId])
+}
+
+/// "Lesson starts in 30 minutes" reminders already sent to the teacher. The id
+/// is the dedupe key: "lesson:<lessonId>" for a created lesson, or
+/// "group:<groupId>:<yyyy-mm-dd>" for a class known only from the group's
+/// weekly schedule. Rows older than a week are pruned.
+model LessonReminder {
+  id     String   @id
+  sentAt DateTime @default(now())
+
+  @@index([sentAt])
 }

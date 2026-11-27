@@ -32,6 +32,8 @@ export interface StudentSummary {
   /** The student's Telegram is linked (the chat can reach them). */
   telegramLinked?: boolean;
   attendancePercentage: number;
+  /** Attendance marks behind the percentage; 0 = nothing marked yet (older servers: undefined). */
+  attendanceMarked?: number;
 }
 
 export interface AttendanceRecordEntry {
@@ -124,8 +126,24 @@ export interface TeacherDashboardData {
     studentsCount: number;
     todayLessonsCount: number;
     pendingGradingCount: number;
+    weekLessonsDone?: number;
+    weekLessonsTotal?: number;
+    /** PRESENT share of this week's attendance marks; null = nothing marked yet. */
+    weekAttendancePercent?: number | null;
   };
   upcomingLessons: { id: string; topic: string; lessonDate: string; time: string; groupName: string }[];
+  /** All lessons of this Tashkent week (Mon–Sun), any status. */
+  weekLessons?: DashboardWeekLesson[];
+}
+
+export interface DashboardWeekLesson {
+  id: string;
+  topic: string;
+  lessonDate: string;
+  status: "planned" | "completed" | "cancelled";
+  groupId: string;
+  groupName: string;
+  attendanceMarked: number;
 }
 
 export interface TeacherCoinTransaction {

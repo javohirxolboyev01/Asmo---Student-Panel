@@ -1,20 +1,19 @@
 // src/teacher/pages/TestEditorPage.tsx
-// Test yaratish / tahrirlash. Savollar bittalab qo'shiladi yoki tayyor matndan
-// (masalan, AI tuzib bergan) bir yo'la import qilinadi — format: lib/quizParser.
-import { useEffect, useMemo, useState } from "react";
+// Test yaratish / tahrirlash. Savollar bittalab qo'shiladi yoki AI bilan
+// tuziladi (components/QuizAiSheet: sozlash → AI'ga yuborish → javobni joylash).
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowDown, ArrowUp, ClipboardCopy, FileQuestion, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, FileQuestion, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { useQuizDetailQuery, useSaveQuizMutation } from "@/hooks/queries/useQuizzes";
 import { useGroupsQuery } from "@/hooks/queries/useGroups";
-import { MAX_OPTIONS, parseQuizText, quizAiPrompt } from "@/lib/quizParser";
+import { MAX_OPTIONS } from "@/lib/quizParser";
 import type { QuizInput, QuizQuestionInput } from "@/types/quiz";
-import { Modal } from "@/components/common/Modal";
 import { Button, Input, Select, Textarea } from "@/components/ui";
 import { toast, getErrorMessage } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useSettingsStore } from "@/stores/settingsStore";
 import { EmptyBox, PageHeader, SectionHead, Skel, Tag, Toggle } from "../components/ui";
+import { QuizAiSheet } from "../components/QuizAiSheet";
 
 const MAX_QUESTIONS = 100;
 const LETTERS = "ABCDEF";
@@ -63,7 +62,6 @@ export const TestEditorPage = () => {
 const TestEditor = ({ id }: { id: string | undefined }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const language = useSettingsStore((s) => s.language);
   const { data, isFetchedAfterMount, isLoading, isError, error, refetch } = useQuizDetailQuery(id);
   // Only a copy fetched for this visit fills the form.
   const existing = isFetchedAfterMount ? data : undefined;
@@ -74,7 +72,6 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => (id ? [] : [emptyQuestion()]));
   const [showErrors, setShowErrors] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [importText, setImportText] = useState("");
   const [loadedId, setLoadedId] = useState<string | null>(null);
 
   // Fill the form once per loaded test, so a background refetch never wipes edits.
@@ -95,8 +92,6 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
 
   // Scores already given only make sense for the questions they were given on.
   const locked = Boolean(existing && existing.attemptCount > 0);
-  const parsed = useMemo(() => parseQuizText(importText), [importText]);
-  const parsedValid = parsed.filter((q) => q.errors.length === 0);
 
   const updateQuestion = (key: string, patch: Partial<QuizQuestionInput>) =>
     setQuestions((qs) => qs.map((q) => (q.key === key ? { ...q, ...patch } : q)));
@@ -118,23 +113,15 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
       correctIndex: q.correctIndex === i ? -1 : q.correctIndex > i ? q.correctIndex - 1 : q.correctIndex,
     });
 
-  const addImported = () => {
-    const room = MAX_QUESTIONS - questions.length;
-    const added = parsedValid.slice(0, room).map(({ text, options, correctIndex }) => draft({ text, options, correctIndex }));
-    // Drop the untouched blank question a new test starts with.
-    setQuestions((qs) => [...qs.filter((q) => q.text.trim() || q.options.some((o) => o.trim())), ...added]);
-    setImportOpen(false);
-    setImportText("");
-    toast.success(t("quizzes.import.added", { count: added.length }));
-  };
+  // Untouched blank questions (a new test starts with one) don't count and are replaced.
+  const isBlank = (q: QuizQuestionInput) => !q.text.trim() && !q.options.some((o) => o.trim());
+  const room = MAX_QUESTIONS - questions.filter((q) => !isBlank(q)).length;
 
-  const copyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(quizAiPrompt(language));
-      toast.success(t("quizzes.import.promptCopied"));
-    } catch {
-      toast.error(t("common.error"));
-    }
+  const addImported = (incoming: QuizQuestionInput[]) => {
+    const added = incoming.slice(0, room).map(draft);
+    setQuestions((qs) => [...qs.filter((q) => !isBlank(q)), ...added]);
+    setImportOpen(false);
+    toast.success(t("quizzes.import.added", { count: added.length }));
   };
 
   const titleError = !meta.title.trim() || meta.title.trim().length > 120 ? t("quizzes.error.title") : undefined;
@@ -240,10 +227,10 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
                     type="button"
                     className="u-btn soft sm"
                     onClick={() => setImportOpen(true)}
-                    disabled={questions.length >= MAX_QUESTIONS}
+                    disabled={room <= 0}
                   >
                     <Sparkles className="u-i s" strokeWidth={2} aria-hidden="true" />
-                    {t("quizzes.import.open")}
+                    {t("quizzes.ai.open")}
                   </button>
                   <button
                     type="button"
@@ -489,63 +476,13 @@ const TestEditor = ({ id }: { id: string | undefined }) => {
         </div>
       </div>
 
-      <Modal
-        isOpen={importOpen}
+      <QuizAiSheet
+        open={importOpen}
         onClose={() => setImportOpen(false)}
-        title={t("quizzes.import.title")}
-        maxWidth="sm:max-w-[640px]"
-      >
-        <div className="grid gap-3.5">
-          <p className="u-sub !mt-0 text-sm">{t("quizzes.import.hint")}</p>
-          <div>
-            <div className="u-sech !mb-2 flex-wrap">
-              <h3>{t("quizzes.import.format")}</h3>
-              <button type="button" className="u-btn soft sm" onClick={copyPrompt}>
-                <ClipboardCopy className="u-i s" strokeWidth={2} aria-hidden="true" />
-                {t("quizzes.import.copyPrompt")}
-              </button>
-            </div>
-            <div className="u-paper full font-mono !text-[13px] !leading-relaxed">
-              {"1. Savol matni?\nA) Variant\nB) Variant\nC) Variant\nD) Variant\nJavob: B"}
-            </div>
-          </div>
-          <Textarea
-            value={importText}
-            onChange={(e) => setImportText(e.target.value)}
-            placeholder={t("quizzes.import.placeholder")}
-            aria-label={t("quizzes.import.placeholder")}
-            className="min-h-[180px] sm:min-h-[220px] font-mono text-sm"
-          />
-          {importText.trim() && (
-            <div className="grid gap-1.5 text-sm">
-              <p className="font-bold">
-                <Tag tone={parsedValid.length ? "ok" : "er"}>
-                  {t("quizzes.import.found", { count: parsed.length, valid: parsedValid.length })}
-                </Tag>
-              </p>
-              {parsed.some((q) => q.errors.length > 0) && (
-                <ul className="text-[13px] font-bold text-u-er grid gap-0.5 max-h-28 overflow-y-auto break-words">
-                  {parsed.map((q, i) =>
-                    q.errors.length ? (
-                      <li key={i}>
-                        {i + 1}. «{q.text.slice(0, 50)}» — {q.errors.map((e) => t(e)).join(", ")}
-                      </li>
-                    ) : null,
-                  )}
-                </ul>
-              )}
-            </div>
-          )}
-          <div className="flex gap-2.5">
-            <Button variant="outline" onClick={() => setImportOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button className="flex-1 min-w-0" onClick={addImported} disabled={parsedValid.length === 0}>
-              <span className="truncate">{t("quizzes.import.add", { count: parsedValid.length })}</span>
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        room={room}
+        defaultTopic={meta.title}
+        onAdd={addImported}
+      />
     </div>
   );
 };

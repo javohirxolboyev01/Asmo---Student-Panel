@@ -6,6 +6,7 @@ import { lower } from "../../utils/serializers.js";
 import { newId } from "../../utils/ids.js";
 import { currentUser, assertLesson, groupScope, liveEnrollment } from "../../utils/teacherScope.js";
 import { homeworkMessage, notifyAttendance, notifyStudents } from "../telegram/telegram.notify.js";
+import { resetLessonReminder } from "./lesson.reminders.js";
 
 const staff = ["TEACHER", "ADMIN"];
 
@@ -116,7 +117,10 @@ lessonsRouter.patch(
   ),
   asyncRoute(async (req: any, res: any) => {
     const lesson = await assertLesson(req, req.params.id);
-    res.json(await prisma.lesson.update({ where: { id: lesson.id }, data: req.body }));
+    const updated = await prisma.lesson.update({ where: { id: lesson.id }, data: req.body });
+    if (req.body.lessonDate && updated.lessonDate.getTime() !== lesson.lessonDate.getTime())
+      await resetLessonReminder(lesson.id);
+    res.json(updated);
   }),
 );
 
